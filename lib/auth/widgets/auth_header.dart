@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../config/app_theme.dart';
+import '../../config/app_theme.dart';
 
-/// Widget untuk header auth (logo + title + subtitle)
+/// Widget untuk header auth dengan animasi (logo + title + subtitle)
 /// Mendukung:
 /// - Icon (default)
 /// - Image dari assets
 /// - Image dari URL (untuk dynamic logo dari admin panel)
-class AuthHeader extends StatelessWidget {
+class AuthHeader extends StatefulWidget {
   final String title;
   final String subtitle;
   final IconData? icon;
@@ -25,55 +25,141 @@ class AuthHeader extends StatelessWidget {
   });
 
   @override
+  State<AuthHeader> createState() => _AuthHeaderState();
+}
+
+class _AuthHeaderState extends State<AuthHeader>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+      ),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
+      ),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, -0.5),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Logo/Icon
-        Container(
-          height: 80,
-          width: 80,
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            gradient:
-                logoUrl != null || logoAssetPath != null
-                    ? null
-                    : const LinearGradient(
-                      colors: [AppTheme.primaryMain, AppTheme.primaryDark],
-                    ),
-            shape: BoxShape.circle,
-            color:
-                logoUrl != null || logoAssetPath != null ? Colors.white : null,
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primaryMain.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+        // Logo/Icon dengan animasi
+        ScaleTransition(
+          scale: _scaleAnimation,
+          child: Container(
+            height: 90,
+            width: 90,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              gradient:
+                  widget.logoUrl != null || widget.logoAssetPath != null
+                      ? null
+                      : LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppTheme.primaryMain, AppTheme.primaryDark],
+                      ),
+              shape: BoxShape.circle,
+              color:
+                  widget.logoUrl != null || widget.logoAssetPath != null
+                      ? Colors.white
+                      : null,
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryMain.withOpacity(0.4),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: AppTheme.primaryLight.withOpacity(0.3),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                ),
+              ],
+            ),
+            child: ClipOval(child: _buildLogoContent()),
+          ),
+        ),
+
+        // Title dengan animasi slide & fade
+        SlideTransition(
+          position: _slideAnimation,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: ShaderMask(
+              shaderCallback:
+                  (bounds) => LinearGradient(
+                    colors: [AppTheme.primaryDark, AppTheme.primaryMain],
+                  ).createShader(bounds),
+              child: Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: widget.isDesktop ? 36 : 30,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ],
+            ),
           ),
-          child: ClipOval(child: _buildLogoContent()),
         ),
+        const SizedBox(height: 12),
 
-        // Title
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: isDesktop ? 32 : 28,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
+        // Subtitle dengan animasi fade
+        FadeTransition(
+          opacity: _fadeAnimation,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              widget.subtitle,
+              style: TextStyle(
+                fontSize: widget.isDesktop ? 16 : 15,
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w500,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-
-        // Subtitle
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: isDesktop ? 16 : 14,
-            color: AppTheme.textSecondary,
-          ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -82,14 +168,14 @@ class AuthHeader extends StatelessWidget {
   /// Build logo content based on priority: URL > Asset > Icon
   Widget _buildLogoContent() {
     // Priority 1: Logo dari URL (untuk dynamic logo dari admin panel)
-    if (logoUrl != null && logoUrl!.isNotEmpty) {
+    if (widget.logoUrl != null && widget.logoUrl!.isNotEmpty) {
       return Image.network(
-        logoUrl!,
+        widget.logoUrl!,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           // Fallback ke icon jika URL gagal load
           return Icon(
-            icon ?? Icons.store,
+            widget.icon ?? Icons.store,
             size: 40,
             color: AppTheme.primaryMain,
           );
@@ -114,14 +200,14 @@ class AuthHeader extends StatelessWidget {
     }
 
     // Priority 2: Logo dari Assets (untuk logo lokal)
-    if (logoAssetPath != null && logoAssetPath!.isNotEmpty) {
+    if (widget.logoAssetPath != null && widget.logoAssetPath!.isNotEmpty) {
       return Image.asset(
-        logoAssetPath!,
+        widget.logoAssetPath!,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           // Fallback ke icon jika asset tidak ditemukan
           return Icon(
-            icon ?? Icons.store,
+            widget.icon ?? Icons.store,
             size: 40,
             color: AppTheme.primaryMain,
           );
@@ -130,6 +216,10 @@ class AuthHeader extends StatelessWidget {
     }
 
     // Priority 3: Icon (default)
-    return Icon(icon ?? Icons.lock_outline, size: 40, color: Colors.white);
+    return Icon(
+      widget.icon ?? Icons.lock_outline,
+      size: 40,
+      color: Colors.white,
+    );
   }
 }

@@ -7,6 +7,7 @@ class ThemeConfig {
   final bool useBackgroundImage;
   final String? logoUrl;
   final String appName;
+  final String appTagline;
 
   ThemeConfig({
     required this.primaryDark,
@@ -15,7 +16,8 @@ class ThemeConfig {
     this.backgroundImageUrl,
     this.useBackgroundImage = false,
     this.logoUrl,
-    this.appName = 'Mobile PosPhone',
+    this.appName = 'POS Phone',
+    this.appTagline = 'Sistem Point of Sale Counter HP',
   });
 
   /// Factory untuk membuat ThemeConfig dari JSON response API
@@ -27,7 +29,8 @@ class ThemeConfig {
       backgroundImageUrl: json['background_image_url'],
       useBackgroundImage: json['use_background_image'] ?? false,
       logoUrl: json['logo_url'],
-      appName: json['app_name'] ?? 'Mobile PosPhone',
+      appName: json['app_name'] ?? 'POS Phone',
+      appTagline: json['app_tagline'] ?? 'Sistem Point of Sale Counter HP',
     );
   }
 
@@ -41,6 +44,7 @@ class ThemeConfig {
       'use_background_image': useBackgroundImage,
       'logo_url': logoUrl,
       'app_name': appName,
+      'app_tagline': appTagline,
     };
   }
 
@@ -51,7 +55,8 @@ class ThemeConfig {
       primaryMain: '#3B82F6',
       primaryLight: '#93C5FD',
       useBackgroundImage: false,
-      appName: 'Mobile PosPhone',
+      appName: 'POS Phone',
+      appTagline: 'Sistem Point of Sale Counter HP',
     );
   }
 }

@@ -6,7 +6,9 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/social_login_button.dart';
 import '../widgets/divider_with_text.dart';
-import '../config/app_theme.dart';
+import '../../config/app_theme.dart';
+import '../providers/branding_provider.dart';
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -68,6 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 600;
+    final branding = context.watch<BrandingProvider>();
 
     return Scaffold(
       body: AuthBackground(
@@ -88,8 +91,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     children: [
                       // Header
                       AuthHeader(
-                        title: 'Buat Akun',
-                        subtitle: 'Daftar untuk memulai',
+                        title: branding.appName,
+                        subtitle: 'Daftar untuk mulai mengelola toko Anda',
+                        logoUrl: branding.logoUrl,
                         icon: Icons.person_add_outlined,
                         isDesktop: isDesktop,
                       ),

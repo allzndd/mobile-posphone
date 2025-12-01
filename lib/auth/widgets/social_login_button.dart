@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../config/app_theme.dart';
+import '../../config/app_theme.dart';
 
-/// Widget untuk tombol social login
-class SocialLoginButton extends StatelessWidget {
+/// Widget untuk tombol social login dengan efek hover modern
+class SocialLoginButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback onPressed;
 
@@ -13,26 +13,80 @@ class SocialLoginButton extends StatelessWidget {
   });
 
   @override
+  State<SocialLoginButton> createState() => _SocialLoginButtonState();
+}
+
+class _SocialLoginButtonState extends State<SocialLoginButton>
+    with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      width: 56,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderColor!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) => _controller.reverse(),
+        onTapCancel: () => _controller.reverse(),
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            height: 60,
+            width: 60,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color:
+                    _isHovered
+                        ? AppTheme.primaryMain.withOpacity(0.3)
+                        : AppTheme.borderColor!,
+                width: _isHovered ? 2 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color:
+                      _isHovered
+                          ? AppTheme.primaryMain.withOpacity(0.15)
+                          : Colors.black.withOpacity(0.05),
+                  blurRadius: _isHovered ? 12 : 8,
+                  offset: Offset(0, _isHovered ? 4 : 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(
+                widget.icon,
+                size: 28,
+                color: _isHovered ? AppTheme.primaryMain : AppTheme.primaryDark,
+              ),
+              onPressed: widget.onPressed,
+            ),
           ),
-        ],
-      ),
-      child: IconButton(
-        icon: Icon(icon, size: 28),
-        color: AppTheme.primaryDark,
-        onPressed: onPressed,
+        ),
       ),
     );
   }

@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../config/app_theme.dart';
+import '../../auth/providers/branding_provider.dart';
+
+/// Sidebar Header - Logo & App Name
+class SidebarHeader extends StatelessWidget {
+  final bool isCollapsed;
+
+  const SidebarHeader({super.key, required this.isCollapsed});
+
+  @override
+  Widget build(BuildContext context) {
+    final branding = context.watch<BrandingProvider>();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      child: Row(
+        children: [
+          Container(
+            height: 50,
+            width: 50,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child:
+                  branding.logoUrl != null && branding.logoUrl!.isNotEmpty
+                      ? Image.network(
+                        branding.logoUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.store,
+                            color: AppTheme.primaryMain,
+                            size: 28,
+                          );
+                        },
+                      )
+                      : const Icon(
+                        Icons.store,
+                        color: AppTheme.primaryMain,
+                        size: 28,
+                      ),
+            ),
+          ),
+          if (!isCollapsed) ...[
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    branding.appName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    branding.appTagline,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}

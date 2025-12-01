@@ -6,8 +6,11 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/social_login_button.dart';
 import '../widgets/divider_with_text.dart';
-import '../config/app_theme.dart';
+import '../../config/app_theme.dart';
 import 'register_screen.dart';
+import '../../dashboard/screens/dashboard_screen.dart';
+import '../providers/branding_provider.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,6 +28,15 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Load branding config saat screen dibuka
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BrandingProvider>().loadThemeConfig();
+    });
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -35,15 +47,14 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // TODO: Implement login logic
+      // Simulasi login - akan diganti dengan API call
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login berhasil!'),
-              backgroundColor: AppTheme.primaryMain,
-            ),
+
+          // Navigate to Dashboard
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
           );
         }
       });
@@ -54,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 600;
+    final branding = context.watch<BrandingProvider>();
 
     return Scaffold(
       body: AuthBackground(
@@ -74,8 +86,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       // Header
                       AuthHeader(
-                        title: 'Selamat Datang',
-                        subtitle: 'Masuk ke akun Anda',
+                        title: branding.appName,
+                        subtitle: branding.appTagline,
+                        logoUrl: branding.logoUrl,
                         isDesktop: isDesktop,
                       ),
                       const SizedBox(height: 40),
