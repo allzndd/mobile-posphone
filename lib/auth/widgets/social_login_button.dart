@@ -63,7 +63,7 @@ class _SocialLoginButtonState extends State<SocialLoginButton>
                 color:
                     _isHovered
                         ? AppTheme.primaryMain.withOpacity(0.3)
-                        : AppTheme.borderColor!,
+                        : AppTheme.borderLight,
                 width: _isHovered ? 2 : 1,
               ),
               boxShadow: [

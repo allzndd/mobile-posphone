@@ -47,7 +47,7 @@ class _DividerWithTextState extends State<DividerWithText>
               height: 1,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.transparent, AppTheme.borderColor!],
+                  colors: [Colors.transparent, Colors.grey[300]!],
                   stops: const [0.0, 1.0],
                 ),
               ),
@@ -70,7 +70,7 @@ class _DividerWithTextState extends State<DividerWithText>
               height: 1,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppTheme.borderColor!, Colors.transparent],
+                  colors: [AppTheme.borderLight, Colors.transparent],
                   stops: const [0.0, 1.0],
                 ),
               ),

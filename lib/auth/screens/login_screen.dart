@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../layouts/screens/main_layout.dart';
 import '../widgets/auth_background.dart';
 import '../widgets/auth_card.dart';
 import '../widgets/auth_header.dart';
@@ -8,7 +9,6 @@ import '../widgets/social_login_button.dart';
 import '../widgets/divider_with_text.dart';
 import '../../config/app_theme.dart';
 import 'register_screen.dart';
-import '../../dashboard/screens/dashboard_screen.dart';
 import '../providers/branding_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -52,9 +52,15 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           setState(() => _isLoading = false);
 
-          // Navigate to Dashboard
+          // Navigate to MainLayout (POS system)
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            MaterialPageRoute(
+              builder: (context) => MainLayout(
+                child: Container(),
+                title: 'Dashboard Kasir',
+                selectedIndex: 0,
+              ),
+            ),
           );
         }
       });

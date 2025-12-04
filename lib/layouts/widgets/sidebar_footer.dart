@@ -22,18 +22,20 @@ class SidebarFooter extends StatelessWidget {
 
         // Collapse/Expand Button
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: EdgeInsets.symmetric(horizontal: isCollapsed ? 8 : 12),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: () => onCollapseToggle(!isCollapsed),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isCollapsed ? 12 : 16,
                   vertical: 12,
                 ),
                 child: Row(
+                  mainAxisSize: isCollapsed ? MainAxisSize.min : MainAxisSize.max,
+                  mainAxisAlignment: isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
                   children: [
                     Icon(
                       isCollapsed ? Icons.chevron_right : Icons.chevron_left,
@@ -56,15 +58,15 @@ class SidebarFooter extends StatelessWidget {
 
         // Logout Button
         Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(isCollapsed ? 8 : 12),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: onLogout,
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isCollapsed ? 12 : 16,
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
@@ -72,6 +74,8 @@ class SidebarFooter extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
+                  mainAxisSize: isCollapsed ? MainAxisSize.min : MainAxisSize.max,
+                  mainAxisAlignment: isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
                   children: [
                     const Icon(Icons.logout, color: Colors.white, size: 24),
                     if (!isCollapsed) ...[

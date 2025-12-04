@@ -14,8 +14,13 @@ class SidebarHeader extends StatelessWidget {
     final branding = context.watch<BrandingProvider>();
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      padding: EdgeInsets.symmetric(
+        vertical: 24,
+        horizontal: isCollapsed ? 15 : 20,
+      ),
       child: Row(
+        mainAxisSize: isCollapsed ? MainAxisSize.min : MainAxisSize.max,
+        mainAxisAlignment: isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
           Container(
             height: 50,
