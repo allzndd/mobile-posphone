@@ -1,8 +1,8 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
-import '../../config/app_theme.dart';
 import '../../auth/providers/branding_provider.dart';
+import '../../config/app_theme.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -11,173 +11,139 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> with TickerProviderStateMixin {
-  int _currentBannerIndex = 0;
-  late PageController _bannerController;
-  late AnimationController _headerAnimationController;
-  
-  Timer? _bannerTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _bannerController = PageController();
-    _headerAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _headerAnimationController.forward();
-    
-    // Auto-scroll banner
-    _bannerTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (_bannerController.hasClients) {
-        int nextPage = (_currentBannerIndex + 1) % 3;
-        _bannerController.animateToPage(
-          nextPage,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _bannerController.dispose();
-    _headerAnimationController.dispose();
-    _bannerTimer?.cancel();
-    super.dispose();
-  }
-
+class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final branding = context.watch<BrandingProvider>();
-    final size = MediaQuery.of(context).size;
-    final isDesktop = size.width > 900;
-    final isTablet = size.width > 600 && size.width <= 900;
-    final horizontalPadding = isDesktop ? 40.0 : isTablet ? 24.0 : 16.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      color: AppTheme.backgroundLight,
-      child: SingleChildScrollView(
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : AppTheme.backgroundLight,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome Header
-              _buildWelcomeHeader(branding, isDesktop),
-              const SizedBox(height: 24),
-              
-              // Quick Stats Cards
-              _buildQuickStats(isDesktop, isTablet),
-              const SizedBox(height: 24),
-              
-              // Action Buttons
-              _buildActionButtons(isDesktop),
-              const SizedBox(height: 32),
-              
-              // Product Section
-              _buildProductSection(isDesktop),
-              const SizedBox(height: 32),
-              
-              // Transaction History
-              _buildTransactionHistory(isDesktop),
-              const SizedBox(height: 32),
-              
-              // Payment Shortcuts
-              _buildPaymentShortcuts(isDesktop),
-              const SizedBox(height: 24),
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _header(branding, isDark),
+            const SizedBox(height: 24),
+
+            _quickStats(),
+            const SizedBox(height: 28),
+
+            Text(
+              "Grafik Penjualan",
+              style: AppTheme.textTheme.displayMedium
+                  ?.copyWith(color: AppTheme.primaryMain),
+            ),
+            const SizedBox(height: 16),
+            _salesChart(isDark),
+            const SizedBox(height: 32),
+
+            Text(
+              "Produk Terlaris",
+              style: AppTheme.textTheme.displayMedium
+                  ?.copyWith(color: AppTheme.primaryMain),
+            ),
+            const SizedBox(height: 16),
+            _topProducts(),
+            const SizedBox(height: 32),
+
+            Text(
+              "Stok Menipis",
+              style: AppTheme.textTheme.displayMedium
+                  ?.copyWith(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            _lowStockList(isDark),
+            const SizedBox(height: 32),
+
+            Text(
+              "Riwayat Transaksi",
+              style: AppTheme.textTheme.displayMedium
+                  ?.copyWith(color: AppTheme.primaryMain),
+            ),
+            const SizedBox(height: 16),
+            _trans("INV-0012", "Rp 2.500.000", "Tunai"),
+            _trans("INV-0011", "Rp 1.200.000", "QRIS"),
+            _trans("INV-0010", "Rp 800.000", "Debit"),
+            const SizedBox(height: 28),
+
+            Text(
+              "Shortcut Pembayaran",
+              style: AppTheme.textTheme.displayMedium
+                  ?.copyWith(color: AppTheme.primaryMain),
+            ),
+            const SizedBox(height: 16),
+            _paymentShortcuts(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildWelcomeHeader(BrandingProvider branding, bool isDesktop) {
+  // ------------------------------------------------------------
+  // HEADER
+  // ------------------------------------------------------------
+  Widget _header(BrandingProvider branding, bool isDark) {
     return Container(
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.primaryMain, AppTheme.primaryDark],
+          colors: [
+            AppTheme.primaryMain,
+            AppTheme.primaryDark,
+          ],
         ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryMain.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
-      padding: EdgeInsets.all(isDesktop ? 28 : 20),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withOpacity(.2),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              Icons.phone_android_rounded,
-              color: Colors.white,
-              size: isDesktop ? 40 : 32,
-            ),
+            child: const Icon(Icons.store, color: Colors.white, size: 34),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Selamat Datang!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isDesktop ? 24 : 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
+                const Text("Selamat Datang!",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold)),
                 Text(
                   branding.appName,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
-                    fontSize: isDesktop ? 16 : 14,
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isDesktop ? 20 : 16,
-              vertical: isDesktop ? 12 : 10,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.calendar_today_rounded,
-                  color: AppTheme.primaryMain,
-                  size: isDesktop ? 20 : 18,
-                ),
-                const SizedBox(width: 8),
+                Icon(Icons.calendar_today,
+                    color: AppTheme.primaryMain, size: 18),
+                const SizedBox(width: 6),
                 Text(
-                  'Hari Ini',
+                  "Hari Ini",
                   style: TextStyle(
                     color: AppTheme.primaryMain,
                     fontWeight: FontWeight.bold,
-                    fontSize: isDesktop ? 14 : 12,
                   ),
-                ),
+                )
               ],
             ),
           ),
@@ -186,391 +152,257 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildQuickStats(bool isDesktop, bool isTablet) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: isDesktop ? 4 : isTablet ? 2 : 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: isDesktop ? 1.8 : 1.3,
+  // ------------------------------------------------------------
+  // QUICK STATS
+  // ------------------------------------------------------------
+  Widget _quickStats() {
+    return Column(
       children: [
-        _buildStatCard(
-          icon: Icons.attach_money_rounded,
-          title: 'Penjualan',
-          value: 'Rp 5.2 Jt',
-          color: AppTheme.accentGreen,
-          isDesktop: isDesktop,
-        ),
-        _buildStatCard(
-          icon: Icons.receipt_long_rounded,
-          title: 'Transaksi',
-          value: '12',
-          color: AppTheme.primaryMain,
-          isDesktop: isDesktop,
-        ),
-        _buildStatCard(
-          icon: Icons.inventory_2_rounded,
-          title: 'Produk',
-          value: '234',
-          color: AppTheme.accentOrange,
-          isDesktop: isDesktop,
-        ),
-        _buildStatCard(
-          icon: Icons.people_rounded,
-          title: 'Pelanggan',
-          value: '89',
-          color: AppTheme.accentPurple,
-          isDesktop: isDesktop,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-    required bool isDesktop,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Hitung ukuran responsif berdasarkan lebar card
-        final cardWidth = constraints.maxWidth;
-        final padding = cardWidth < 150 ? 8.0 : (cardWidth < 200 ? 10.0 : 12.0);
-        final iconPadding = cardWidth < 150 ? 8.0 : (cardWidth < 200 ? 9.0 : 10.0);
-        final iconSize = cardWidth < 150 ? 18.0 : (cardWidth < 200 ? 20.0 : 22.0);
-        final valueSize = cardWidth < 150 ? 16.0 : (cardWidth < 200 ? 18.0 : 20.0);
-        final titleSize = cardWidth < 150 ? 10.0 : (cardWidth < 200 ? 11.0 : 12.0);
-        final spacing = cardWidth < 150 ? 4.0 : 6.0;
-
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.1),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.all(padding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.all(iconPadding),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: iconSize,
-                ),
-              ),
-              SizedBox(height: spacing),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: valueSize,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: titleSize,
-                    color: Colors.grey.shade600,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildActionButtons(bool isDesktop) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.qr_code_scanner_rounded,
-            label: 'Scan Barcode',
-            gradient: LinearGradient(
-              colors: [AppTheme.primaryMain, AppTheme.primaryDark],
-            ),
-            onPressed: () {},
-            isDesktop: isDesktop,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.add_shopping_cart_rounded,
-            label: 'Input Manual',
-            gradient: LinearGradient(
-              colors: [AppTheme.accentGreen, const Color(0xFF059669)],
-            ),
-            onPressed: () {},
-            isDesktop: isDesktop,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required LinearGradient gradient,
-    required VoidCallback onPressed,
-    required bool isDesktop,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: gradient.colors.first.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              vertical: isDesktop ? 20 : 16,
-              horizontal: 16,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  color: Colors.white,
-                  size: isDesktop ? 24 : 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isDesktop ? 16 : 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-// Tambahkan metode ini di dalam _DashboardScreenState
-
-Widget _buildProductSection(bool isDesktop) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Daftar Produk',
-        style: AppTheme.textTheme.displayMedium?.copyWith(
-          color: AppTheme.primaryMain,
-        ),
-      ),
-      const SizedBox(height: 16),
-      SizedBox(
-        height: isDesktop ? 180 : 140,
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          children: [
-            _buildProductCard('Samsung S24 Ultra', 'Rp 16.999.000', 3, isDesktop),
-            _buildProductCard('iPhone 15 Pro', 'Rp 18.999.000', 2, isDesktop),
-            _buildProductCard('Xiaomi 13T', 'Rp 7.499.000', 5, isDesktop),
-            _buildProductCard('Oppo Reno 10', 'Rp 6.999.000', 4, isDesktop),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _buildProductCard(String name, String price, int stock, bool isDesktop) {
-  return Container(
-    width: isDesktop ? 220 : 180,
-    margin: const EdgeInsets.only(right: 16),
-    decoration: BoxDecoration(
-      color: AppTheme.backgroundWhite,
-      borderRadius: AppTheme.mediumRadius,
-      boxShadow: [AppTheme.lightShadow],
-    ),
-    padding: EdgeInsets.all(isDesktop ? 20 : 14),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          name,
-          style: AppTheme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: isDesktop ? 17 : 15,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          price,
-          style: AppTheme.textTheme.bodyLarge?.copyWith(
-            color: AppTheme.primaryMain,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const Spacer(),
         Row(
           children: [
-            Icon(Icons.inventory_2, color: AppTheme.textTertiary, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              'Stok: $stock',
-              style: AppTheme.textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textTertiary,
-                fontSize: isDesktop ? 13 : 12,
-              ),
-            ),
+            Expanded(child: _stat("Penjualan", "Rp 5.200.000", Icons.attach_money, Colors.green)),
+            const SizedBox(width: 14),
+            Expanded(child: _stat("Transaksi", "12", Icons.receipt_long, AppTheme.primaryMain)),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(child: _stat("Produk", "234", Icons.inventory_2, Colors.orange)),
+            const SizedBox(width: 14),
+            Expanded(child: _stat("Pelanggan", "89", Icons.people, AppTheme.accentPurple)),
           ],
         ),
       ],
-    ),
-  );
-}
+    );
+  }
 
-Widget _buildTransactionHistory(bool isDesktop) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Riwayat Transaksi',
-        style: AppTheme.textTheme.displayMedium?.copyWith(
-          color: AppTheme.primaryMain,
-        ),
+  Widget _stat(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: color.withOpacity(.2), blurRadius: 12)],
       ),
-      const SizedBox(height: 16),
-      ListView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+      child: Row(
         children: [
-          _buildTransactionTile('INV-0012', 'Rp 2.500.000', 'Tunai', 'Selesai', isDesktop),
-          _buildTransactionTile('INV-0011', 'Rp 1.200.000', 'QRIS', 'Selesai', isDesktop),
-          _buildTransactionTile('INV-0010', 'Rp 800.000', 'Debit', 'Selesai', isDesktop),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 26),
+          ),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(value,
+                  style:
+                      TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(title, style: TextStyle(color: Colors.grey[600])),
+            ],
+          )
         ],
       ),
-    ],
-  );
-}
+    );
+  }
 
-Widget _buildTransactionTile(String inv, String amount, String method, String status, bool isDesktop) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 16),
-    decoration: BoxDecoration(
-      color: AppTheme.backgroundWhite,
-      borderRadius: AppTheme.mediumRadius,
-      boxShadow: [AppTheme.lightShadow],
-    ),
-    child: ListTile(
-      leading: Icon(Icons.receipt_long, color: AppTheme.primaryMain),
-      title: Text(
-        inv,
-        style: AppTheme.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-          fontSize: isDesktop ? 16 : 14,
+  // ------------------------------------------------------------
+  // GRAFIK PENJUALAN
+  // ------------------------------------------------------------
+  Widget _salesChart(bool isDark) {
+    return Container(
+      height: 220,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [AppTheme.lightShadow],
+      ),
+      child: LineChart(
+        LineChartData(
+          gridData: const FlGridData(show: false),
+          titlesData: const FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              isCurved: true,
+              color: AppTheme.primaryMain,
+              barWidth: 4,
+              spots: const [
+                FlSpot(0, 2),
+                FlSpot(1, 3.2),
+                FlSpot(2, 2.8),
+                FlSpot(3, 4.1),
+                FlSpot(4, 3.9),
+                FlSpot(5, 5.2),
+              ],
+            )
+          ],
         ),
       ),
-      subtitle: Text(
-        '$method • $status',
-        style: AppTheme.textTheme.bodyMedium?.copyWith(
-          fontSize: isDesktop ? 14 : 12,
-        ),
-      ),
-      trailing: Text(
-        amount,
-        style: AppTheme.textTheme.bodyLarge?.copyWith(
-          color: AppTheme.successColor,
-          fontWeight: FontWeight.bold,
-          fontSize: isDesktop ? 16 : 14,
-        ),
-      ),
-    ),
-  );
-}
+    );
+  }
 
-Widget _buildPaymentShortcuts(bool isDesktop) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Shortcut Pembayaran',
-        style: AppTheme.textTheme.displayMedium?.copyWith(
-          color: AppTheme.primaryMain,
-        ),
-      ),
-      const SizedBox(height: 16),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  // ------------------------------------------------------------
+  // PRODUK TERLARIS
+  // ------------------------------------------------------------
+  Widget _topProducts() {
+    return SizedBox(
+      height: 160,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
         children: [
-          _buildPaymentShortcut(Icons.money, 'Tunai', AppTheme.successColor, isDesktop),
-          _buildPaymentShortcut(Icons.qr_code, 'QRIS', AppTheme.primaryMain, isDesktop),
-          _buildPaymentShortcut(Icons.credit_card, 'Debit', AppTheme.accentOrange, isDesktop),
-          _buildPaymentShortcut(Icons.account_balance_wallet, 'E-Wallet', AppTheme.accentPurple, isDesktop),
+          _product("Samsung S24 Ultra", "Rp 16.999.000"),
+          _product("iPhone 15 Pro", "Rp 18.999.000"),
+          _product("Xiaomi 13T", "Rp 7.499.000"),
+          _product("Oppo Reno 10", "Rp 6.999.000"),
         ],
       ),
-    ],
-  );
-}
+    );
+  }
 
-Widget _buildPaymentShortcut(IconData icon, String label, Color color, bool isDesktop) {
-  return Column(
-    children: [
-      Container(
-        padding: EdgeInsets.all(isDesktop ? 18 : 14),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
-          borderRadius: AppTheme.mediumRadius,
-        ),
-        child: Icon(icon, color: color, size: isDesktop ? 32 : 28),
+  Widget _product(String name, String price) {
+    return Container(
+      width: 180,
+      margin: const EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [AppTheme.lightShadow],
       ),
-      const SizedBox(height: 8),
-      Text(
-        label,
-        style: AppTheme.textTheme.bodyMedium?.copyWith(
-          color: color,
-          fontWeight: FontWeight.bold,
-          fontSize: isDesktop ? 15 : 13,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(name,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const SizedBox(height: 6),
+          Text(price,
+              style: TextStyle(
+                  color: AppTheme.primaryMain, fontWeight: FontWeight.bold)),
+          const Spacer(),
+          Row(
+            children: [
+              const Icon(Icons.inventory_2, size: 16),
+              const SizedBox(width: 6),
+              Text("Stok Tersedia",
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ------------------------------------------------------------
+  // STOK MENIPIS
+  // ------------------------------------------------------------
+  Widget _lowStockList(bool isDark) {
+    final List<Map<String, dynamic>> items = [
+      {"name": "Vivo Y21", "stock": 2},
+      {"name": "Samsung A14", "stock": 1},
+      {"name": "Oppo A57", "stock": 3},
+    ];
+
+    return Column(
+      children: items
+          .map((e) => _lowStockItem(e["name"], e["stock"] as int, isDark))
+          .toList(),
+    );
+  }
+
+  Widget _lowStockItem(String name, int stock, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.withOpacity(.3)),
+        boxShadow: [AppTheme.lightShadow],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Colors.red),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Text(name,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15))),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              "Sisa $stock",
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ------------------------------------------------------------
+  // RIWAYAT TRANSAKSI
+  // ------------------------------------------------------------
+  Widget _trans(String inv, String amount, String method) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [AppTheme.lightShadow],
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.receipt_long, color: Colors.blue),
+        title: Text(inv,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+        subtitle: Text(method),
+        trailing: Text(
+          amount,
+          style: TextStyle(
+              color: AppTheme.successColor, fontWeight: FontWeight.bold),
         ),
       ),
-    ],
-  );
-}
+    );
+  }
+
+  // ------------------------------------------------------------
+  // PAYMENT SHORTCUT
+  // ------------------------------------------------------------
+  Widget _paymentShortcuts() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _pay(Icons.money, "Tunai", Colors.green),
+        _pay(Icons.qr_code, "QRIS", Colors.blue),
+        _pay(Icons.credit_card, "Kartu", Colors.orange),
+        _pay(Icons.wallet, "E-Wallet", AppTheme.accentPurple),
+      ],
+    );
+  }
+
+  Widget _pay(IconData icon, String label, Color color) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: color.withOpacity(.1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(icon, color: color, size: 28),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ],
+    );
+  }
 }

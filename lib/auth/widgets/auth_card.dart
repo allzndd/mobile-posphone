@@ -1,56 +1,69 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import '../../config/app_theme.dart';
 
-/// Widget untuk card container auth dengan glassmorphism effect
-class AuthCard extends StatelessWidget {
+class AuthCard extends StatefulWidget {
   final Widget child;
   final bool isDesktop;
 
   const AuthCard({super.key, required this.child, this.isDesktop = false});
 
   @override
+  State<AuthCard> createState() => _AuthCardState();
+}
+
+class _AuthCardState extends State<AuthCard> {
+  bool _hover = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: isDesktop ? 480 : double.infinity),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+    return LayoutBuilder(
+      builder: (context, size) {
+        final bool isMobile = size.maxWidth < 600;
+
+        final double padding = isMobile ? 28 : (widget.isDesktop ? 45 : 38);
+
+        return MouseRegion(
+          onEnter: (_) {
+            if (!isMobile) setState(() => _hover = true);
+          },
+          onExit: (_) {
+            if (!isMobile) setState(() => _hover = false);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+
+            // RESPONSIVE WIDTH (mobile penuh, desktop max 480)
+            width: isMobile ? size.maxWidth : 480,
+
+            // CARD STYLE
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.95),
-                  Colors.white.withOpacity(0.85),
-                ],
-              ),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 1.5,
+                width: 2,
+                color: AppTheme.primaryMain.withOpacity(0.35),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
+                  color: AppTheme.primaryMain.withOpacity(isMobile ? 0.15 : (_hover ? 0.25 : 0.20)),
+                  blurRadius: isMobile ? 18 : (_hover ? 35 : 22),
+                  offset: Offset(0, isMobile ? 6 : 12),
                 ),
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 5),
+                  color: AppTheme.primaryLight.withOpacity(isMobile ? 0.12 : (_hover ? 0.20 : 0.15)),
+                  blurRadius: isMobile ? 12 : (_hover ? 20 : 14),
+                  offset: Offset(0, isMobile ? 4 : 8),
                 ),
               ],
             ),
-            child: Container(
-              padding: EdgeInsets.all(isDesktop ? 50 : 35),
-              child: child,
-            ),
+
+            padding: EdgeInsets.all(padding),
+
+            child: widget.child,
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
