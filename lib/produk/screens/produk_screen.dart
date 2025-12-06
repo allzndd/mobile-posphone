@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 
 class ProdukScreen extends StatefulWidget {
   const ProdukScreen({super.key});
@@ -111,15 +113,17 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   List<Map<String, dynamic>> get _filteredProducts {
-    var filtered = _products.where((product) {
-      final matchesSearch = product['name']
-          .toString()
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase());
-      final matchesCategory =
-          _selectedCategory == 'Semua' || product['category'] == _selectedCategory;
-      return matchesSearch && matchesCategory;
-    }).toList();
+    var filtered =
+        _products.where((product) {
+          final matchesSearch = product['name']
+              .toString()
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
+          final matchesCategory =
+              _selectedCategory == 'Semua' ||
+              product['category'] == _selectedCategory;
+          return matchesSearch && matchesCategory;
+        }).toList();
 
     // Sorting
     switch (_sortBy) {
@@ -145,12 +149,13 @@ class _ProdukScreenState extends State<ProdukScreen>
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 900;
     final isTablet = screenWidth > 600 && screenWidth <= 900;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: themeProvider.backgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _buildHeader(isDesktop)),
@@ -165,17 +170,19 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildHeader(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppTheme.primaryMain, AppTheme.primaryDark],
+          colors: [themeProvider.primaryMain, themeProvider.primaryDark],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryMain.withOpacity(0.3),
+            color: themeProvider.primaryMain.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -268,32 +275,35 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildSearchAndFilter(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
-      color: Colors.white,
-      child: isDesktop
-          ? Row(
-              children: [
-                Expanded(child: _buildSearchBar()),
-                const SizedBox(width: 16),
-                _buildSortDropdown(),
-                const SizedBox(width: 16),
-                _buildViewToggle(),
-              ],
-            )
-          : Column(
-              children: [
-                _buildSearchBar(),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(child: _buildSortDropdown()),
-                    const SizedBox(width: 12),
-                    _buildViewToggle(),
-                  ],
-                ),
-              ],
-            ),
+      color: themeProvider.surfaceColor,
+      child:
+          isDesktop
+              ? Row(
+                children: [
+                  Expanded(child: _buildSearchBar()),
+                  const SizedBox(width: 16),
+                  _buildSortDropdown(),
+                  const SizedBox(width: 16),
+                  _buildViewToggle(),
+                ],
+              )
+              : Column(
+                children: [
+                  _buildSearchBar(),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _buildSortDropdown()),
+                      const SizedBox(width: 12),
+                      _buildViewToggle(),
+                    ],
+                  ),
+                ],
+              ),
     );
   }
 
@@ -310,14 +320,18 @@ class _ProdukScreenState extends State<ProdukScreen>
           hintText: 'Cari produk...',
           hintStyle: TextStyle(color: AppTheme.textTertiary),
           prefixIcon: Icon(Icons.search, color: AppTheme.primaryMain),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.clear, color: AppTheme.textTertiary),
-                  onPressed: () => setState(() => _searchQuery = ''),
-                )
-              : null,
+          suffixIcon:
+              _searchQuery.isNotEmpty
+                  ? IconButton(
+                    icon: Icon(Icons.clear, color: AppTheme.textTertiary),
+                    onPressed: () => setState(() => _searchQuery = ''),
+                  )
+                  : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -338,12 +352,10 @@ class _ProdukScreenState extends State<ProdukScreen>
         isExpanded: false,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
         onChanged: (value) => setState(() => _sortBy = value!),
-        items: _sortOptions.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
+        items:
+            _sortOptions.map((option) {
+              return DropdownMenuItem(value: option, child: Text(option));
+            }).toList(),
       ),
     );
   }
@@ -385,9 +397,11 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildCategoryTabs(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       height: isDesktop ? 60 : 56,
-      color: Colors.white,
+      color: themeProvider.surfaceColor,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 16),
@@ -398,9 +412,7 @@ class _ProdukScreenState extends State<ProdukScreen>
           return Padding(
             padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
             child: Material(
-              color: isSelected
-                  ? AppTheme.primaryMain
-                  : AppTheme.surfaceLight,
+              color: isSelected ? AppTheme.primaryMain : AppTheme.surfaceLight,
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 onTap: () => setState(() => _selectedCategory = category),
@@ -414,8 +426,10 @@ class _ProdukScreenState extends State<ProdukScreen>
                     child: Text(
                       category,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : AppTheme.textSecondary,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color:
+                            isSelected ? Colors.white : AppTheme.textSecondary,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
                         fontSize: isDesktop ? 14 : 13,
                       ),
                     ),
@@ -430,8 +444,14 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildStatsBar(bool isDesktop) {
-    final totalStock = _products.fold<int>(0, (sum, p) => sum + (p['stock'] as int));
-    final totalSold = _products.fold<int>(0, (sum, p) => sum + (p['sold'] as int));
+    final totalStock = _products.fold<int>(
+      0,
+      (sum, p) => sum + (p['stock'] as int),
+    );
+    final totalSold = _products.fold<int>(
+      0,
+      (sum, p) => sum + (p['sold'] as int),
+    );
     final outOfStock = _products.where((p) => p['stock'] == 0).length;
 
     return Container(
@@ -441,47 +461,104 @@ class _ProdukScreenState extends State<ProdukScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppTheme.primaryLight.withOpacity(0.2), AppTheme.secondaryLight.withOpacity(0.2)],
+          colors: [
+            AppTheme.primaryLight.withOpacity(0.2),
+            AppTheme.secondaryLight.withOpacity(0.2),
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.primaryLight.withOpacity(0.3)),
       ),
-      child: isDesktop
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem(Icons.inventory_rounded, 'Total Produk', '${_products.length}', AppTheme.primaryMain),
-                _buildStatDivider(),
-                _buildStatItem(Icons.shopping_bag_outlined, 'Terjual', '$totalSold', AppTheme.successColor),
-                _buildStatDivider(),
-                _buildStatItem(Icons.warehouse_outlined, 'Total Stok', '$totalStock', AppTheme.accentOrange),
-                _buildStatDivider(),
-                _buildStatItem(Icons.warning_amber_rounded, 'Stok Habis', '$outOfStock', AppTheme.errorColor),
-              ],
-            )
-          : Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: _buildStatItem(Icons.inventory_rounded, 'Produk', '${_products.length}', AppTheme.primaryMain)),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildStatItem(Icons.shopping_bag_outlined, 'Terjual', '$totalSold', AppTheme.successColor)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _buildStatItem(Icons.warehouse_outlined, 'Stok', '$totalStock', AppTheme.accentOrange)),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildStatItem(Icons.warning_amber_rounded, 'Habis', '$outOfStock', AppTheme.errorColor)),
-                  ],
-                ),
-              ],
-            ),
+      child:
+          isDesktop
+              ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem(
+                    Icons.inventory_rounded,
+                    'Total Produk',
+                    '${_products.length}',
+                    AppTheme.primaryMain,
+                  ),
+                  _buildStatDivider(),
+                  _buildStatItem(
+                    Icons.shopping_bag_outlined,
+                    'Terjual',
+                    '$totalSold',
+                    AppTheme.successColor,
+                  ),
+                  _buildStatDivider(),
+                  _buildStatItem(
+                    Icons.warehouse_outlined,
+                    'Total Stok',
+                    '$totalStock',
+                    AppTheme.accentOrange,
+                  ),
+                  _buildStatDivider(),
+                  _buildStatItem(
+                    Icons.warning_amber_rounded,
+                    'Stok Habis',
+                    '$outOfStock',
+                    AppTheme.errorColor,
+                  ),
+                ],
+              )
+              : Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatItem(
+                          Icons.inventory_rounded,
+                          'Produk',
+                          '${_products.length}',
+                          AppTheme.primaryMain,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildStatItem(
+                          Icons.shopping_bag_outlined,
+                          'Terjual',
+                          '$totalSold',
+                          AppTheme.successColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatItem(
+                          Icons.warehouse_outlined,
+                          'Stok',
+                          '$totalStock',
+                          AppTheme.accentOrange,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildStatItem(
+                          Icons.warning_amber_rounded,
+                          'Habis',
+                          '$outOfStock',
+                          AppTheme.errorColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
     );
   }
 
-  Widget _buildStatItem(IconData icon, String label, String value, Color color) {
+  Widget _buildStatItem(
+    IconData icon,
+    String label,
+    String value,
+    Color color,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 150;
@@ -531,11 +608,7 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildStatDivider() {
-    return Container(
-      height: 40,
-      width: 1,
-      color: AppTheme.borderLight,
-    );
+    return Container(height: 40, width: 1, color: AppTheme.borderLight);
   }
 
   Widget _buildProductList(bool isDesktop, bool isTablet) {
@@ -547,7 +620,11 @@ class _ProdukScreenState extends State<ProdukScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.inbox_outlined, size: 80, color: AppTheme.textTertiary),
+              Icon(
+                Icons.inbox_outlined,
+                size: 80,
+                color: AppTheme.textTertiary,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada produk ditemukan',
@@ -598,9 +675,11 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildProductGridCard(Map<String, dynamic> product) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -626,7 +705,9 @@ class _ProdukScreenState extends State<ProdukScreen>
                     Container(
                       decoration: BoxDecoration(
                         color: AppTheme.surfaceLight,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
                       ),
                       child: Center(
                         child: Icon(
@@ -641,11 +722,15 @@ class _ProdukScreenState extends State<ProdukScreen>
                       top: 8,
                       right: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: product['stock'] > 0
-                              ? AppTheme.successColor
-                              : AppTheme.errorColor,
+                          color:
+                              product['stock'] > 0
+                                  ? AppTheme.successColor
+                                  : AppTheme.errorColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -703,7 +788,10 @@ class _ProdukScreenState extends State<ProdukScreen>
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: AppTheme.accentOrange.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(6),
@@ -731,10 +819,12 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildProductListCard(Map<String, dynamic> product) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -795,7 +885,11 @@ class _ProdukScreenState extends State<ProdukScreen>
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.attach_money, size: 16, color: AppTheme.primaryMain),
+                          Icon(
+                            Icons.attach_money,
+                            size: 16,
+                            color: AppTheme.primaryMain,
+                          ),
                           Text(
                             'Rp ${_formatPrice(product['price'])}',
                             style: TextStyle(
@@ -805,7 +899,11 @@ class _ProdukScreenState extends State<ProdukScreen>
                             ),
                           ),
                           const SizedBox(width: 16),
-                          Icon(Icons.inventory_2_outlined, size: 16, color: AppTheme.accentOrange),
+                          Icon(
+                            Icons.inventory_2_outlined,
+                            size: 16,
+                            color: AppTheme.accentOrange,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'Stok: ${product['stock']}',
@@ -823,19 +921,24 @@ class _ProdukScreenState extends State<ProdukScreen>
                 Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: product['stock'] > 0
-                            ? AppTheme.successColor.withOpacity(0.1)
-                            : AppTheme.errorColor.withOpacity(0.1),
+                        color:
+                            product['stock'] > 0
+                                ? AppTheme.successColor.withOpacity(0.1)
+                                : AppTheme.errorColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         product['status'],
                         style: TextStyle(
-                          color: product['stock'] > 0
-                              ? AppTheme.successColor
-                              : AppTheme.errorColor,
+                          color:
+                              product['stock'] > 0
+                                  ? AppTheme.successColor
+                                  : AppTheme.errorColor,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -857,9 +960,11 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildFAB() {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return FloatingActionButton.extended(
       onPressed: _showAddProductDialog,
-      backgroundColor: AppTheme.primaryMain,
+      backgroundColor: themeProvider.primaryMain,
       icon: const Icon(Icons.add, color: Colors.white),
       label: const Text(
         'Tambah Produk',
@@ -870,58 +975,64 @@ class _ProdukScreenState extends State<ProdukScreen>
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 
   void _showProductDetail(Map<String, dynamic> product) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryMain.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(Icons.info_outline, color: AppTheme.primaryMain),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            const Text('Detail Produk'),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildDetailRow('Nama', product['name']),
-              _buildDetailRow('Kategori', product['category']),
-              _buildDetailRow('Harga', 'Rp ${_formatPrice(product['price'])}'),
-              _buildDetailRow('Stok', '${product['stock']} unit'),
-              _buildDetailRow('Terjual', '${product['sold']} unit'),
-              _buildDetailRow('Status', product['status']),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryMain.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.info_outline, color: AppTheme.primaryMain),
+                ),
+                const SizedBox(width: 12),
+                const Text('Detail Produk'),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildDetailRow('Nama', product['name']),
+                  _buildDetailRow('Kategori', product['category']),
+                  _buildDetailRow(
+                    'Harga',
+                    'Rp ${_formatPrice(product['price'])}',
+                  ),
+                  _buildDetailRow('Stok', '${product['stock']} unit'),
+                  _buildDetailRow('Terjual', '${product['sold']} unit'),
+                  _buildDetailRow('Status', product['status']),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tutup'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showEditProductDialog(product);
+                },
+                child: const Text('Edit'),
+              ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showEditProductDialog(product);
-            },
-            child: const Text('Edit'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -962,47 +1073,48 @@ class _ProdukScreenState extends State<ProdukScreen>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppTheme.borderLight,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.borderLight,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildOptionItem(
+                  icon: Icons.edit_outlined,
+                  label: 'Edit Produk',
+                  color: AppTheme.primaryMain,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showEditProductDialog(product);
+                  },
+                ),
+                _buildOptionItem(
+                  icon: Icons.delete_outline,
+                  label: 'Hapus Produk',
+                  color: AppTheme.errorColor,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _confirmDelete(product);
+                  },
+                ),
+                _buildOptionItem(
+                  icon: Icons.share_outlined,
+                  label: 'Bagikan',
+                  color: AppTheme.accentOrange,
+                  onTap: () => Navigator.pop(context),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            _buildOptionItem(
-              icon: Icons.edit_outlined,
-              label: 'Edit Produk',
-              color: AppTheme.primaryMain,
-              onTap: () {
-                Navigator.pop(context);
-                _showEditProductDialog(product);
-              },
-            ),
-            _buildOptionItem(
-              icon: Icons.delete_outline,
-              label: 'Hapus Produk',
-              color: AppTheme.errorColor,
-              onTap: () {
-                Navigator.pop(context);
-                _confirmDelete(product);
-              },
-            ),
-            _buildOptionItem(
-              icon: Icons.share_outlined,
-              label: 'Bagikan',
-              color: AppTheme.accentOrange,
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -1048,118 +1160,132 @@ class _ProdukScreenState extends State<ProdukScreen>
   void _showAddProductDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryMain, AppTheme.primaryDark],
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.add, color: Colors.white),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            const Text('Tambah Produk Baru'),
-          ],
-        ),
-        content: const Text('Form tambah produk akan ditampilkan di sini'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppTheme.primaryMain, AppTheme.primaryDark],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                const Text('Tambah Produk Baru'),
+              ],
+            ),
+            content: const Text('Form tambah produk akan ditampilkan di sini'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Simpan'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
     );
   }
 
   void _showEditProductDialog(Map<String, dynamic> product) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.accentOrange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(Icons.edit, color: AppTheme.accentOrange),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            const Text('Edit Produk'),
-          ],
-        ),
-        content: Text('Form edit untuk: ${product['name']}'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentOrange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.edit, color: AppTheme.accentOrange),
+                ),
+                const SizedBox(width: 12),
+                const Text('Edit Produk'),
+              ],
+            ),
+            content: Text('Form edit untuk: ${product['name']}'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Update'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Update'),
-          ),
-        ],
-      ),
     );
   }
 
   void _confirmDelete(Map<String, dynamic> product) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.errorColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(Icons.warning_amber_rounded, color: AppTheme.errorColor),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            const Text('Konfirmasi Hapus'),
-          ],
-        ),
-        content: Text('Apakah Anda yakin ingin menghapus "${product['name']}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _products.removeWhere((p) => p['id'] == product['id']);
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${product['name']} berhasil dihapus'),
-                  backgroundColor: AppTheme.successColor,
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.errorColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.warning_amber_rounded,
+                    color: AppTheme.errorColor,
+                  ),
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+                const SizedBox(width: 12),
+                const Text('Konfirmasi Hapus'),
+              ],
             ),
-            child: const Text('Hapus'),
+            content: Text(
+              'Apakah Anda yakin ingin menghapus "${product['name']}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _products.removeWhere((p) => p['id'] == product['id']);
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${product['name']} berhasil dihapus'),
+                      backgroundColor: AppTheme.successColor,
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.errorColor,
+                ),
+                child: const Text('Hapus'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

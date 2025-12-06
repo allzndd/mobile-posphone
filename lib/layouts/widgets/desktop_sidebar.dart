@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../config/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../config/theme_provider.dart';
 import 'sidebar_header.dart';
 import 'sidebar_menu.dart';
 import 'sidebar_footer.dart';
@@ -23,18 +24,19 @@ class DesktopSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return Container(
       width: isCollapsed ? 80 : 280,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppTheme.primaryDark, AppTheme.primaryMain],
+          colors: [themeProvider.sidebarStart, themeProvider.sidebarEnd],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryMain.withOpacity(0.3),
+            color: themeProvider.primaryMain.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(4, 0),
           ),

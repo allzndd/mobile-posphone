@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 
 class TransaksiKeluarScreen extends StatefulWidget {
   const TransaksiKeluarScreen({super.key});
@@ -87,11 +89,13 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
 
   List<Map<String, dynamic>> get _filteredTransactions {
     return _transactions.where((trx) {
-      final matchesSearch = trx['supplier']
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ||
-          trx['id'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesSearch =
+          trx['supplier'].toString().toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ||
+          trx['id'].toString().toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
       final matchesStatus =
           _filterStatus == 'Semua' || trx['status'] == _filterStatus;
       return matchesSearch && matchesStatus;
@@ -100,11 +104,12 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 900;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: themeProvider.backgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _buildHeader(isDesktop)),
@@ -118,17 +123,19 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   Widget _buildHeader(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppTheme.errorColor, AppTheme.accentRed],
+          colors: [themeProvider.primaryMain, themeProvider.primaryDark],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.errorColor.withOpacity(0.3),
+            color: themeProvider.primaryMain.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -136,56 +143,56 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
       ),
       child: Row(
         children: [
-            Container(
-              padding: EdgeInsets.all(isDesktop ? 12 : 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_upward_rounded,
-                color: Colors.white,
-                size: isDesktop ? 28 : 24,
-              ),
+          Container(
+            padding: EdgeInsets.all(isDesktop ? 12 : 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
             ),
-            SizedBox(width: isDesktop ? 16 : 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Transaksi Keluar',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: isDesktop ? 24 : 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'Kelola pembelian & pengeluaran',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: isDesktop ? 14 : 12,
-                    ),
-                  ),
-                ],
-              ),
+            child: Icon(
+              Icons.arrow_upward_rounded,
+              color: Colors.white,
+              size: isDesktop ? 28 : 24,
             ),
-            if (isDesktop) ...[
-              _buildHeaderAction(
-                icon: Icons.add_box_outlined,
-                label: 'Pengeluaran Baru',
-                onTap: () => _showNewTransaction(),
-              ),
-              const SizedBox(width: 8),
-              _buildHeaderAction(
-                icon: Icons.print_outlined,
-                label: 'Cetak Laporan',
-                onTap: () {},
-              ),
-            ],
+          ),
+          SizedBox(width: isDesktop ? 16 : 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Transaksi Keluar',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isDesktop ? 24 : 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Kelola pembelian & pengeluaran',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: isDesktop ? 14 : 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isDesktop) ...[
+            _buildHeaderAction(
+              icon: Icons.add_box_outlined,
+              label: 'Pengeluaran Baru',
+              onTap: () => _showNewTransaction(),
+            ),
+            const SizedBox(width: 8),
+            _buildHeaderAction(
+              icon: Icons.print_outlined,
+              label: 'Cetak Laporan',
+              onTap: () {},
+            ),
           ],
-        ),
+        ],
+      ),
     );
   }
 
@@ -225,81 +232,126 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
     final totalPengeluaran = _transactions
         .where((t) => t['status'] == 'Selesai')
         .fold<int>(0, (sum, t) => sum + (t['total'] as int));
-    final transaksiHariIni = _transactions
-        .where((t) => t['date'].toString().startsWith('2025-12-04'))
-        .length;
+    final transaksiHariIni =
+        _transactions
+            .where((t) => t['date'].toString().startsWith('2025-12-04'))
+            .length;
     final pending = _transactions.where((t) => t['status'] == 'Pending').length;
 
     return Container(
       margin: EdgeInsets.all(isDesktop ? 24 : 16),
-      child: isDesktop
-          ? Row(
-              children: [
-                Expanded(
-                    child: _buildStatCard('Total Transaksi', '$totalTransaksi',
-                        Icons.receipt_long, AppTheme.primaryMain, isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
+      child:
+          isDesktop
+              ? Row(
+                children: [
+                  Expanded(
                     child: _buildStatCard(
-                        'Total Pengeluaran',
-                        'Rp ${_formatPrice(totalPengeluaran)}',
-                        Icons.account_balance_wallet,
-                        AppTheme.errorColor,
-                        isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
-                    child: _buildStatCard('Hari Ini', '$transaksiHariIni',
-                        Icons.today, AppTheme.accentOrange, isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
-                    child: _buildStatCard('Pending', '$pending',
-                        Icons.pending_actions, AppTheme.warningColor, isDesktop)),
-              ],
-            )
-          : Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
+                      'Total Transaksi',
+                      '$totalTransaksi',
+                      Icons.receipt_long,
+                      AppTheme.primaryMain,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Total Pengeluaran',
+                      'Rp ${_formatPrice(totalPengeluaran)}',
+                      Icons.account_balance_wallet,
+                      AppTheme.errorColor,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Hari Ini',
+                      '$transaksiHariIni',
+                      Icons.today,
+                      AppTheme.accentOrange,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Pending',
+                      '$pending',
+                      Icons.pending_actions,
+                      AppTheme.warningColor,
+                      isDesktop,
+                    ),
+                  ),
+                ],
+              )
+              : Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
                         child: _buildStatCard(
-                            'Total Transaksi',
-                            '$totalTransaksi',
-                            Icons.receipt_long,
-                            AppTheme.primaryMain,
-                            isDesktop)),
-                    const SizedBox(width: 12),
-                    Expanded(
+                          'Total Transaksi',
+                          '$totalTransaksi',
+                          Icons.receipt_long,
+                          AppTheme.primaryMain,
+                          isDesktop,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
                         child: _buildStatCard(
-                            'Pengeluaran',
-                            'Rp ${_formatPrice(totalPengeluaran)}',
-                            Icons.account_balance_wallet,
-                            AppTheme.errorColor,
-                            isDesktop)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                        child: _buildStatCard('Hari Ini', '$transaksiHariIni',
-                            Icons.today, AppTheme.accentOrange, isDesktop)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                        child: _buildStatCard('Pending', '$pending',
-                            Icons.pending_actions, AppTheme.warningColor, isDesktop)),
-                  ],
-                ),
-              ],
-            ),
+                          'Pengeluaran',
+                          'Rp ${_formatPrice(totalPengeluaran)}',
+                          Icons.account_balance_wallet,
+                          AppTheme.errorColor,
+                          isDesktop,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          'Hari Ini',
+                          '$transaksiHariIni',
+                          Icons.today,
+                          AppTheme.accentOrange,
+                          isDesktop,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Pending',
+                          '$pending',
+                          Icons.pending_actions,
+                          AppTheme.warningColor,
+                          isDesktop,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
     );
   }
 
   Widget _buildStatCard(
-      String title, String value, IconData icon, Color color, bool isDesktop) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    bool isDesktop,
+  ) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -353,9 +405,11 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   Widget _buildFilterSection(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
-      color: Colors.white,
+      color: themeProvider.surfaceColor,
       child: Column(
         children: [
           if (isDesktop)
@@ -396,16 +450,22 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
         decoration: InputDecoration(
           hintText: 'Cari transaksi / supplier...',
           hintStyle: TextStyle(color: AppTheme.textTertiary),
-          prefixIcon: Icon(Icons.search, color: AppTheme.errorColor),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.clear, color: AppTheme.textTertiary),
-                  onPressed: () => setState(() => _searchQuery = ''),
-                )
-              : null,
+          prefixIcon: Icon(
+            Icons.search,
+            color: context.read<ThemeProvider>().secondaryMain,
+          ),
+          suffixIcon:
+              _searchQuery.isNotEmpty
+                  ? IconButton(
+                    icon: Icon(Icons.clear, color: AppTheme.textTertiary),
+                    onPressed: () => setState(() => _searchQuery = ''),
+                  )
+                  : null,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -421,17 +481,18 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
       ),
       child: DropdownButton<String>(
         value: _filterStatus,
-        icon: Icon(Icons.filter_list, color: AppTheme.errorColor),
+        icon: Icon(
+          Icons.filter_list,
+          color: context.read<ThemeProvider>().secondaryMain,
+        ),
         underline: const SizedBox(),
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
         onChanged: (value) => setState(() => _filterStatus = value!),
-        items: _statusOptions.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
+        items:
+            _statusOptions.map((option) {
+              return DropdownMenuItem(value: option, child: Text(option));
+            }).toList(),
       ),
     );
   }
@@ -446,17 +507,18 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
       ),
       child: DropdownButton<String>(
         value: _filterPeriod,
-        icon: Icon(Icons.calendar_today, color: AppTheme.errorColor),
+        icon: Icon(
+          Icons.calendar_today,
+          color: context.read<ThemeProvider>().secondaryMain,
+        ),
         underline: const SizedBox(),
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
         onChanged: (value) => setState(() => _filterPeriod = value!),
-        items: _periodOptions.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
+        items:
+            _periodOptions.map((option) {
+              return DropdownMenuItem(value: option, child: Text(option));
+            }).toList(),
       ),
     );
   }
@@ -470,8 +532,11 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.receipt_long_outlined,
-                  size: 80, color: AppTheme.textTertiary),
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 80,
+                color: AppTheme.textTertiary,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada transaksi',
@@ -533,11 +598,18 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: AppTheme.errorColor.withOpacity(0.1),
+                              color: context
+                                  .read<ThemeProvider>()
+                                  .secondaryMain
+                                  .withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(Icons.shopping_cart_outlined,
-                                color: AppTheme.errorColor, size: 20),
+                            child: Icon(
+                              Icons.shopping_cart_outlined,
+                              color:
+                                  context.read<ThemeProvider>().secondaryMain,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -566,7 +638,9 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -589,11 +663,17 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                   children: [
                     Expanded(
                       child: _buildInfoItem(
-                          Icons.business, 'Supplier', trx['supplier']),
+                        Icons.business,
+                        'Supplier',
+                        trx['supplier'],
+                      ),
                     ),
                     Expanded(
-                      child: _buildInfoItem(Icons.inventory_2_outlined, 'Items',
-                          '${trx['items']} produk'),
+                      child: _buildInfoItem(
+                        Icons.inventory_2_outlined,
+                        'Items',
+                        '${trx['items']} produk',
+                      ),
                     ),
                   ],
                 ),
@@ -602,11 +682,17 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                   children: [
                     Expanded(
                       child: _buildInfoItem(
-                          Icons.payment, 'Pembayaran', trx['payment']),
+                        Icons.payment,
+                        'Pembayaran',
+                        trx['payment'],
+                      ),
                     ),
                     Expanded(
                       child: _buildInfoItem(
-                          Icons.person_outline, 'PIC', trx['pic']),
+                        Icons.person_outline,
+                        'PIC',
+                        trx['pic'],
+                      ),
                     ),
                   ],
                 ),
@@ -628,7 +714,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.errorColor,
+                        color: context.read<ThemeProvider>().secondaryMain,
                       ),
                     ),
                   ],
@@ -652,10 +738,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppTheme.textTertiary,
-                ),
+                style: TextStyle(fontSize: 11, color: AppTheme.textTertiary),
               ),
               Text(
                 value,
@@ -675,9 +758,11 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   Widget _buildFAB() {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return FloatingActionButton.extended(
       onPressed: _showNewTransaction,
-      backgroundColor: AppTheme.errorColor,
+      backgroundColor: themeProvider.primaryMain,
       icon: const Icon(Icons.add, color: Colors.white),
       label: const Text(
         'Pengeluaran Baru',
@@ -701,158 +786,169 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 
   void _showTransactionDetail(Map<String, dynamic> trx) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          padding: const EdgeInsets.all(24),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500),
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppTheme.errorColor, AppTheme.accentRed],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.shopping_cart, color: Colors.white, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Detail Transaksi Keluar',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            trx['id'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppTheme.textTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _buildDetailRow('Tanggal', trx['date']),
-                _buildDetailRow('Supplier', trx['supplier']),
-                _buildDetailRow('PIC', trx['pic']),
-                _buildDetailRow('Pembayaran', trx['payment']),
-                _buildDetailRow('Status', trx['status']),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
-                const Text(
-                  'Produk',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ...(trx['products'] as List).map((product) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
+                    Row(
                       children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                context.read<ThemeProvider>().secondaryDark,
+                                context.read<ThemeProvider>().secondaryMain,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.shopping_cart,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            '${product['qty']}x ${product['name']}',
-                            style: TextStyle(color: AppTheme.textSecondary),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Detail Transaksi Keluar',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                trx['id'],
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDetailRow('Tanggal', trx['date']),
+                    _buildDetailRow('Supplier', trx['supplier']),
+                    _buildDetailRow('PIC', trx['pic']),
+                    _buildDetailRow('Pembayaran', trx['payment']),
+                    _buildDetailRow('Status', trx['status']),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Produk',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...(trx['products'] as List).map((product) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${product['qty']}x ${product['name']}',
+                                style: TextStyle(color: AppTheme.textSecondary),
+                              ),
+                            ),
+                            Text(
+                              'Rp ${_formatPrice(product['price'] * product['qty'])}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'Rp ${_formatPrice(product['price'] * product['qty'])}',
+                          'Rp ${_formatPrice(trx['total'])}',
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: context.read<ThemeProvider>().secondaryMain,
                           ),
                         ),
                       ],
                     ),
-                  );
-                }).toList(),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Total',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Rp ${_formatPrice(trx['total'])}',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.errorColor,
-                      ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.print),
+                            label: const Text('Cetak'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(Icons.check),
+                            label: const Text('Tutup'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  context.read<ThemeProvider>().secondaryMain,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.print),
-                        label: const Text('Cetak'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.check),
-                        label: const Text('Tutup'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.errorColor,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -890,37 +986,50 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   void _showNewTransaction() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.errorColor, AppTheme.accentRed],
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.add_box_outlined, color: Colors.white),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            const Text('Pengeluaran Baru'),
-          ],
-        ),
-        content: const Text('Form pengeluaran baru akan ditampilkan di sini'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        context.read<ThemeProvider>().secondaryDark,
+                        context.read<ThemeProvider>().secondaryMain,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.add_box_outlined,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text('Pengeluaran Baru'),
+              ],
+            ),
+            content: const Text(
+              'Form pengeluaran baru akan ditampilkan di sini',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.read<ThemeProvider>().secondaryMain,
+                ),
+                child: const Text('Proses'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
-            child: const Text('Proses'),
-          ),
-        ],
-      ),
     );
   }
 }

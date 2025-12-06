@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../auth/providers/branding_provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -15,10 +16,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final branding = context.watch<BrandingProvider>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeProvider = context.watch<ThemeProvider>();
+    final isDark = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : AppTheme.backgroundLight,
+      backgroundColor: themeProvider.backgroundColor,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         physics: const BouncingScrollPhysics(),
@@ -33,8 +35,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             Text(
               "Grafik Penjualan",
-              style: AppTheme.textTheme.displayMedium
-                  ?.copyWith(color: AppTheme.primaryMain),
+              style: AppTheme.textTheme.displayMedium?.copyWith(
+                color: AppTheme.primaryMain,
+              ),
             ),
             const SizedBox(height: 16),
             _salesChart(isDark),
@@ -42,8 +45,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             Text(
               "Produk Terlaris",
-              style: AppTheme.textTheme.displayMedium
-                  ?.copyWith(color: AppTheme.primaryMain),
+              style: AppTheme.textTheme.displayMedium?.copyWith(
+                color: AppTheme.primaryMain,
+              ),
             ),
             const SizedBox(height: 16),
             _topProducts(),
@@ -51,8 +55,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             Text(
               "Stok Menipis",
-              style: AppTheme.textTheme.displayMedium
-                  ?.copyWith(color: Colors.red),
+              style: AppTheme.textTheme.displayMedium?.copyWith(
+                color: Colors.red,
+              ),
             ),
             const SizedBox(height: 16),
             _lowStockList(isDark),
@@ -60,8 +65,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             Text(
               "Riwayat Transaksi",
-              style: AppTheme.textTheme.displayMedium
-                  ?.copyWith(color: AppTheme.primaryMain),
+              style: AppTheme.textTheme.displayMedium?.copyWith(
+                color: AppTheme.primaryMain,
+              ),
             ),
             const SizedBox(height: 16),
             _trans("INV-0012", "Rp 2.500.000", "Tunai"),
@@ -71,8 +77,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             Text(
               "Shortcut Pembayaran",
-              style: AppTheme.textTheme.displayMedium
-                  ?.copyWith(color: AppTheme.primaryMain),
+              style: AppTheme.textTheme.displayMedium?.copyWith(
+                color: AppTheme.primaryMain,
+              ),
             ),
             const SizedBox(height: 16),
             _paymentShortcuts(),
@@ -86,14 +93,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // HEADER
   // ------------------------------------------------------------
   Widget _header(BrandingProvider branding, bool isDark) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryMain,
-            AppTheme.primaryDark,
-          ],
+          colors: [themeProvider.primaryMain, themeProvider.primaryDark],
         ),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -112,16 +118,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Selamat Datang!",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold)),
+                const Text(
+                  "Selamat Datang!",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 Text(
                   branding.appName,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                  ),
+                  style: TextStyle(color: Colors.white.withOpacity(0.9)),
                 ),
               ],
             ),
@@ -134,8 +141,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today,
-                    color: AppTheme.primaryMain, size: 18),
+                Icon(
+                  Icons.calendar_today,
+                  color: AppTheme.primaryMain,
+                  size: 18,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   "Hari Ini",
@@ -143,7 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: AppTheme.primaryMain,
                     fontWeight: FontWeight.bold,
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -156,21 +166,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // QUICK STATS
   // ------------------------------------------------------------
   Widget _quickStats() {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Column(
       children: [
         Row(
           children: [
-            Expanded(child: _stat("Penjualan", "Rp 5.200.000", Icons.attach_money, Colors.green)),
+            Expanded(
+              child: _stat(
+                "Penjualan",
+                "Rp 5.200.000",
+                Icons.attach_money,
+                Colors.green,
+              ),
+            ),
             const SizedBox(width: 14),
-            Expanded(child: _stat("Transaksi", "12", Icons.receipt_long, AppTheme.primaryMain)),
+            Expanded(
+              child: _stat(
+                "Transaksi",
+                "12",
+                Icons.receipt_long,
+                themeProvider.primaryMain,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 14),
         Row(
           children: [
-            Expanded(child: _stat("Produk", "234", Icons.inventory_2, Colors.orange)),
+            Expanded(
+              child: _stat(
+                "Produk",
+                "234",
+                Icons.inventory_2,
+                themeProvider.secondaryMain,
+              ),
+            ),
             const SizedBox(width: 14),
-            Expanded(child: _stat("Pelanggan", "89", Icons.people, AppTheme.accentPurple)),
+            Expanded(
+              child: _stat(
+                "Pelanggan",
+                "89",
+                Icons.people,
+                themeProvider.primaryLight,
+              ),
+            ),
           ],
         ),
       ],
@@ -178,10 +218,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _stat(String title, String value, IconData icon, Color color) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: color.withOpacity(.2), blurRadius: 12)],
       ),
@@ -199,12 +241,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value,
-                  style:
-                      TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(
+                value,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
               Text(title, style: TextStyle(color: Colors.grey[600])),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -214,6 +261,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // GRAFIK PENJUALAN
   // ------------------------------------------------------------
   Widget _salesChart(bool isDark) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       height: 220,
       padding: const EdgeInsets.all(18),
@@ -230,7 +279,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           lineBarsData: [
             LineChartBarData(
               isCurved: true,
-              color: AppTheme.primaryMain,
+              color: themeProvider.primaryMain,
               barWidth: 4,
               spots: const [
                 FlSpot(0, 2),
@@ -240,7 +289,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 FlSpot(4, 3.9),
                 FlSpot(5, 5.2),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -266,31 +315,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _product(String name, String price) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       width: 180,
       margin: const EdgeInsets.only(right: 16),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [AppTheme.lightShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(
+            name,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 6),
-          Text(price,
-              style: TextStyle(
-                  color: AppTheme.primaryMain, fontWeight: FontWeight.bold)),
+          Text(
+            price,
+            style: TextStyle(
+              color: AppTheme.primaryMain,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const Spacer(),
           Row(
             children: [
               const Icon(Icons.inventory_2, size: 16),
               const SizedBox(width: 6),
-              Text("Stok Tersedia",
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+              Text(
+                "Stok Tersedia",
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
             ],
           ),
         ],
@@ -309,9 +368,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
 
     return Column(
-      children: items
-          .map((e) => _lowStockItem(e["name"], e["stock"] as int, isDark))
-          .toList(),
+      children:
+          items
+              .map((e) => _lowStockItem(e["name"], e["stock"] as int, isDark))
+              .toList(),
     );
   }
 
@@ -330,9 +390,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const Icon(Icons.warning_amber_rounded, color: Colors.red),
           const SizedBox(width: 12),
           Expanded(
-              child: Text(name,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15))),
+            child: Text(
+              name,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+          ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
@@ -353,22 +415,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // RIWAYAT TRANSAKSI
   // ------------------------------------------------------------
   Widget _trans(String inv, String amount, String method) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [AppTheme.lightShadow],
       ),
       child: ListTile(
         leading: const Icon(Icons.receipt_long, color: Colors.blue),
-        title: Text(inv,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+        title: Text(
+          inv,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
         subtitle: Text(method),
         trailing: Text(
           amount,
           style: TextStyle(
-              color: AppTheme.successColor, fontWeight: FontWeight.bold),
+            color: AppTheme.successColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

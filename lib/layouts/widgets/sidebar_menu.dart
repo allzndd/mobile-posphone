@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 
 class SidebarMenu extends StatefulWidget {
   final bool isCollapsed;
@@ -35,19 +37,22 @@ class _SidebarMenuState extends State<SidebarMenu> {
     },
     {'icon': Icons.people_rounded, 'title': 'Pelanggan', 'index': 3},
     {'icon': Icons.analytics_rounded, 'title': 'Stok', 'index': 4},
+    {'icon': Icons.palette_rounded, 'title': 'Theme', 'index': 7},
     {'icon': Icons.settings_rounded, 'title': 'Pengaturan', 'index': 5},
   ];
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider?>();
+    
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primaryDark,
-            AppTheme.primaryMain,
+            themeProvider?.sidebarStart ?? AppTheme.primaryDark,
+            themeProvider?.sidebarEnd ?? AppTheme.primaryMain,
           ],
         ),
       ),
@@ -98,9 +103,12 @@ class _SidebarMenuState extends State<SidebarMenu> {
             margin: isSubmenu ? const EdgeInsets.only(left: 20) : EdgeInsets.zero,
             decoration: BoxDecoration(
               color: isSelected
-                  ? Colors.white.withOpacity(0.2)
+                  ? Colors.white.withOpacity(0.25)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
+              border: isSelected
+                  ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
+                  : null,
             ),
             child: Row(
               mainAxisSize: widget.isCollapsed ? MainAxisSize.min : MainAxisSize.max,
@@ -110,7 +118,7 @@ class _SidebarMenuState extends State<SidebarMenu> {
               children: [
                 Icon(
                   item['icon'] as IconData,
-                  color: Colors.white,
+                  color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
                   size: isSubmenu ? 20 : 24,
                 ),
                 if (!widget.isCollapsed) ...[
@@ -119,9 +127,9 @@ class _SidebarMenuState extends State<SidebarMenu> {
                     child: Text(
                       item['title'] as String,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
                         fontSize: isSubmenu ? 14 : 15,
-                        fontWeight: isSubmenu ? FontWeight.w400 : FontWeight.w500,
+                        fontWeight: isSelected ? FontWeight.w600 : (isSubmenu ? FontWeight.w400 : FontWeight.w500),
                       ),
                     ),
                   ),
@@ -129,9 +137,9 @@ class _SidebarMenuState extends State<SidebarMenu> {
                     AnimatedRotation(
                       turns: _isTransaksiExpanded ? 0.5 : 0,
                       duration: const Duration(milliseconds: 300),
-                      child: const Icon(
+                      child: Icon(
                         Icons.keyboard_arrow_down,
-                        color: Colors.white,
+                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
                         size: 20,
                       ),
                     ),

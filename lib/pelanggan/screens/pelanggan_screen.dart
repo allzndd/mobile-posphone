@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 
 class PelangganScreen extends StatefulWidget {
   const PelangganScreen({super.key});
@@ -16,12 +18,7 @@ class _PelangganScreenState extends State<PelangganScreen>
   String _sortBy = 'Nama A-Z';
   bool _isGridView = false;
 
-  final List<String> _typeOptions = [
-    'Semua',
-    'Reguler',
-    'VIP',
-    'Wholesaler',
-  ];
+  final List<String> _typeOptions = ['Semua', 'Reguler', 'VIP', 'Wholesaler'];
 
   final List<String> _sortOptions = [
     'Nama A-Z',
@@ -134,22 +131,20 @@ class _PelangganScreenState extends State<PelangganScreen>
 
   List<Map<String, dynamic>> get _filteredCustomers {
     return _customers.where((customer) {
-      final matchesSearch = customer['name']
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ||
-          customer['email']
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ||
-          customer['phone']
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
-      final matchesType =
-          _filterType == 'Semua' || customer['type'] == _filterType;
-      return matchesSearch && matchesType;
-    }).toList()
+        final matchesSearch =
+            customer['name'].toString().toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ) ||
+            customer['email'].toString().toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ) ||
+            customer['phone'].toString().toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            );
+        final matchesType =
+            _filterType == 'Semua' || customer['type'] == _filterType;
+        return matchesSearch && matchesType;
+      }).toList()
       ..sort((a, b) {
         switch (_sortBy) {
           case 'Nama A-Z':
@@ -161,11 +156,13 @@ class _PelangganScreenState extends State<PelangganScreen>
           case 'Terlama':
             return a['joinDate'].toString().compareTo(b['joinDate'].toString());
           case 'Transaksi Terbanyak':
-            return (b['totalTransactions'] as int)
-                .compareTo(a['totalTransactions'] as int);
+            return (b['totalTransactions'] as int).compareTo(
+              a['totalTransactions'] as int,
+            );
           case 'Total Belanja Tertinggi':
-            return (b['totalSpending'] as int)
-                .compareTo(a['totalSpending'] as int);
+            return (b['totalSpending'] as int).compareTo(
+              a['totalSpending'] as int,
+            );
           default:
             return 0;
         }
@@ -178,8 +175,10 @@ class _PelangganScreenState extends State<PelangganScreen>
     final isDesktop = screenWidth > 900;
     final isTablet = screenWidth > 600 && screenWidth <= 900;
 
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: themeProvider.backgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _buildHeader(isDesktop)),
@@ -193,17 +192,19 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildHeader(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppTheme.primaryMain, AppTheme.secondaryDark],
+          colors: [themeProvider.primaryMain, themeProvider.primaryDark],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryMain.withOpacity(0.3),
+            color: themeProvider.primaryMain.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -297,95 +298,130 @@ class _PelangganScreenState extends State<PelangganScreen>
 
   Widget _buildStatsCards(bool isDesktop) {
     final totalCustomers = _customers.length;
-    final vipCustomers =
-        _customers.where((c) => c['type'] == 'VIP').length;
+    final vipCustomers = _customers.where((c) => c['type'] == 'VIP').length;
     final totalTransactions = _customers.fold<int>(
-        0, (sum, c) => sum + (c['totalTransactions'] as int));
+      0,
+      (sum, c) => sum + (c['totalTransactions'] as int),
+    );
     final totalRevenue = _customers.fold<int>(
-        0, (sum, c) => sum + (c['totalSpending'] as int));
+      0,
+      (sum, c) => sum + (c['totalSpending'] as int),
+    );
 
     return Container(
       margin: EdgeInsets.all(isDesktop ? 24 : 16),
-      child: isDesktop
-          ? Row(
-              children: [
-                Expanded(
+      child:
+          isDesktop
+              ? Row(
+                children: [
+                  Expanded(
                     child: _buildStatCard(
-                        'Total Pelanggan',
-                        '$totalCustomers',
-                        Icons.people_outline,
-                        AppTheme.primaryMain,
-                        isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
-                    child: _buildStatCard('VIP Customer', '$vipCustomers',
-                        Icons.stars, AppTheme.accentOrange, isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
+                      'Total Pelanggan',
+                      '$totalCustomers',
+                      Icons.people_outline,
+                      AppTheme.primaryMain,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
                     child: _buildStatCard(
-                        'Total Transaksi',
-                        '$totalTransactions',
-                        Icons.shopping_bag_outlined,
-                        AppTheme.successColor,
-                        isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
+                      'VIP Customer',
+                      '$vipCustomers',
+                      Icons.stars,
+                      AppTheme.accentOrange,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
                     child: _buildStatCard(
-                        'Total Revenue',
-                        'Rp ${_formatPrice(totalRevenue)}',
-                        Icons.account_balance_wallet,
-                        AppTheme.secondaryMain,
-                        isDesktop)),
-              ],
-            )
-          : Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
+                      'Total Transaksi',
+                      '$totalTransactions',
+                      Icons.shopping_bag_outlined,
+                      AppTheme.successColor,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Total Revenue',
+                      'Rp ${_formatPrice(totalRevenue)}',
+                      Icons.account_balance_wallet,
+                      AppTheme.secondaryMain,
+                      isDesktop,
+                    ),
+                  ),
+                ],
+              )
+              : Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
                         child: _buildStatCard(
-                            'Total Pelanggan',
-                            '$totalCustomers',
-                            Icons.people_outline,
-                            AppTheme.primaryMain,
-                            isDesktop)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                        child: _buildStatCard('VIP', '$vipCustomers',
-                            Icons.stars, AppTheme.accentOrange, isDesktop)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
+                          'Total Pelanggan',
+                          '$totalCustomers',
+                          Icons.people_outline,
+                          AppTheme.primaryMain,
+                          isDesktop,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
                         child: _buildStatCard(
-                            'Transaksi',
-                            '$totalTransactions',
-                            Icons.shopping_bag_outlined,
-                            AppTheme.successColor,
-                            isDesktop)),
-                    const SizedBox(width: 12),
-                    Expanded(
+                          'VIP',
+                          '$vipCustomers',
+                          Icons.stars,
+                          AppTheme.accentOrange,
+                          isDesktop,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
                         child: _buildStatCard(
-                            'Revenue',
-                            'Rp ${_formatPrice(totalRevenue)}',
-                            Icons.account_balance_wallet,
-                            AppTheme.secondaryMain,
-                            isDesktop)),
-                  ],
-                ),
-              ],
-            ),
+                          'Transaksi',
+                          '$totalTransactions',
+                          Icons.shopping_bag_outlined,
+                          AppTheme.successColor,
+                          isDesktop,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Revenue',
+                          'Rp ${_formatPrice(totalRevenue)}',
+                          Icons.account_balance_wallet,
+                          AppTheme.secondaryMain,
+                          isDesktop,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
     );
   }
 
   Widget _buildStatCard(
-      String title, String value, IconData icon, Color color, bool isDesktop) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    bool isDesktop,
+  ) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -487,15 +523,18 @@ class _PelangganScreenState extends State<PelangganScreen>
           hintText: 'Cari nama, email, atau nomor telepon...',
           hintStyle: TextStyle(color: AppTheme.textTertiary),
           prefixIcon: Icon(Icons.search, color: AppTheme.primaryMain),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.clear, color: AppTheme.textTertiary),
-                  onPressed: () => setState(() => _searchQuery = ''),
-                )
-              : null,
+          suffixIcon:
+              _searchQuery.isNotEmpty
+                  ? IconButton(
+                    icon: Icon(Icons.clear, color: AppTheme.textTertiary),
+                    onPressed: () => setState(() => _searchQuery = ''),
+                  )
+                  : null,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -516,12 +555,10 @@ class _PelangganScreenState extends State<PelangganScreen>
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
         onChanged: (value) => setState(() => _filterType = value!),
-        items: _typeOptions.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
+        items:
+            _typeOptions.map((option) {
+              return DropdownMenuItem(value: option, child: Text(option));
+            }).toList(),
       ),
     );
   }
@@ -541,12 +578,10 @@ class _PelangganScreenState extends State<PelangganScreen>
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
         onChanged: (value) => setState(() => _sortBy = value!),
-        items: _sortOptions.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
+        items:
+            _sortOptions.map((option) {
+              return DropdownMenuItem(value: option, child: Text(option));
+            }).toList(),
       ),
     );
   }
@@ -597,8 +632,11 @@ class _PelangganScreenState extends State<PelangganScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.people_outline,
-                  size: 80, color: AppTheme.textTertiary),
+              Icon(
+                Icons.people_outline,
+                size: 80,
+                color: AppTheme.textTertiary,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada pelanggan',
@@ -637,8 +675,7 @@ class _PelangganScreenState extends State<PelangganScreen>
         padding: EdgeInsets.all(isDesktop ? 24 : 16),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
-            (context, index) =>
-                _buildCustomerCard(customers[index], isDesktop),
+            (context, index) => _buildCustomerCard(customers[index], isDesktop),
             childCount: customers.length,
           ),
         ),
@@ -704,7 +741,9 @@ class _PelangganScreenState extends State<PelangganScreen>
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: typeColor.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
@@ -740,17 +779,26 @@ class _PelangganScreenState extends State<PelangganScreen>
                   children: [
                     Expanded(
                       child: _buildInfoItem(
-                          Icons.email_outlined, 'Email', customer['email']),
+                        Icons.email_outlined,
+                        'Email',
+                        customer['email'],
+                      ),
                     ),
                     Expanded(
                       child: _buildInfoItem(
-                          Icons.phone_outlined, 'Telepon', customer['phone']),
+                        Icons.phone_outlined,
+                        'Telepon',
+                        customer['phone'],
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildInfoItem(Icons.location_on_outlined, 'Alamat',
-                    customer['address']),
+                _buildInfoItem(
+                  Icons.location_on_outlined,
+                  'Alamat',
+                  customer['address'],
+                ),
                 const SizedBox(height: 16),
                 const Divider(height: 1),
                 const SizedBox(height: 16),
@@ -816,8 +864,7 @@ class _PelangganScreenState extends State<PelangganScreen>
     );
   }
 
-  Widget _buildCustomerGridCard(
-      Map<String, dynamic> customer, bool isDesktop) {
+  Widget _buildCustomerGridCard(Map<String, dynamic> customer, bool isDesktop) {
     final typeColor = _getTypeColor(customer['type']);
 
     return Container(
@@ -858,7 +905,9 @@ class _PelangganScreenState extends State<PelangganScreen>
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: typeColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -888,10 +937,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                 const SizedBox(height: 4),
                 Text(
                   customer['email'],
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.textTertiary,
-                  ),
+                  style: TextStyle(fontSize: 11, color: AppTheme.textTertiary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
@@ -904,8 +950,11 @@ class _PelangganScreenState extends State<PelangganScreen>
                   children: [
                     Column(
                       children: [
-                        Icon(Icons.shopping_bag_outlined,
-                            size: 18, color: AppTheme.primaryMain),
+                        Icon(
+                          Icons.shopping_bag_outlined,
+                          size: 18,
+                          color: AppTheme.primaryMain,
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           '${customer['totalTransactions']}',
@@ -924,8 +973,11 @@ class _PelangganScreenState extends State<PelangganScreen>
                     ),
                     Column(
                       children: [
-                        Icon(Icons.account_balance_wallet,
-                            size: 18, color: AppTheme.successColor),
+                        Icon(
+                          Icons.account_balance_wallet,
+                          size: 18,
+                          color: AppTheme.successColor,
+                        ),
                         const SizedBox(height: 4),
                         FittedBox(
                           fit: BoxFit.scaleDown,
@@ -962,10 +1014,7 @@ class _PelangganScreenState extends State<PelangganScreen>
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppTheme.textTertiary,
-                ),
+                style: TextStyle(fontSize: 11, color: AppTheme.textTertiary),
               ),
               Text(
                 value,
@@ -1011,9 +1060,9 @@ class _PelangganScreenState extends State<PelangganScreen>
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 
   String _formatPriceShort(int price) {
@@ -1028,171 +1077,177 @@ class _PelangganScreenState extends State<PelangganScreen>
   void _showCustomerDetail(Map<String, dynamic> customer) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          padding: const EdgeInsets.all(24),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500),
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: customer['color'].withOpacity(0.1),
-                      child: Text(
-                        customer['avatar'],
-                        style: TextStyle(
-                          color: customer['color'],
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            customer['name'],
-                            style: const TextStyle(
-                              fontSize: 20,
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: customer['color'].withOpacity(0.1),
+                          child: Text(
+                            customer['avatar'],
+                            style: TextStyle(
+                              color: customer['color'],
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            customer['id'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppTheme.textTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _buildDetailRow('Tipe', customer['type']),
-                _buildDetailRow('Email', customer['email']),
-                _buildDetailRow('Telepon', customer['phone']),
-                _buildDetailRow('Alamat', customer['address']),
-                _buildDetailRow('Bergabung Sejak', customer['joinDate']),
-                _buildDetailRow('Transaksi Terakhir', customer['lastTransaction']),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryMain.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Column(
-                          children: [
-                            Text(
-                              '${customer['totalTransactions']}',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryMain,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Total Transaksi',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.textTertiary,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppTheme.successColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                'Rp ${_formatPrice(customer['totalSpending'])}',
-                                style: TextStyle(
-                                  fontSize: 18,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                customer['name'],
+                                style: const TextStyle(
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.successColor,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Total Belanja',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.textTertiary,
+                              Text(
+                                customer['id'],
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.textTertiary,
+                                ),
                               ),
-                              textAlign: TextAlign.center,
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDetailRow('Tipe', customer['type']),
+                    _buildDetailRow('Email', customer['email']),
+                    _buildDetailRow('Telepon', customer['phone']),
+                    _buildDetailRow('Alamat', customer['address']),
+                    _buildDetailRow('Bergabung Sejak', customer['joinDate']),
+                    _buildDetailRow(
+                      'Transaksi Terakhir',
+                      customer['lastTransaction'],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryMain.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ],
+                            child: Column(
+                              children: [
+                                Text(
+                                  '${customer['totalTransactions']}',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primaryMain,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Total Transaksi',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textTertiary,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppTheme.successColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    'Rp ${_formatPrice(customer['totalSpending'])}',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.successColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Total Belanja',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textTertiary,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _showEditCustomer(customer),
+                            icon: const Icon(Icons.edit),
+                            label: const Text('Edit'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              // Navigate to transaction history
+                            },
+                            icon: const Icon(Icons.history),
+                            label: const Text('Riwayat'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryMain,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showEditCustomer(customer),
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Edit'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // Navigate to transaction history
-                        },
-                        icon: const Icon(Icons.history),
-                        label: const Text('Riwayat'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryMain,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -1230,39 +1285,44 @@ class _PelangganScreenState extends State<PelangganScreen>
   void _showAddCustomer() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryMain, AppTheme.secondaryMain],
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppTheme.primaryMain, AppTheme.secondaryMain],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.person_add, color: Colors.white),
                 ),
-                borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 12),
+                const Text('Tambah Pelanggan Baru'),
+              ],
+            ),
+            content: const Text(
+              'Form tambah pelanggan baru akan ditampilkan di sini',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
               ),
-              child: const Icon(Icons.person_add, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            const Text('Tambah Pelanggan Baru'),
-          ],
-        ),
-        content: const Text('Form tambah pelanggan baru akan ditampilkan di sini'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryMain,
+                ),
+                child: const Text('Simpan'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryMain,
-            ),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -1270,39 +1330,44 @@ class _PelangganScreenState extends State<PelangganScreen>
     Navigator.pop(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryMain, AppTheme.secondaryMain],
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppTheme.primaryMain, AppTheme.secondaryMain],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.edit, color: Colors.white),
                 ),
-                borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 12),
+                const Text('Edit Pelanggan'),
+              ],
+            ),
+            content: Text(
+              'Form edit pelanggan ${customer['name']} akan ditampilkan di sini',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
               ),
-              child: const Icon(Icons.edit, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            const Text('Edit Pelanggan'),
-          ],
-        ),
-        content: Text('Form edit pelanggan ${customer['name']} akan ditampilkan di sini'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryMain,
+                ),
+                child: const Text('Simpan'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryMain,
-            ),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
     );
   }
 }

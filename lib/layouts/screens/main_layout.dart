@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../widgets/desktop_sidebar.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/mobile_bottom_nav.dart';
 import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 import '../../dashboard/screens/dashboard_screen.dart';
 import '../../produk/screens/produk_screen.dart';
 import '../../transaksi/screens/transaksimasuk_screen.dart';
 import '../../transaksi/screens/transaksikeluar_screen.dart';
 import '../../pelanggan/screens/pelanggan_screen.dart';
+import '../../stok/screens/stok_screen.dart';
+import '../../pengaturan/screens/pengaturan_screen.dart';
+import '../../theme/screens/theme_customizer_screen.dart';
 // import '../../reports/screens/report_screen.dart';
-// import '../../settings/screens/settings_screen.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget? child;
@@ -43,9 +47,10 @@ class _MainLayoutState extends State<MainLayout> {
     const ProdukScreen(),
     const TransaksiMasukScreen(),
     const PelangganScreen(),
-    const Center(child: Text('Stok')), // Placeholder
-    const Center(child: Text('Pengaturan')), // Placeholder
+    const StokScreen(),
+    const PengaturanScreen(),
     const TransaksiKeluarScreen(),
+    const ThemeCustomizerScreen(),
   ];
 
   // Judul untuk setiap layar
@@ -57,6 +62,7 @@ class _MainLayoutState extends State<MainLayout> {
     'Stok',
     'Pengaturan',
     'Transaksi Keluar',
+    'Theme Customizer',
   ];
 
   void _onMenuItemTap(int index) {
@@ -72,16 +78,18 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 900;
     final isTablet = screenWidth > 600 && screenWidth <= 900;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      body: isDesktop 
-          ? _buildDesktopLayout() 
-          : isTablet 
-              ? _buildTabletLayout() 
+      backgroundColor: themeProvider.backgroundColor,
+      body:
+          isDesktop
+              ? _buildDesktopLayout()
+              : isTablet
+              ? _buildTabletLayout()
               : _buildMobileLayout(),
     );
   }
@@ -116,9 +124,10 @@ class _MainLayoutState extends State<MainLayout> {
                       topLeft: Radius.circular(24),
                     ),
                   ),
-                  child: _screens.isNotEmpty && _currentIndex < _screens.length
-                      ? _screens[_currentIndex]
-                      : const DashboardScreen(),
+                  child:
+                      _screens.isNotEmpty && _currentIndex < _screens.length
+                          ? _screens[_currentIndex]
+                          : const DashboardScreen(),
                 ),
               ),
             ],
@@ -131,14 +140,12 @@ class _MainLayoutState extends State<MainLayout> {
   Widget _buildTabletLayout() {
     return Column(
       children: [
-        CustomAppBar(
-          title: _screenTitles[_currentIndex],
-          isDesktop: false,
-        ),
+        CustomAppBar(title: _screenTitles[_currentIndex], isDesktop: false),
         Expanded(
-          child: _screens.isNotEmpty && _currentIndex < _screens.length
-              ? _screens[_currentIndex]
-              : const DashboardScreen(),
+          child:
+              _screens.isNotEmpty && _currentIndex < _screens.length
+                  ? _screens[_currentIndex]
+                  : const DashboardScreen(),
         ),
         MobileBottomNav(
           selectedIndex: _currentIndex,
@@ -151,14 +158,12 @@ class _MainLayoutState extends State<MainLayout> {
   Widget _buildMobileLayout() {
     return Column(
       children: [
-        CustomAppBar(
-          title: _screenTitles[_currentIndex],
-          isDesktop: false,
-        ),
+        CustomAppBar(title: _screenTitles[_currentIndex], isDesktop: false),
         Expanded(
-          child: _screens.isNotEmpty && _currentIndex < _screens.length
-              ? _screens[_currentIndex]
-              : const DashboardScreen(),
+          child:
+              _screens.isNotEmpty && _currentIndex < _screens.length
+                  ? _screens[_currentIndex]
+                  : const DashboardScreen(),
         ),
         MobileBottomNav(
           selectedIndex: _currentIndex,

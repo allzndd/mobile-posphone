@@ -44,25 +44,25 @@ class MobileBottomNav extends StatelessWidget {
                 ),
                 _buildNavItem(
                   context: context,
-                  icon: Icons.inventory_2_rounded,
-                  label: 'Produk',
-                  index: 1,
-                  isSelected: selectedIndex == 1,
-                ),
-                _buildNavItem(
-                  context: context,
-                  icon: Icons.point_of_sale_rounded,
-                  label: 'Transaksi',
+                  icon: Icons.arrow_downward_rounded,
+                  label: 'Masuk',
                   index: 2,
-                  isSelected: selectedIndex == 2 || selectedIndex == 6,
-                  showSubmenu: true,
+                  isSelected: selectedIndex == 2,
                 ),
                 _buildNavItem(
                   context: context,
-                  icon: Icons.people_rounded,
-                  label: 'Pelanggan',
-                  index: 3,
-                  isSelected: selectedIndex == 3,
+                  icon: Icons.arrow_upward_rounded,
+                  label: 'Keluar',
+                  index: 6,
+                  isSelected: selectedIndex == 6,
+                ),
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.apps_rounded,
+                  label: 'Lainnya',
+                  index: -1,
+                  isSelected: selectedIndex == 1 || selectedIndex == 3 || selectedIndex == 4 || selectedIndex == 5 || selectedIndex == 7,
+                  showSubmenu: true,
                 ),
               ],
             ),
@@ -84,7 +84,7 @@ class MobileBottomNav extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           if (showSubmenu) {
-            _showTransaksiMenu(context);
+            _showMenuLainnya(context);
           } else {
             onMenuItemTap(index);
           }
@@ -124,11 +124,15 @@ class MobileBottomNav extends StatelessWidget {
     );
   }
 
-  void _showTransaksiMenu(BuildContext context) {
+  void _showMenuLainnya(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -146,7 +150,7 @@ class MobileBottomNav extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
@@ -160,14 +164,14 @@ class MobileBottomNav extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.point_of_sale_rounded,
+                        Icons.apps_rounded,
                         color: Colors.white,
                         size: 20,
                       ),
                     ),
                     const SizedBox(width: 12),
                     const Text(
-                      'Pilih Transaksi',
+                      'Menu Lainnya',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -176,27 +180,65 @@ class MobileBottomNav extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildSubmenuItem(
-                context: context,
-                icon: Icons.arrow_downward_rounded,
-                title: 'Transaksi Masuk',
-                subtitle: 'Kelola penjualan & pembayaran',
-                color: AppTheme.successColor,
-                index: 2,
-                isSelected: selectedIndex == 2,
+              const SizedBox(height: 16),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildSubmenuItem(
+                        context: context,
+                        icon: Icons.inventory_2_rounded,
+                        title: 'Produk',
+                        subtitle: 'Kelola data produk & stok',
+                        color: AppTheme.primaryMain,
+                        index: 1,
+                        isSelected: selectedIndex == 1,
+                      ),
+                      const Divider(height: 1),
+                      _buildSubmenuItem(
+                        context: context,
+                        icon: Icons.people_rounded,
+                        title: 'Pelanggan',
+                        subtitle: 'Kelola data pelanggan',
+                        color: AppTheme.secondaryMain,
+                        index: 3,
+                        isSelected: selectedIndex == 3,
+                      ),
+                      const Divider(height: 1),
+                      _buildSubmenuItem(
+                        context: context,
+                        icon: Icons.analytics_rounded,
+                        title: 'Stok',
+                        subtitle: 'Kelola inventori & laporan stok',
+                        color: AppTheme.accentOrange,
+                        index: 4,
+                        isSelected: selectedIndex == 4,
+                      ),
+                      const Divider(height: 1),
+                      _buildSubmenuItem(
+                        context: context,
+                        icon: Icons.palette_rounded,
+                        title: 'Theme',
+                        subtitle: 'Personalisasi warna & tampilan',
+                        color: AppTheme.accentPurple,
+                        index: 7,
+                        isSelected: selectedIndex == 7,
+                      ),
+                      const Divider(height: 1),
+                      _buildSubmenuItem(
+                        context: context,
+                        icon: Icons.settings_rounded,
+                        title: 'Pengaturan',
+                        subtitle: 'Konfigurasi aplikasi & sistem',
+                        color: AppTheme.textSecondary,
+                        index: 5,
+                        isSelected: selectedIndex == 5,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
               ),
-              const Divider(height: 1),
-              _buildSubmenuItem(
-                context: context,
-                icon: Icons.arrow_upward_rounded,
-                title: 'Transaksi Keluar',
-                subtitle: 'Kelola pembelian & pengeluaran',
-                color: AppTheme.errorColor,
-                index: 6,
-                isSelected: selectedIndex == 6,
-              ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -221,18 +263,18 @@ class MobileBottomNav extends StatelessWidget {
           onMenuItemTap(index);
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(icon, color: color, size: 22),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,7 +282,7 @@ class MobileBottomNav extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: isSelected ? color : AppTheme.textPrimary,
                       ),
@@ -249,17 +291,18 @@ class MobileBottomNav extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: AppTheme.textTertiary,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (isSelected)
-                Icon(Icons.check_circle, color: color, size: 24)
-              else
-                Icon(Icons.chevron_right, color: AppTheme.textTertiary, size: 24),
+              Icon(
+                isSelected ? Icons.check_circle : Icons.chevron_right,
+                color: isSelected ? color : AppTheme.textTertiary,
+                size: 22,
+              ),
             ],
           ),
         ),

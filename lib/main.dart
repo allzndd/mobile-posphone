@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth/screens/login_screen.dart';
 import 'auth/providers/branding_provider.dart';
+import 'config/theme_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,9 +14,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => BrandingProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => BrandingProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
       child: MaterialApp(
-        title: 'Mobile PosPhone',
+        title: 'PosPhone',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(

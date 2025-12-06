@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 import '../../auth/providers/branding_provider.dart';
 
 /// Sidebar Header - Logo & App Name
@@ -12,15 +12,24 @@ class SidebarHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final branding = context.watch<BrandingProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
 
     return Container(
       padding: EdgeInsets.symmetric(
         vertical: 24,
         horizontal: isCollapsed ? 15 : 20,
       ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [themeProvider.sidebarStart, themeProvider.sidebarEnd],
+        ),
+      ),
       child: Row(
         mainAxisSize: isCollapsed ? MainAxisSize.min : MainAxisSize.max,
-        mainAxisAlignment: isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
           Container(
             height: 50,
@@ -46,16 +55,12 @@ class SidebarHeader extends StatelessWidget {
                         errorBuilder: (context, error, stackTrace) {
                           return const Icon(
                             Icons.store,
-                            color: AppTheme.primaryMain,
+                            color: Colors.white,
                             size: 28,
                           );
                         },
                       )
-                      : const Icon(
-                        Icons.store,
-                        color: AppTheme.primaryMain,
-                        size: 28,
-                      ),
+                      : const Icon(Icons.store, color: Colors.white, size: 28),
             ),
           ),
           if (!isCollapsed) ...[

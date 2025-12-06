@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 
 class TransaksiMasukScreen extends StatefulWidget {
   const TransaksiMasukScreen({super.key});
@@ -117,11 +119,13 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
 
   List<Map<String, dynamic>> get _filteredTransactions {
     return _transactions.where((trx) {
-      final matchesSearch = trx['customer']
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ||
-          trx['id'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesSearch =
+          trx['customer'].toString().toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ||
+          trx['id'].toString().toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
       final matchesStatus =
           _filterStatus == 'Semua' || trx['status'] == _filterStatus;
       return matchesSearch && matchesStatus;
@@ -130,12 +134,13 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 900;
     final isTablet = screenWidth > 600 && screenWidth <= 900;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: themeProvider.backgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _buildHeader(isDesktop)),
@@ -149,17 +154,19 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
   }
 
   Widget _buildHeader(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppTheme.successColor, AppTheme.secondaryDark],
+          colors: [themeProvider.primaryMain, themeProvider.primaryDark],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.successColor.withOpacity(0.3),
+            color: themeProvider.primaryMain.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -167,56 +174,56 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
       ),
       child: Row(
         children: [
-            Container(
-              padding: EdgeInsets.all(isDesktop ? 12 : 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_downward_rounded,
-                color: Colors.white,
-                size: isDesktop ? 28 : 24,
-              ),
+          Container(
+            padding: EdgeInsets.all(isDesktop ? 12 : 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
             ),
-            SizedBox(width: isDesktop ? 16 : 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Transaksi Masuk',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: isDesktop ? 24 : 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'Kelola penjualan & pembayaran',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: isDesktop ? 14 : 12,
-                    ),
-                  ),
-                ],
-              ),
+            child: Icon(
+              Icons.arrow_downward_rounded,
+              color: Colors.white,
+              size: isDesktop ? 28 : 24,
             ),
-            if (isDesktop) ...[
-              _buildHeaderAction(
-                icon: Icons.add_shopping_cart,
-                label: 'Transaksi Baru',
-                onTap: () => _showNewTransaction(),
-              ),
-              const SizedBox(width: 8),
-              _buildHeaderAction(
-                icon: Icons.print_outlined,
-                label: 'Cetak Laporan',
-                onTap: () {},
-              ),
-            ],
+          ),
+          SizedBox(width: isDesktop ? 16 : 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Transaksi Masuk',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isDesktop ? 24 : 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Kelola penjualan & pembayaran',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: isDesktop ? 14 : 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isDesktop) ...[
+            _buildHeaderAction(
+              icon: Icons.add_shopping_cart,
+              label: 'Transaksi Baru',
+              onTap: () => _showNewTransaction(),
+            ),
+            const SizedBox(width: 8),
+            _buildHeaderAction(
+              icon: Icons.print_outlined,
+              label: 'Cetak Laporan',
+              onTap: () {},
+            ),
           ],
-        ),
+        ],
+      ),
     );
   }
 
@@ -256,85 +263,126 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
     final totalPendapatan = _transactions
         .where((t) => t['status'] == 'Selesai')
         .fold<int>(0, (sum, t) => sum + (t['total'] as int));
-    final transaksiHariIni = _transactions
-        .where((t) => t['date'].toString().startsWith('2025-12-04'))
-        .length;
+    final transaksiHariIni =
+        _transactions
+            .where((t) => t['date'].toString().startsWith('2025-12-04'))
+            .length;
     final pending = _transactions.where((t) => t['status'] == 'Pending').length;
 
     return Container(
       margin: EdgeInsets.all(isDesktop ? 24 : 16),
-      child: isDesktop
-          ? Row(
-              children: [
-                Expanded(
+      child:
+          isDesktop
+              ? Row(
+                children: [
+                  Expanded(
                     child: _buildStatCard(
-                        'Total Transaksi',
-                        '$totalTransaksi',
-                        Icons.receipt_long,
-                        AppTheme.primaryMain,
-                        isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
+                      'Total Transaksi',
+                      '$totalTransaksi',
+                      Icons.receipt_long,
+                      AppTheme.primaryMain,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
                     child: _buildStatCard(
-                        'Total Pendapatan',
-                        'Rp ${_formatPrice(totalPendapatan)}',
-                        Icons.account_balance_wallet,
-                        AppTheme.successColor,
-                        isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
-                    child: _buildStatCard('Hari Ini', '$transaksiHariIni',
-                        Icons.today, AppTheme.accentOrange, isDesktop)),
-                const SizedBox(width: 16),
-                Expanded(
-                    child: _buildStatCard('Pending', '$pending',
-                        Icons.pending_actions, AppTheme.warningColor, isDesktop)),
-              ],
-            )
-          : Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
+                      'Total Pendapatan',
+                      'Rp ${_formatPrice(totalPendapatan)}',
+                      Icons.account_balance_wallet,
+                      AppTheme.successColor,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Hari Ini',
+                      '$transaksiHariIni',
+                      Icons.today,
+                      AppTheme.accentOrange,
+                      isDesktop,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Pending',
+                      '$pending',
+                      Icons.pending_actions,
+                      AppTheme.warningColor,
+                      isDesktop,
+                    ),
+                  ),
+                ],
+              )
+              : Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
                         child: _buildStatCard(
-                            'Total Transaksi',
-                            '$totalTransaksi',
-                            Icons.receipt_long,
-                            AppTheme.primaryMain,
-                            isDesktop)),
-                    const SizedBox(width: 12),
-                    Expanded(
+                          'Total Transaksi',
+                          '$totalTransaksi',
+                          Icons.receipt_long,
+                          AppTheme.primaryMain,
+                          isDesktop,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
                         child: _buildStatCard(
-                            'Pendapatan',
-                            'Rp ${_formatPrice(totalPendapatan)}',
-                            Icons.account_balance_wallet,
-                            AppTheme.successColor,
-                            isDesktop)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                        child: _buildStatCard('Hari Ini', '$transaksiHariIni',
-                            Icons.today, AppTheme.accentOrange, isDesktop)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                        child: _buildStatCard('Pending', '$pending',
-                            Icons.pending_actions, AppTheme.warningColor, isDesktop)),
-                  ],
-                ),
-              ],
-            ),
+                          'Pendapatan',
+                          'Rp ${_formatPrice(totalPendapatan)}',
+                          Icons.account_balance_wallet,
+                          AppTheme.successColor,
+                          isDesktop,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          'Hari Ini',
+                          '$transaksiHariIni',
+                          Icons.today,
+                          AppTheme.accentOrange,
+                          isDesktop,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Pending',
+                          '$pending',
+                          Icons.pending_actions,
+                          AppTheme.warningColor,
+                          isDesktop,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
     );
   }
 
   Widget _buildStatCard(
-      String title, String value, IconData icon, Color color, bool isDesktop) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    bool isDesktop,
+  ) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -388,9 +436,11 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
   }
 
   Widget _buildFilterSection(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
-      color: Colors.white,
+      color: themeProvider.surfaceColor,
       child: Column(
         children: [
           if (isDesktop)
@@ -436,15 +486,18 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
           hintText: 'Cari transaksi / customer...',
           hintStyle: TextStyle(color: AppTheme.textTertiary),
           prefixIcon: Icon(Icons.search, color: AppTheme.successColor),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.clear, color: AppTheme.textTertiary),
-                  onPressed: () => setState(() => _searchQuery = ''),
-                )
-              : null,
+          suffixIcon:
+              _searchQuery.isNotEmpty
+                  ? IconButton(
+                    icon: Icon(Icons.clear, color: AppTheme.textTertiary),
+                    onPressed: () => setState(() => _searchQuery = ''),
+                  )
+                  : null,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -465,12 +518,10 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
         onChanged: (value) => setState(() => _filterStatus = value!),
-        items: _statusOptions.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
+        items:
+            _statusOptions.map((option) {
+              return DropdownMenuItem(value: option, child: Text(option));
+            }).toList(),
       ),
     );
   }
@@ -490,12 +541,10 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
         onChanged: (value) => setState(() => _filterPeriod = value!),
-        items: _periodOptions.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
+        items:
+            _periodOptions.map((option) {
+              return DropdownMenuItem(value: option, child: Text(option));
+            }).toList(),
       ),
     );
   }
@@ -546,8 +595,11 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.receipt_long_outlined,
-                  size: 80, color: AppTheme.textTertiary),
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 80,
+                color: AppTheme.textTertiary,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada transaksi',
@@ -568,7 +620,8 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
         padding: EdgeInsets.all(isDesktop ? 24 : 16),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
-            (context, index) => _buildTransactionCard(transactions[index], isDesktop),
+            (context, index) =>
+                _buildTransactionCard(transactions[index], isDesktop),
             childCount: transactions.length,
           ),
         ),
@@ -631,8 +684,11 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                               color: AppTheme.successColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(Icons.receipt,
-                                color: AppTheme.successColor, size: 20),
+                            child: Icon(
+                              Icons.receipt,
+                              color: AppTheme.successColor,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -661,7 +717,9 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -684,11 +742,17 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                   children: [
                     Expanded(
                       child: _buildInfoItem(
-                          Icons.person, 'Customer', trx['customer']),
+                        Icons.person,
+                        'Customer',
+                        trx['customer'],
+                      ),
                     ),
                     Expanded(
-                      child: _buildInfoItem(Icons.shopping_bag_outlined, 'Items',
-                          '${trx['items']} produk'),
+                      child: _buildInfoItem(
+                        Icons.shopping_bag_outlined,
+                        'Items',
+                        '${trx['items']} produk',
+                      ),
                     ),
                   ],
                 ),
@@ -696,12 +760,18 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: _buildInfoItem(Icons.payment, 'Pembayaran',
-                          trx['payment']),
+                      child: _buildInfoItem(
+                        Icons.payment,
+                        'Pembayaran',
+                        trx['payment'],
+                      ),
                     ),
                     Expanded(
                       child: _buildInfoItem(
-                          Icons.person_outline, 'Kasir', trx['cashier']),
+                        Icons.person_outline,
+                        'Kasir',
+                        trx['cashier'],
+                      ),
                     ),
                   ],
                 ),
@@ -770,12 +840,17 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                         color: AppTheme.successColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(Icons.receipt,
-                          color: AppTheme.successColor, size: 20),
+                      child: Icon(
+                        Icons.receipt,
+                        color: AppTheme.successColor,
+                        size: 20,
+                      ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
@@ -801,20 +876,14 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                 ),
                 Text(
                   trx['customer'],
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppTheme.textTertiary,
-                  ),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textTertiary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const Spacer(),
                 Text(
                   '${trx['items']} produk • ${trx['payment']}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 8),
                 FittedBox(
@@ -848,10 +917,7 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppTheme.textTertiary,
-                ),
+                style: TextStyle(fontSize: 11, color: AppTheme.textTertiary),
               ),
               Text(
                 value,
@@ -897,158 +963,168 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 
   void _showTransactionDetail(Map<String, dynamic> trx) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          padding: const EdgeInsets.all(24),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500),
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppTheme.successColor, AppTheme.secondaryDark],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.receipt, color: Colors.white, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Detail Transaksi',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            trx['id'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppTheme.textTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _buildDetailRow('Tanggal', trx['date']),
-                _buildDetailRow('Customer', trx['customer']),
-                _buildDetailRow('Kasir', trx['cashier']),
-                _buildDetailRow('Pembayaran', trx['payment']),
-                _buildDetailRow('Status', trx['status']),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
-                const Text(
-                  'Produk',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ...(trx['products'] as List).map((product) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
+                    Row(
                       children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.successColor,
+                                AppTheme.secondaryDark,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.receipt,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            '${product['qty']}x ${product['name']}',
-                            style: TextStyle(color: AppTheme.textSecondary),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Detail Transaksi',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                trx['id'],
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDetailRow('Tanggal', trx['date']),
+                    _buildDetailRow('Customer', trx['customer']),
+                    _buildDetailRow('Kasir', trx['cashier']),
+                    _buildDetailRow('Pembayaran', trx['payment']),
+                    _buildDetailRow('Status', trx['status']),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Produk',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...(trx['products'] as List).map((product) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${product['qty']}x ${product['name']}',
+                                style: TextStyle(color: AppTheme.textSecondary),
+                              ),
+                            ),
+                            Text(
+                              'Rp ${_formatPrice(product['price'] * product['qty'])}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'Rp ${_formatPrice(product['price'] * product['qty'])}',
+                          'Rp ${_formatPrice(trx['total'])}',
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.successColor,
                           ),
                         ),
                       ],
                     ),
-                  );
-                }).toList(),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Total',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Rp ${_formatPrice(trx['total'])}',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.successColor,
-                      ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.print),
+                            label: const Text('Cetak'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(Icons.check),
+                            label: const Text('Tutup'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.successColor,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.print),
-                        label: const Text('Cetak'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.check),
-                        label: const Text('Tutup'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.successColor,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -1086,36 +1162,42 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
   void _showNewTransaction() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.successColor, AppTheme.secondaryDark],
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.add_shopping_cart, color: Colors.white),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            const Text('Transaksi Baru'),
-          ],
-        ),
-        content: const Text('Form transaksi baru akan ditampilkan di sini'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppTheme.successColor, AppTheme.secondaryDark],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.add_shopping_cart,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text('Transaksi Baru'),
+              ],
+            ),
+            content: const Text('Form transaksi baru akan ditampilkan di sini'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Proses'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Proses'),
-          ),
-        ],
-      ),
     );
   }
 }
