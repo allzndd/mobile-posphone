@@ -677,20 +677,20 @@ class _StokScreenState extends State<StokScreen>
     }
   }
 
-  Widget _buildFilterSection(bool isDesktop) {
-    // This method is no longer used, kept for compatibility
-    return const SizedBox.shrink();
-  }
+  // Widget _buildFilterSection(bool isDesktop) {
+  //   // This method is no longer used, kept for compatibility
+  //   return const SizedBox.shrink();
+  // }
 
-  Widget _buildCategoryFilter() {
-    // This method is no longer used, kept for compatibility
-    return const SizedBox.shrink();
-  }
+  // Widget _buildCategoryFilter() {
+  //   // This method is no longer used, kept for compatibility
+  //   return const SizedBox.shrink();
+  // }
 
-  Widget _buildStatusFilter() {
-    // This method is no longer used, kept for compatibility
-    return const SizedBox.shrink();
-  }
+  // Widget _buildStatusFilter() {
+  //   // This method is no longer used, kept for compatibility
+  //   return const SizedBox.shrink();
+  // }
 
   Widget _buildSortFilter() {
     final themeProvider = context.watch<ThemeProvider>();
