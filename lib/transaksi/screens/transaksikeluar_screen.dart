@@ -14,6 +14,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   String _searchQuery = '';
   String _filterStatus = 'Semua';
   String _filterPeriod = 'Hari Ini';
+  bool _isListView = true;
 
   final List<String> _statusOptions = [
     'Semua',
@@ -396,7 +397,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
             title,
             style: TextStyle(
               fontSize: isDesktop ? 14 : 12,
-              color: AppTheme.textTertiary,
+              color: themeProvider.textTertiary,
             ),
           ),
         ],
@@ -420,6 +421,8 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                 Expanded(child: _buildStatusFilter()),
                 const SizedBox(width: 16),
                 Expanded(child: _buildPeriodFilter()),
+                const SizedBox(width: 16),
+                _buildViewToggle(),
               ],
             )
           else ...[
@@ -430,6 +433,8 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                 Expanded(child: _buildStatusFilter()),
                 const SizedBox(width: 12),
                 Expanded(child: _buildPeriodFilter()),
+                const SizedBox(width: 12),
+                _buildViewToggle(),
               ],
             ),
           ],
@@ -439,17 +444,18 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   Widget _buildSearchBar() {
+    final themeProvider = context.read<ThemeProvider>();
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
           hintText: 'Cari transaksi / supplier...',
-          hintStyle: TextStyle(color: AppTheme.textTertiary),
+          hintStyle: TextStyle(color: themeProvider.textTertiary),
           prefixIcon: Icon(
             Icons.search,
             color: context.read<ThemeProvider>().secondaryMain,
@@ -457,7 +463,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
           suffixIcon:
               _searchQuery.isNotEmpty
                   ? IconButton(
-                    icon: Icon(Icons.clear, color: AppTheme.textTertiary),
+                    icon: Icon(Icons.clear, color: themeProvider.textTertiary),
                     onPressed: () => setState(() => _searchQuery = ''),
                   )
                   : null,
@@ -472,12 +478,13 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   Widget _buildStatusFilter() {
+    final themeProvider = context.read<ThemeProvider>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: DropdownButton<String>(
         value: _filterStatus,
@@ -498,12 +505,13 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   Widget _buildPeriodFilter() {
+    final themeProvider = context.read<ThemeProvider>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: DropdownButton<String>(
         value: _filterPeriod,
@@ -523,8 +531,53 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
     );
   }
 
+  Widget _buildViewToggle() {
+    final themeProvider = context.read<ThemeProvider>();
+    return Container(
+      decoration: BoxDecoration(
+        color: themeProvider.surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: themeProvider.borderColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildViewButton(Icons.view_list_rounded, true),
+          _buildViewButton(Icons.grid_view_rounded, false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildViewButton(IconData icon, bool isList) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isActive = _isListView == isList;
+    return Material(
+      color:
+          isActive
+              ? context.read<ThemeProvider>().secondaryMain
+              : Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: () => setState(() => _isListView = isList),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          child: Icon(
+            icon,
+            color: isActive ? Colors.white : themeProvider.textTertiary,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildTransactionList(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
     final transactions = _filteredTransactions;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600 && screenWidth <= 900;
 
     if (transactions.isEmpty) {
       return SliverFillRemaining(
@@ -535,14 +588,14 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
               Icon(
                 Icons.receipt_long_outlined,
                 size: 80,
-                color: AppTheme.textTertiary,
+                color: themeProvider.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada transaksi',
                 style: TextStyle(
                   fontSize: 18,
-                  color: AppTheme.textSecondary,
+                  color: themeProvider.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -552,25 +605,46 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
       );
     }
 
-    return SliverPadding(
-      padding: EdgeInsets.all(isDesktop ? 24 : 16),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) =>
-              _buildTransactionCard(transactions[index], isDesktop),
-          childCount: transactions.length,
+    if (_isListView) {
+      return SliverPadding(
+        padding: EdgeInsets.all(isDesktop ? 24 : 16),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) =>
+                _buildTransactionCard(transactions[index], isDesktop),
+            childCount: transactions.length,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      final crossAxisCount = isDesktop ? 3 : (isTablet ? 2 : 1);
+      return SliverPadding(
+        padding: EdgeInsets.all(isDesktop ? 24 : 16),
+        sliver: SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: 1.2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) =>
+                _buildTransactionGridCard(transactions[index], isDesktop),
+            childCount: transactions.length,
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildTransactionCard(Map<String, dynamic> trx, bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
     final statusColor = _getStatusColor(trx['status']);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -727,10 +801,128 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
     );
   }
 
+  Widget _buildTransactionGridCard(Map<String, dynamic> trx, bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final statusColor = _getStatusColor(trx['status']);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: themeProvider.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showTransactionDetail(trx),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: themeProvider.cardColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.arrow_upward_rounded,
+                        color: context.read<ThemeProvider>().secondaryMain,
+                        size: 20,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        trx['status'],
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  trx['id'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  trx['supplier'],
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: themeProvider.textTertiary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Spacer(),
+                Text(
+                  '${trx['items']} produk • ${trx['payment']}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: themeProvider.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Divider(height: 1),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: themeProvider.textTertiary,
+                      ),
+                    ),
+                    Text(
+                      'Rp ${_formatPrice(trx['total'])}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: context.read<ThemeProvider>().secondaryMain,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildInfoItem(IconData icon, String label, String value) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppTheme.textTertiary),
+        Icon(icon, size: 16, color: themeProvider.textTertiary),
         const SizedBox(width: 8),
         Expanded(
           child: Column(
@@ -738,14 +930,17 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
             children: [
               Text(
                 label,
-                style: TextStyle(fontSize: 11, color: AppTheme.textTertiary),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: themeProvider.textTertiary,
+                ),
               ),
               Text(
                 value,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
+                  color: themeProvider.textPrimary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -953,6 +1148,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   Widget _buildDetailRow(String label, String value) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -963,7 +1159,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
             child: Text(
               label,
               style: TextStyle(
-                color: AppTheme.textTertiary,
+                color: themeProvider.textTertiary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -973,7 +1169,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
             child: Text(
               value,
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: themeProvider.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),

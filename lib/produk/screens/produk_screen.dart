@@ -308,22 +308,26 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildSearchBar() {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
           hintText: 'Cari produk...',
-          hintStyle: TextStyle(color: AppTheme.textTertiary),
-          prefixIcon: Icon(Icons.search, color: AppTheme.primaryMain),
+          hintStyle: TextStyle(color: themeProvider.textTertiary),
+          prefixIcon: Icon(
+            Icons.search,
+            color: context.read<ThemeProvider>().primaryMain,
+          ),
           suffixIcon:
               _searchQuery.isNotEmpty
                   ? IconButton(
-                    icon: Icon(Icons.clear, color: AppTheme.textTertiary),
+                    icon: Icon(Icons.clear, color: themeProvider.textTertiary),
                     onPressed: () => setState(() => _searchQuery = ''),
                   )
                   : null,
@@ -338,16 +342,20 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildSortDropdown() {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: DropdownButton<String>(
         value: _sortBy,
-        icon: Icon(Icons.arrow_drop_down, color: AppTheme.primaryMain),
+        icon: Icon(
+          Icons.arrow_drop_down,
+          color: context.read<ThemeProvider>().primaryMain,
+        ),
         underline: const SizedBox(),
         isExpanded: false,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
@@ -361,11 +369,12 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildViewToggle() {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: Row(
         children: [
@@ -377,9 +386,13 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildViewButton(IconData icon, bool isGrid) {
+    final themeProvider = context.watch<ThemeProvider>();
     final isActive = _isGridView == isGrid;
     return Material(
-      color: isActive ? AppTheme.primaryMain : Colors.transparent,
+      color:
+          isActive
+              ? context.read<ThemeProvider>().primaryMain
+              : Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () => setState(() => _isGridView = isGrid),
@@ -388,7 +401,7 @@ class _ProdukScreenState extends State<ProdukScreen>
           padding: const EdgeInsets.all(12),
           child: Icon(
             icon,
-            color: isActive ? Colors.white : AppTheme.textTertiary,
+            color: isActive ? Colors.white : themeProvider.textTertiary,
             size: 20,
           ),
         ),
@@ -412,7 +425,10 @@ class _ProdukScreenState extends State<ProdukScreen>
           return Padding(
             padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
             child: Material(
-              color: isSelected ? AppTheme.primaryMain : AppTheme.surfaceLight,
+              color:
+                  isSelected
+                      ? context.read<ThemeProvider>().primaryMain
+                      : themeProvider.cardColor,
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 onTap: () => setState(() => _selectedCategory = category),
@@ -427,7 +443,9 @@ class _ProdukScreenState extends State<ProdukScreen>
                       category,
                       style: TextStyle(
                         color:
-                            isSelected ? Colors.white : AppTheme.textSecondary,
+                            isSelected
+                                ? Colors.white
+                                : themeProvider.textSecondary,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.w500,
                         fontSize: isDesktop ? 14 : 13,
@@ -561,6 +579,7 @@ class _ProdukScreenState extends State<ProdukScreen>
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final themeProvider = context.watch<ThemeProvider>();
         final isCompact = constraints.maxWidth < 150;
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -583,7 +602,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                     label,
                     style: TextStyle(
                       fontSize: isCompact ? 10 : 12,
-                      color: AppTheme.textTertiary,
+                      color: themeProvider.textTertiary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -612,6 +631,7 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildProductList(bool isDesktop, bool isTablet) {
+    final themeProvider = context.watch<ThemeProvider>();
     final products = _filteredProducts;
 
     if (products.isEmpty) {
@@ -623,14 +643,14 @@ class _ProdukScreenState extends State<ProdukScreen>
               Icon(
                 Icons.inbox_outlined,
                 size: 80,
-                color: AppTheme.textTertiary,
+                color: themeProvider.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada produk ditemukan',
                 style: TextStyle(
                   fontSize: 18,
-                  color: AppTheme.textSecondary,
+                  color: themeProvider.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -704,7 +724,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceLight,
+                        color: themeProvider.cardColor,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(16),
                         ),
@@ -713,7 +733,10 @@ class _ProdukScreenState extends State<ProdukScreen>
                         child: Icon(
                           Icons.phone_android,
                           size: 60,
-                          color: AppTheme.primaryMain.withOpacity(0.3),
+                          color: context
+                              .read<ThemeProvider>()
+                              .primaryMain
+                              .withOpacity(0.3),
                         ),
                       ),
                     ),
@@ -768,7 +791,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                         product['category'],
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppTheme.textTertiary,
+                          color: themeProvider.textTertiary,
                         ),
                       ),
                       const Spacer(),
@@ -779,7 +802,8 @@ class _ProdukScreenState extends State<ProdukScreen>
                             child: Text(
                               'Rp ${_formatPrice(product['price'])}',
                               style: TextStyle(
-                                color: AppTheme.primaryMain,
+                                color:
+                                    context.read<ThemeProvider>().primaryMain,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -848,14 +872,17 @@ class _ProdukScreenState extends State<ProdukScreen>
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
+                    color: themeProvider.cardColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
                     child: Icon(
                       Icons.phone_android,
                       size: 40,
-                      color: AppTheme.primaryMain.withOpacity(0.3),
+                      color: context
+                          .read<ThemeProvider>()
+                          .primaryMain
+                          .withOpacity(0.3),
                     ),
                   ),
                 ),
@@ -879,7 +906,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                         product['category'],
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppTheme.textTertiary,
+                          color: themeProvider.textTertiary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -893,7 +920,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                           Text(
                             'Rp ${_formatPrice(product['price'])}',
                             style: TextStyle(
-                              color: AppTheme.primaryMain,
+                              color: context.read<ThemeProvider>().primaryMain,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -909,7 +936,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                             'Stok: ${product['stock']}',
                             style: TextStyle(
                               fontSize: 13,
-                              color: AppTheme.textSecondary,
+                              color: themeProvider.textSecondary,
                             ),
                           ),
                         ],
@@ -946,7 +973,10 @@ class _ProdukScreenState extends State<ProdukScreen>
                     ),
                     const SizedBox(height: 8),
                     IconButton(
-                      icon: Icon(Icons.more_vert, color: AppTheme.textTertiary),
+                      icon: Icon(
+                        Icons.more_vert,
+                        color: themeProvider.textTertiary,
+                      ),
                       onPressed: () => _showProductOptions(product),
                     ),
                   ],
@@ -993,10 +1023,16 @@ class _ProdukScreenState extends State<ProdukScreen>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryMain.withOpacity(0.1),
+                    color: context
+                        .read<ThemeProvider>()
+                        .primaryMain
+                        .withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(Icons.info_outline, color: AppTheme.primaryMain),
+                  child: Icon(
+                    Icons.info_outline,
+                    color: context.read<ThemeProvider>().primaryMain,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 const Text('Detail Produk'),
@@ -1037,6 +1073,7 @@ class _ProdukScreenState extends State<ProdukScreen>
   }
 
   Widget _buildDetailRow(String label, String value) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -1047,7 +1084,7 @@ class _ProdukScreenState extends State<ProdukScreen>
             child: Text(
               label,
               style: TextStyle(
-                color: AppTheme.textTertiary,
+                color: themeProvider.textTertiary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1057,7 +1094,7 @@ class _ProdukScreenState extends State<ProdukScreen>
             child: Text(
               value,
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: themeProvider.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1147,7 +1184,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
+                  color: context.read<ThemeProvider>().textPrimary,
                 ),
               ),
             ],
@@ -1171,7 +1208,10 @@ class _ProdukScreenState extends State<ProdukScreen>
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppTheme.primaryMain, AppTheme.primaryDark],
+                      colors: [
+                        context.read<ThemeProvider>().primaryMain,
+                        context.read<ThemeProvider>().primaryDark,
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),

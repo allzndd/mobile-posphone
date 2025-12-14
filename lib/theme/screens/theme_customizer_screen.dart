@@ -123,7 +123,7 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
       margin: EdgeInsets.all(isDesktop ? 24 : 12),
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -160,14 +160,14 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
                       style: TextStyle(
                         fontSize: isDesktop ? 18 : 16,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                        color: themeProvider.textPrimary,
                       ),
                     ),
                     Text(
                       themeProvider.currentScheme.name,
                       style: TextStyle(
                         fontSize: isDesktop ? 14 : 12,
-                        color: AppTheme.textTertiary,
+                        color: themeProvider.textTertiary,
                       ),
                     ),
                   ],
@@ -190,7 +190,7 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
             style: TextStyle(
               fontSize: isDesktop ? 14 : 13,
               fontWeight: FontWeight.w600,
-              color: AppTheme.textSecondary,
+              color: themeProvider.textSecondary,
             ),
           ),
           const SizedBox(height: 12),
@@ -277,13 +277,14 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
   }
 
   Widget _buildColorPreview(String label, Color color, bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       width: isDesktop ? 140 : 100,
       padding: EdgeInsets.all(isDesktop ? 12 : 10),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: Column(
         children: [
@@ -302,13 +303,13 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
             style: TextStyle(
               fontSize: isDesktop ? 12 : 10,
               fontWeight: FontWeight.w600,
-              color: AppTheme.textSecondary,
+              color: themeProvider.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
           Text(
             _colorToHex(color),
-            style: TextStyle(fontSize: 10, color: AppTheme.textTertiary),
+            style: TextStyle(fontSize: 10, color: themeProvider.textTertiary),
           ),
         ],
       ),
@@ -324,7 +325,7 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
       ),
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -357,7 +358,7 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
                 style: TextStyle(
                   fontSize: isDesktop ? 18 : 16,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: themeProvider.textPrimary,
                 ),
               ),
             ],
@@ -403,10 +404,10 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
-            color: AppTheme.surfaceLight,
+            color: themeProvider.surfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isActive ? scheme.primaryMain : AppTheme.borderLight,
+              color: isActive ? scheme.primaryMain : themeProvider.borderColor,
               width: isActive ? 3 : 1,
             ),
           ),
@@ -443,7 +444,8 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
                 style: TextStyle(
                   fontSize: isDesktop ? 14 : 12,
                   fontWeight: FontWeight.bold,
-                  color: isActive ? scheme.primaryMain : AppTheme.textPrimary,
+                  color:
+                      isActive ? scheme.primaryMain : themeProvider.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),

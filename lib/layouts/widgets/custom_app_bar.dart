@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../config/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../config/theme_provider.dart';
 
 /// Custom App Bar Widget
 class CustomAppBar extends StatelessWidget {
@@ -10,10 +11,14 @@ class CustomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth < 400;
+
     return Container(
       height: 70,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -22,35 +27,47 @@ class CustomAppBar extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 12 : 20),
       child: Row(
         children: [
           if (!isDesktop)
             IconButton(
-              icon: const Icon(Icons.menu),
+              icon: Icon(Icons.menu, color: themeProvider.textPrimary),
               onPressed: () {
                 // TODO: Open drawer
               },
             ),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primaryDark,
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: isNarrow ? 16 : 20,
+                fontWeight: FontWeight.bold,
+                color: themeProvider.primaryMain,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
 
           // Search Button
-          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+          IconButton(
+            icon: Icon(Icons.search, color: themeProvider.textSecondary),
+            onPressed: () {},
+            iconSize: isNarrow ? 20 : 24,
+          ),
 
           // Notification Button
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined),
+                icon: Icon(
+                  Icons.notifications_outlined,
+                  color: themeProvider.textSecondary,
+                ),
                 onPressed: () {},
+                iconSize: isNarrow ? 20 : 24,
               ),
               Positioned(
                 right: 8,
@@ -67,31 +84,36 @@ class CustomAppBar extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
 
           // User Profile
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: EdgeInsets.symmetric(
+              horizontal: isNarrow ? 8 : 12,
+              vertical: 6,
+            ),
             decoration: BoxDecoration(
-              color: AppTheme.primaryLight.withOpacity(0.1),
+              color: themeProvider.primaryLight.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppTheme.primaryMain,
-                  child: const Text(
+                  radius: isNarrow ? 14 : 18,
+                  backgroundColor: themeProvider.primaryMain,
+                  child: Text(
                     'A',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                      fontSize: isNarrow ? 12 : 14,
                     ),
                   ),
                 ),
-                if (isDesktop) ...[
+                if (isDesktop && !isNarrow) ...[
                   const SizedBox(width: 12),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -100,11 +122,15 @@ class CustomAppBar extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
+                          color: themeProvider.textPrimary,
                         ),
                       ),
                       Text(
                         'Administrator',
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: themeProvider.textTertiary,
+                        ),
                       ),
                     ],
                   ),

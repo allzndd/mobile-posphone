@@ -36,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(
               "Grafik Penjualan",
               style: AppTheme.textTheme.displayMedium?.copyWith(
-                color: AppTheme.primaryMain,
+                color: themeProvider.primaryMain,
               ),
             ),
             const SizedBox(height: 16),
@@ -46,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(
               "Produk Terlaris",
               style: AppTheme.textTheme.displayMedium?.copyWith(
-                color: AppTheme.primaryMain,
+                color: themeProvider.primaryMain,
               ),
             ),
             const SizedBox(height: 16),
@@ -66,7 +66,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(
               "Riwayat Transaksi",
               style: AppTheme.textTheme.displayMedium?.copyWith(
-                color: AppTheme.primaryMain,
+                color: themeProvider.primaryMain,
               ),
             ),
             const SizedBox(height: 16),
@@ -78,7 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(
               "Shortcut Pembayaran",
               style: AppTheme.textTheme.displayMedium?.copyWith(
-                color: AppTheme.primaryMain,
+                color: themeProvider.primaryMain,
               ),
             ),
             const SizedBox(height: 16),
@@ -94,69 +94,94 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // ------------------------------------------------------------
   Widget _header(BrandingProvider branding, bool isDark) {
     final themeProvider = context.watch<ThemeProvider>();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth < 400;
 
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(isNarrow ? 16 : 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [themeProvider.primaryMain, themeProvider.primaryDark],
         ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.store, color: Colors.white, size: 34),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(isNarrow ? 10 : 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  Icons.store,
+                  color: Colors.white,
+                  size: isNarrow ? 28 : 32,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Selamat Datang!",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isNarrow ? 18 : 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      branding.appName,
+                      style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Selamat Datang!",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+          if (!isNarrow) const SizedBox(height: 12),
+          if (!isNarrow)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
                 ),
-                Text(
-                  branding.appName,
-                  style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      color: themeProvider.primaryMain,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Hari Ini",
+                      style: TextStyle(
+                        color: themeProvider.primaryMain,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  color: AppTheme.primaryMain,
-                  size: 18,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  "Hari Ini",
-                  style: TextStyle(
-                    color: AppTheme.primaryMain,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -221,7 +246,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final themeProvider = context.watch<ThemeProvider>();
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
@@ -230,27 +255,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withOpacity(.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 26),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
-              ),
-              Text(title, style: TextStyle(color: Colors.grey[600])),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: themeProvider.textSecondary,
+                    fontSize: 12,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -267,7 +307,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       height: 220,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [AppTheme.lightShadow],
       ),
@@ -318,9 +358,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final themeProvider = context.watch<ThemeProvider>();
 
     return Container(
-      width: 180,
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(14),
+      width: 160,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
@@ -331,24 +371,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Text(
             name,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: themeProvider.textPrimary,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 6),
           Text(
             price,
             style: TextStyle(
-              color: AppTheme.primaryMain,
+              color: themeProvider.primaryMain,
               fontWeight: FontWeight.bold,
+              fontSize: 13,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const Spacer(),
           Row(
             children: [
-              const Icon(Icons.inventory_2, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                "Stok Tersedia",
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              Icon(
+                Icons.inventory_2,
+                size: 14,
+                color: themeProvider.textSecondary,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  "Stok Tersedia",
+                  style: TextStyle(
+                    color: themeProvider.textSecondary,
+                    fontSize: 11,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -376,34 +435,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _lowStockItem(String name, int stock, bool isDark) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.red.withOpacity(.3)),
         boxShadow: [AppTheme.lightShadow],
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Colors.red),
-          const SizedBox(width: 12),
+          const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 22),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: themeProvider.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             decoration: BoxDecoration(
               color: Colors.red.withOpacity(.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               "Sisa $stock",
-              style: const TextStyle(color: Colors.red),
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -418,24 +489,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final themeProvider = context.watch<ThemeProvider>();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [AppTheme.lightShadow],
       ),
       child: ListTile(
-        leading: const Icon(Icons.receipt_long, color: Colors.blue),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        leading: Icon(
+          Icons.receipt_long,
+          color: themeProvider.primaryMain,
+          size: 22,
+        ),
         title: Text(
           inv,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        subtitle: Text(method),
-        trailing: Text(
-          amount,
           style: TextStyle(
-            color: AppTheme.successColor,
             fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: themeProvider.textPrimary,
+          ),
+        ),
+        subtitle: Text(
+          method,
+          style: TextStyle(fontSize: 12, color: themeProvider.textSecondary),
+        ),
+        trailing: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            amount,
+            style: TextStyle(
+              color: AppTheme.successColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
           ),
         ),
       ),
@@ -458,19 +545,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _pay(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: color.withOpacity(.1),
-            borderRadius: BorderRadius.circular(16),
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: color, size: 24),
           ),
-          child: Icon(icon, color: color, size: 28),
-        ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: themeProvider.textSecondary),
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }

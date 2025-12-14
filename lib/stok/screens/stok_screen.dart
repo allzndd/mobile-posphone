@@ -192,7 +192,7 @@ class _StokScreenState extends State<StokScreen>
     final isTablet = screenWidth > 600 && screenWidth <= 900;
 
     final themeProvider = context.watch<ThemeProvider>();
-    
+
     return Scaffold(
       backgroundColor: themeProvider.backgroundColor,
       body: CustomScrollView(
@@ -434,10 +434,11 @@ class _StokScreenState extends State<StokScreen>
     Color color,
     bool isDesktop,
   ) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       padding: EdgeInsets.all(isDesktop ? 20 : 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -482,7 +483,7 @@ class _StokScreenState extends State<StokScreen>
             title,
             style: TextStyle(
               fontSize: isDesktop ? 14 : 12,
-              color: AppTheme.textTertiary,
+              color: themeProvider.textTertiary,
             ),
           ),
         ],
@@ -492,7 +493,7 @@ class _StokScreenState extends State<StokScreen>
 
   Widget _buildSearchAndSort(bool isDesktop) {
     final themeProvider = context.watch<ThemeProvider>();
-    
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 12),
       color: themeProvider.surfaceColor,
@@ -528,7 +529,7 @@ class _StokScreenState extends State<StokScreen>
 
     return Container(
       height: isDesktop ? 60 : 50,
-      color: Colors.white,
+      color: themeProvider.surfaceColor,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 12),
@@ -546,7 +547,7 @@ class _StokScreenState extends State<StokScreen>
               color:
                   isSelected
                       ? themeProvider.secondaryMain
-                      : AppTheme.surfaceLight,
+                      : themeProvider.surfaceColor,
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 onTap: () => setState(() => _filterCategory = category),
@@ -561,7 +562,9 @@ class _StokScreenState extends State<StokScreen>
                       category,
                       style: TextStyle(
                         color:
-                            isSelected ? Colors.white : AppTheme.textSecondary,
+                            isSelected
+                                ? Colors.white
+                                : themeProvider.textSecondary,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.w500,
                         fontSize: isDesktop ? 14 : 13,
@@ -579,10 +582,10 @@ class _StokScreenState extends State<StokScreen>
 
   Widget _buildStatusTabs(bool isDesktop) {
     final themeProvider = context.watch<ThemeProvider>();
-    
+
     return Container(
       height: isDesktop ? 60 : 50,
-      color: themeProvider.surfaceColor,
+      color: themeProvider.backgroundColor,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 12),
@@ -616,7 +619,7 @@ class _StokScreenState extends State<StokScreen>
               bottom: isDesktop ? 8 : 6,
             ),
             child: Material(
-              color: isSelected ? statusColor : AppTheme.surfaceLight,
+              color: isSelected ? statusColor : themeProvider.surfaceColor,
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 onTap: () => setState(() => _filterStatus = status),
@@ -644,7 +647,7 @@ class _StokScreenState extends State<StokScreen>
                             color:
                                 isSelected
                                     ? Colors.white
-                                    : AppTheme.textSecondary,
+                                    : themeProvider.textSecondary,
                             fontWeight:
                                 isSelected ? FontWeight.bold : FontWeight.w500,
                             fontSize: isDesktop ? 14 : 13,
@@ -698,9 +701,9 @@ class _StokScreenState extends State<StokScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -711,8 +714,9 @@ class _StokScreenState extends State<StokScreen>
             value: _sortBy,
             icon: Icon(Icons.arrow_drop_down, color: themeProvider.primaryMain),
             underline: const SizedBox(),
-            style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+            style: TextStyle(color: themeProvider.textPrimary, fontSize: 14),
             onChanged: (value) => setState(() => _sortBy = value!),
+            dropdownColor: themeProvider.surfaceColor,
             items:
                 _sortOptions.map((option) {
                   return DropdownMenuItem(value: option, child: Text(option));
@@ -728,20 +732,20 @@ class _StokScreenState extends State<StokScreen>
 
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
           hintText: 'Cari produk atau kode...',
-          hintStyle: TextStyle(color: AppTheme.textTertiary),
+          hintStyle: TextStyle(color: themeProvider.textTertiary),
           prefixIcon: Icon(Icons.search, color: themeProvider.primaryMain),
           suffixIcon:
               _searchQuery.isNotEmpty
                   ? IconButton(
-                    icon: Icon(Icons.clear, color: AppTheme.textTertiary),
+                    icon: Icon(Icons.clear, color: themeProvider.textTertiary),
                     onPressed: () => setState(() => _searchQuery = ''),
                   )
                   : null,
@@ -756,11 +760,12 @@ class _StokScreenState extends State<StokScreen>
   }
 
   Widget _buildViewToggle() {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -785,7 +790,7 @@ class _StokScreenState extends State<StokScreen>
           padding: const EdgeInsets.all(12),
           child: Icon(
             icon,
-            color: isActive ? Colors.white : AppTheme.textTertiary,
+            color: isActive ? Colors.white : themeProvider.textTertiary,
             size: 20,
           ),
         ),
@@ -795,6 +800,7 @@ class _StokScreenState extends State<StokScreen>
 
   Widget _buildStockList(bool isDesktop, bool isTablet) {
     final items = _filteredStock;
+    final themeProvider = context.watch<ThemeProvider>();
 
     if (items.isEmpty) {
       return SliverFillRemaining(
@@ -805,14 +811,14 @@ class _StokScreenState extends State<StokScreen>
               Icon(
                 Icons.inventory_2_outlined,
                 size: 80,
-                color: AppTheme.textTertiary,
+                color: themeProvider.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada stok',
                 style: TextStyle(
                   fontSize: 18,
-                  color: AppTheme.textSecondary,
+                  color: themeProvider.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -904,13 +910,14 @@ class _StokScreenState extends State<StokScreen>
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: isDesktop ? 16 : 15,
+                              color: themeProvider.textPrimary,
                             ),
                           ),
                           Text(
                             '${item['id']} • ${item['category']}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppTheme.textTertiary,
+                              color: themeProvider.textTertiary,
                             ),
                           ),
                         ],
@@ -947,7 +954,7 @@ class _StokScreenState extends State<StokScreen>
                             'Stok Tersedia',
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppTheme.textTertiary,
+                              color: themeProvider.textTertiary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -976,7 +983,7 @@ class _StokScreenState extends State<StokScreen>
                             'Min / Max',
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppTheme.textTertiary,
+                              color: themeProvider.textTertiary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -985,7 +992,7 @@ class _StokScreenState extends State<StokScreen>
                             style: TextStyle(
                               fontSize: isDesktop ? 16 : 14,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.textPrimary,
+                              color: themeProvider.textPrimary,
                             ),
                           ),
                         ],
@@ -1119,9 +1126,10 @@ class _StokScreenState extends State<StokScreen>
                 const SizedBox(height: 12),
                 Text(
                   item['name'],
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
+                    color: themeProvider.textPrimary,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -1129,7 +1137,10 @@ class _StokScreenState extends State<StokScreen>
                 const SizedBox(height: 4),
                 Text(
                   item['category'],
-                  style: TextStyle(fontSize: 11, color: AppTheme.textTertiary),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: themeProvider.textTertiary,
+                  ),
                 ),
                 const Spacer(),
                 Text(
@@ -1145,7 +1156,7 @@ class _StokScreenState extends State<StokScreen>
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: stockPercentage / 100,
-                    backgroundColor: AppTheme.borderLight,
+                    backgroundColor: themeProvider.borderColor,
                     valueColor: AlwaysStoppedAnimation<Color>(item['color']),
                     minHeight: 6,
                   ),
@@ -1153,7 +1164,10 @@ class _StokScreenState extends State<StokScreen>
                 const SizedBox(height: 4),
                 Text(
                   '$stockPercentage% Terisi',
-                  style: TextStyle(fontSize: 10, color: AppTheme.textTertiary),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: themeProvider.textTertiary,
+                  ),
                 ),
               ],
             ),
@@ -1164,23 +1178,24 @@ class _StokScreenState extends State<StokScreen>
   }
 
   Widget _buildInfoChip(IconData icon, String label) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppTheme.textTertiary),
+          Icon(icon, size: 14, color: themeProvider.textTertiary),
           const SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
               fontSize: 11,
-              color: AppTheme.textSecondary,
+              color: themeProvider.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1211,6 +1226,7 @@ class _StokScreenState extends State<StokScreen>
   }
 
   void _showStockDetail(Map<String, dynamic> item) {
+    final themeProvider = context.read<ThemeProvider>();
     showDialog(
       context: context,
       builder:
@@ -1247,16 +1263,17 @@ class _StokScreenState extends State<StokScreen>
                             children: [
                               Text(
                                 item['name'],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
+                                  color: themeProvider.textPrimary,
                                 ),
                               ),
                               Text(
                                 item['id'],
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: AppTheme.textTertiary,
+                                  color: themeProvider.textTertiary,
                                 ),
                               ),
                             ],
@@ -1305,7 +1322,7 @@ class _StokScreenState extends State<StokScreen>
                                   'Stok Saat Ini',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: AppTheme.textTertiary,
+                                    color: themeProvider.textTertiary,
                                   ),
                                 ),
                               ],
@@ -1317,7 +1334,7 @@ class _StokScreenState extends State<StokScreen>
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: AppTheme.surfaceLight,
+                              color: themeProvider.surfaceColor,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(
@@ -1327,7 +1344,7 @@ class _StokScreenState extends State<StokScreen>
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimary,
+                                    color: themeProvider.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -1335,7 +1352,7 @@ class _StokScreenState extends State<StokScreen>
                                   'Min - Max',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: AppTheme.textTertiary,
+                                    color: themeProvider.textTertiary,
                                   ),
                                 ),
                               ],
@@ -1370,8 +1387,7 @@ class _StokScreenState extends State<StokScreen>
                             icon: const Icon(Icons.add_box),
                             label: const Text('Tambah'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  context.read<ThemeProvider>().primaryMain,
+                              backgroundColor: themeProvider.primaryMain,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),
@@ -1387,6 +1403,7 @@ class _StokScreenState extends State<StokScreen>
   }
 
   Widget _buildDetailRow(String label, String value) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -1397,7 +1414,7 @@ class _StokScreenState extends State<StokScreen>
             child: Text(
               label,
               style: TextStyle(
-                color: AppTheme.textTertiary,
+                color: themeProvider.textTertiary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1407,7 +1424,7 @@ class _StokScreenState extends State<StokScreen>
             child: Text(
               value,
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: themeProvider.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1418,14 +1435,17 @@ class _StokScreenState extends State<StokScreen>
   }
 
   void _showStockOptions() {
+    final themeProvider = context.read<ThemeProvider>();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder:
           (context) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            decoration: BoxDecoration(
+              color: themeProvider.surfaceColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: SafeArea(
               child: Column(
@@ -1436,7 +1456,7 @@ class _StokScreenState extends State<StokScreen>
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTheme.borderLight,
+                      color: themeProvider.borderColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),

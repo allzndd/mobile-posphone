@@ -95,6 +95,8 @@ class _MainLayoutState extends State<MainLayout> {
   }
 
   Widget _buildDesktopLayout() {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Row(
       children: [
         // Sidebar
@@ -119,7 +121,7 @@ class _MainLayoutState extends State<MainLayout> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.backgroundLight,
+                    color: themeProvider.backgroundColor,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(24),
                     ),

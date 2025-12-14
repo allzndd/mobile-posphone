@@ -466,7 +466,7 @@ class _PelangganScreenState extends State<PelangganScreen>
             title,
             style: TextStyle(
               fontSize: isDesktop ? 14 : 12,
-              color: AppTheme.textTertiary,
+              color: themeProvider.textTertiary,
             ),
           ),
         ],
@@ -475,9 +475,10 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildFilterSection(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
-      color: Colors.white,
+      color: themeProvider.surfaceColor,
       child: Column(
         children: [
           if (isDesktop)
@@ -511,22 +512,26 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildSearchBar() {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
           hintText: 'Cari nama, email, atau nomor telepon...',
-          hintStyle: TextStyle(color: AppTheme.textTertiary),
-          prefixIcon: Icon(Icons.search, color: AppTheme.primaryMain),
+          hintStyle: TextStyle(color: themeProvider.textTertiary),
+          prefixIcon: Icon(
+            Icons.search,
+            color: context.read<ThemeProvider>().primaryMain,
+          ),
           suffixIcon:
               _searchQuery.isNotEmpty
                   ? IconButton(
-                    icon: Icon(Icons.clear, color: AppTheme.textTertiary),
+                    icon: Icon(Icons.clear, color: themeProvider.textTertiary),
                     onPressed: () => setState(() => _searchQuery = ''),
                   )
                   : null,
@@ -541,16 +546,20 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildTypeFilter() {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: DropdownButton<String>(
         value: _filterType,
-        icon: Icon(Icons.filter_list, color: AppTheme.primaryMain),
+        icon: Icon(
+          Icons.filter_list,
+          color: context.read<ThemeProvider>().primaryMain,
+        ),
         underline: const SizedBox(),
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
@@ -564,16 +573,20 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildSortFilter() {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: DropdownButton<String>(
         value: _sortBy,
-        icon: Icon(Icons.sort, color: AppTheme.primaryMain),
+        icon: Icon(
+          Icons.sort,
+          color: context.read<ThemeProvider>().primaryMain,
+        ),
         underline: const SizedBox(),
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
@@ -587,11 +600,12 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildViewToggle() {
+    final themeProvider = context.watch<ThemeProvider>();
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: themeProvider.borderColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -604,9 +618,13 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildViewButton(IconData icon, bool isGrid) {
+    final themeProvider = context.watch<ThemeProvider>();
     final isActive = _isGridView == isGrid;
     return Material(
-      color: isActive ? AppTheme.primaryMain : Colors.transparent,
+      color:
+          isActive
+              ? context.read<ThemeProvider>().primaryMain
+              : Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () => setState(() => _isGridView = isGrid),
@@ -615,7 +633,7 @@ class _PelangganScreenState extends State<PelangganScreen>
           padding: const EdgeInsets.all(12),
           child: Icon(
             icon,
-            color: isActive ? Colors.white : AppTheme.textTertiary,
+            color: isActive ? Colors.white : themeProvider.textTertiary,
             size: 20,
           ),
         ),
@@ -624,6 +642,7 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildCustomerList(bool isDesktop, bool isTablet) {
+    final themeProvider = context.watch<ThemeProvider>();
     final customers = _filteredCustomers;
 
     if (customers.isEmpty) {
@@ -635,14 +654,14 @@ class _PelangganScreenState extends State<PelangganScreen>
               Icon(
                 Icons.people_outline,
                 size: 80,
-                color: AppTheme.textTertiary,
+                color: themeProvider.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ada pelanggan',
                 style: TextStyle(
                   fontSize: 18,
-                  color: AppTheme.textSecondary,
+                  color: themeProvider.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -684,12 +703,13 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildCustomerCard(Map<String, dynamic> customer, bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
     final typeColor = _getTypeColor(customer['type']);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -764,7 +784,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                             customer['id'],
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppTheme.textTertiary,
+                              color: themeProvider.textTertiary,
                             ),
                           ),
                         ],
@@ -812,7 +832,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                             'Total Transaksi',
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppTheme.textTertiary,
+                              color: themeProvider.textTertiary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -821,7 +841,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                             style: TextStyle(
                               fontSize: isDesktop ? 18 : 16,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryMain,
+                              color: context.read<ThemeProvider>().primaryMain,
                             ),
                           ),
                         ],
@@ -835,7 +855,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                             'Total Belanja',
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppTheme.textTertiary,
+                              color: themeProvider.textTertiary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -865,11 +885,12 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildCustomerGridCard(Map<String, dynamic> customer, bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
     final typeColor = _getTypeColor(customer['type']);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -937,7 +958,10 @@ class _PelangganScreenState extends State<PelangganScreen>
                 const SizedBox(height: 4),
                 Text(
                   customer['email'],
-                  style: TextStyle(fontSize: 11, color: AppTheme.textTertiary),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: themeProvider.textTertiary,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
@@ -953,7 +977,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                         Icon(
                           Icons.shopping_bag_outlined,
                           size: 18,
-                          color: AppTheme.primaryMain,
+                          color: context.read<ThemeProvider>().primaryMain,
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -961,7 +985,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.textPrimary,
+                            color: context.read<ThemeProvider>().textPrimary,
                           ),
                         ),
                       ],
@@ -969,7 +993,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                     Container(
                       width: 1,
                       height: 30,
-                      color: AppTheme.borderLight,
+                      color: context.read<ThemeProvider>().borderColor,
                     ),
                     Column(
                       children: [
@@ -1003,10 +1027,11 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildInfoItem(IconData icon, String label, String value) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: AppTheme.textTertiary),
+        Icon(icon, size: 16, color: themeProvider.textTertiary),
         const SizedBox(width: 8),
         Expanded(
           child: Column(
@@ -1014,14 +1039,17 @@ class _PelangganScreenState extends State<PelangganScreen>
             children: [
               Text(
                 label,
-                style: TextStyle(fontSize: 11, color: AppTheme.textTertiary),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: themeProvider.textTertiary,
+                ),
               ),
               Text(
                 value,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
+                  color: themeProvider.textPrimary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1034,9 +1062,11 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildFAB() {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return FloatingActionButton.extended(
       onPressed: _showAddCustomer,
-      backgroundColor: AppTheme.primaryMain,
+      backgroundColor: themeProvider.primaryMain,
       icon: const Icon(Icons.person_add, color: Colors.white),
       label: const Text(
         'Tambah Pelanggan',
@@ -1046,6 +1076,7 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Color _getTypeColor(String type) {
+    final themeProvider = context.read<ThemeProvider>();
     switch (type) {
       case 'VIP':
         return AppTheme.accentOrange;
@@ -1054,7 +1085,7 @@ class _PelangganScreenState extends State<PelangganScreen>
       case 'Reguler':
         return AppTheme.successColor;
       default:
-        return AppTheme.textTertiary;
+        return themeProvider.textTertiary;
     }
   }
 
@@ -1120,7 +1151,10 @@ class _PelangganScreenState extends State<PelangganScreen>
                                 customer['id'],
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: AppTheme.textTertiary,
+                                  color:
+                                      context
+                                          .read<ThemeProvider>()
+                                          .textTertiary,
                                 ),
                               ),
                             ],
@@ -1151,7 +1185,10 @@ class _PelangganScreenState extends State<PelangganScreen>
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryMain.withOpacity(0.1),
+                              color: context
+                                  .read<ThemeProvider>()
+                                  .primaryMain
+                                  .withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(
@@ -1161,7 +1198,10 @@ class _PelangganScreenState extends State<PelangganScreen>
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.primaryMain,
+                                    color:
+                                        context
+                                            .read<ThemeProvider>()
+                                            .primaryMain,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -1169,7 +1209,10 @@ class _PelangganScreenState extends State<PelangganScreen>
                                   'Total Transaksi',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: AppTheme.textTertiary,
+                                    color:
+                                        context
+                                            .read<ThemeProvider>()
+                                            .textTertiary,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -1203,7 +1246,10 @@ class _PelangganScreenState extends State<PelangganScreen>
                                   'Total Belanja',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: AppTheme.textTertiary,
+                                    color:
+                                        context
+                                            .read<ThemeProvider>()
+                                            .textTertiary,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -1236,7 +1282,8 @@ class _PelangganScreenState extends State<PelangganScreen>
                             icon: const Icon(Icons.history),
                             label: const Text('Riwayat'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryMain,
+                              backgroundColor:
+                                  context.read<ThemeProvider>().primaryMain,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),
@@ -1252,6 +1299,7 @@ class _PelangganScreenState extends State<PelangganScreen>
   }
 
   Widget _buildDetailRow(String label, String value) {
+    final themeProvider = context.watch<ThemeProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -1262,7 +1310,7 @@ class _PelangganScreenState extends State<PelangganScreen>
             child: Text(
               label,
               style: TextStyle(
-                color: AppTheme.textTertiary,
+                color: themeProvider.textTertiary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1272,7 +1320,7 @@ class _PelangganScreenState extends State<PelangganScreen>
             child: Text(
               value,
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: themeProvider.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1317,7 +1365,7 @@ class _PelangganScreenState extends State<PelangganScreen>
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryMain,
+                  backgroundColor: context.read<ThemeProvider>().primaryMain,
                 ),
                 child: const Text('Simpan'),
               ),
@@ -1341,7 +1389,10 @@ class _PelangganScreenState extends State<PelangganScreen>
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppTheme.primaryMain, AppTheme.secondaryMain],
+                      colors: [
+                        context.read<ThemeProvider>().primaryMain,
+                        context.read<ThemeProvider>().secondaryMain,
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -1362,7 +1413,7 @@ class _PelangganScreenState extends State<PelangganScreen>
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryMain,
+                  backgroundColor: context.read<ThemeProvider>().primaryMain,
                 ),
                 child: const Text('Simpan'),
               ),

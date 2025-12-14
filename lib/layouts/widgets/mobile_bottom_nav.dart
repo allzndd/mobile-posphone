@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/theme_provider.dart';
 
 /// Mobile Bottom Navigation
 class MobileBottomNav extends StatelessWidget {
@@ -14,9 +16,11 @@ class MobileBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeProvider.surfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -80,6 +84,8 @@ class MobileBottomNav extends StatelessWidget {
     required bool isSelected,
     bool showSubmenu = false,
   }) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -92,7 +98,7 @@ class MobileBottomNav extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.primaryMain.withOpacity(0.1)
+                ? themeProvider.primaryMain.withOpacity(0.1)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
@@ -103,7 +109,7 @@ class MobileBottomNav extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: isSelected ? AppTheme.primaryMain : AppTheme.textTertiary,
+                color: isSelected ? themeProvider.primaryMain : themeProvider.textTertiary,
                 size: 22,
               ),
               const SizedBox(height: 2),
@@ -112,7 +118,7 @@ class MobileBottomNav extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? AppTheme.primaryMain : AppTheme.textTertiary,
+                  color: isSelected ? themeProvider.primaryMain : themeProvider.textTertiary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -125,6 +131,8 @@ class MobileBottomNav extends StatelessWidget {
   }
 
   void _showMenuLainnya(BuildContext context) {
+    final themeProvider = context.read<ThemeProvider>();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -133,9 +141,9 @@ class MobileBottomNav extends StatelessWidget {
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.7,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: themeProvider.surfaceColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SafeArea(
           child: Column(
@@ -146,7 +154,7 @@ class MobileBottomNav extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppTheme.borderLight,
+                  color: themeProvider.borderColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -159,7 +167,7 @@ class MobileBottomNav extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [AppTheme.primaryMain, AppTheme.secondaryMain],
+                          colors: [themeProvider.primaryMain, themeProvider.secondaryMain],
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -170,11 +178,12 @@ class MobileBottomNav extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Menu Lainnya',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: themeProvider.textPrimary,
                       ),
                     ),
                   ],
@@ -255,6 +264,8 @@ class MobileBottomNav extends StatelessWidget {
     required int index,
     required bool isSelected,
   }) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -284,7 +295,7 @@ class MobileBottomNav extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? color : AppTheme.textPrimary,
+                        color: isSelected ? color : themeProvider.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -292,7 +303,7 @@ class MobileBottomNav extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppTheme.textTertiary,
+                        color: themeProvider.textTertiary,
                       ),
                     ),
                   ],
@@ -300,7 +311,7 @@ class MobileBottomNav extends StatelessWidget {
               ),
               Icon(
                 isSelected ? Icons.check_circle : Icons.chevron_right,
-                color: isSelected ? color : AppTheme.textTertiary,
+                color: isSelected ? color : themeProvider.textTertiary,
                 size: 22,
               ),
             ],
