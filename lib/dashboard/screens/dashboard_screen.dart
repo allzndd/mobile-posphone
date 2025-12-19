@@ -1,7 +1,10 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../auth/providers/branding_provider.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../config/logo_provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/theme_provider.dart';
 
@@ -15,7 +18,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    final branding = context.watch<BrandingProvider>();
+    final logoProvider = context.watch<LogoProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isDark = themeProvider.isDarkMode;
 
@@ -27,7 +30,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _header(branding, isDark),
+            _header(logoProvider, isDark),
             const SizedBox(height: 24),
 
             _quickStats(),
@@ -92,7 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // ------------------------------------------------------------
   // HEADER
   // ------------------------------------------------------------
-  Widget _header(BrandingProvider branding, bool isDark) {
+  Widget _header(LogoProvider logoProvider, bool isDark) {
     final themeProvider = context.watch<ThemeProvider>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 400;
@@ -115,10 +118,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: Colors.white.withOpacity(.2),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  Icons.store,
-                  color: Colors.white,
-                  size: isNarrow ? 28 : 32,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    width: isNarrow ? 28 : 32,
+                    height: isNarrow ? 28 : 32,
+                    child: logoProvider.logoPath != null
+                        ? _buildLogoImage(logoProvider.logoPath!, themeProvider)
+                        : Icon(
+                            Icons.store,
+                            color: Colors.white,
+                            size: isNarrow ? 28 : 32,
+                          ),
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -139,7 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     Text(
-                      branding.appName,
+                      logoProvider.appName,
                       style: TextStyle(color: Colors.white.withOpacity(0.9)),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -567,6 +579,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Build logo image based on platform (Web vs Mobile)
+  Widget _buildLogoImage(String logoPath, ThemeProvider themeProvider) {
+    // Check if base64 data URI
+    if (logoPath.startsWith('data:image')) {
+      final base64String = logoPath.split(',')[1];
+      final bytes = base64Decode(base64String);
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.store,
+            color: Colors.white,
+            size: 28,
+          );
+        },
+      );
+    }
+
+    // Check if URL
+    if (logoPath.startsWith('http')) {
+      return Image.network(
+        logoPath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.store,
+            color: Colors.white,
+            size: 28,
+          );
+        },
+      );
+    }
+
+    // Untuk file lokal (Mobile only)
+    if (!kIsWeb) {
+      return Image.file(
+        File(logoPath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.store,
+            color: Colors.white,
+            size: 28,
+          );
+        },
+      );
+    }
+
+    // Fallback
+    return Icon(
+      Icons.store,
+      color: Colors.white,
+      size: 28,
     );
   }
 }

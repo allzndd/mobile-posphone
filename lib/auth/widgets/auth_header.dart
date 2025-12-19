@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../config/app_theme.dart';
+import '../../config/logo_provider.dart';
 
 /// Widget untuk header auth dengan animasi (logo + title + subtitle)
 /// Mendukung:
@@ -165,9 +170,60 @@ class _AuthHeaderState extends State<AuthHeader>
     );
   }
 
-  /// Build logo content based on priority: URL > Asset > Icon
+  /// Build logo content based on priority: Provider > URL > Asset > Icon
   Widget _buildLogoContent() {
-    // Priority 1: Logo dari URL (untuk dynamic logo dari admin panel)
+    // Priority 1: Logo dari Provider (untuk logo yang diupload)
+    final logoProvider = context.watch<LogoProvider>();
+    if (logoProvider.logoPath != null && logoProvider.logoPath!.isNotEmpty) {
+      // Check if base64 data URI
+      if (logoProvider.logoPath!.startsWith('data:image')) {
+        final base64String = logoProvider.logoPath!.split(',')[1];
+        final bytes = base64Decode(base64String);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              widget.icon ?? Icons.store,
+              size: 40,
+              color: AppTheme.primaryMain,
+            );
+          },
+        );
+      }
+
+      // Check if URL
+      if (logoProvider.logoPath!.startsWith('http')) {
+        return Image.network(
+          logoProvider.logoPath!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              widget.icon ?? Icons.store,
+              size: 40,
+              color: AppTheme.primaryMain,
+            );
+          },
+        );
+      }
+
+      // For local file (Mobile only)
+      if (!kIsWeb) {
+        return Image.file(
+          File(logoProvider.logoPath!),
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              widget.icon ?? Icons.store,
+              size: 40,
+              color: AppTheme.primaryMain,
+            );
+          },
+        );
+      }
+    }
+
+    // Priority 2: Logo dari URL (untuk dynamic logo dari admin panel)
     if (widget.logoUrl != null && widget.logoUrl!.isNotEmpty) {
       return Image.network(
         widget.logoUrl!,

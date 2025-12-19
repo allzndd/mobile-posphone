@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../config/theme_provider.dart';
-import '../../auth/providers/branding_provider.dart';
+import '../../config/logo_provider.dart';
 
 /// Sidebar Header - Logo & App Name
 class SidebarHeader extends StatelessWidget {
@@ -11,7 +14,7 @@ class SidebarHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final branding = context.watch<BrandingProvider>();
+    final logoProvider = context.watch<LogoProvider>();
     final themeProvider = context.watch<ThemeProvider>();
 
     return Container(
@@ -48,19 +51,14 @@ class SidebarHeader extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child:
-                  branding.logoUrl != null && branding.logoUrl!.isNotEmpty
-                      ? Image.network(
-                        branding.logoUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.store,
-                            color: Colors.white,
-                            size: 28,
-                          );
-                        },
-                      )
-                      : const Icon(Icons.store, color: Colors.white, size: 28),
+                  logoProvider.logoPath != null &&
+                          logoProvider.logoPath!.isNotEmpty
+                      ? _buildLogoImage(logoProvider.logoPath!, themeProvider)
+                      : Icon(
+                        Icons.store,
+                        color: themeProvider.primaryMain,
+                        size: 28,
+                      ),
             ),
           ),
           if (!isCollapsed) ...[
@@ -70,7 +68,7 @@ class SidebarHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    branding.appName,
+                    logoProvider.appName,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -80,7 +78,7 @@ class SidebarHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    branding.appTagline,
+                    logoProvider.appTagline,
                     style: const TextStyle(color: Colors.white70, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -92,5 +90,47 @@ class SidebarHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Build logo image based on platform and URL type
+  Widget _buildLogoImage(String logoPath, ThemeProvider themeProvider) {
+    // Check if base64 data URI
+    if (logoPath.startsWith('data:image')) {
+      final base64String = logoPath.split(',')[1];
+      final bytes = base64Decode(base64String);
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(Icons.store, color: themeProvider.primaryMain, size: 28);
+        },
+      );
+    }
+
+    // Check if URL (starts with http/https)
+    if (logoPath.startsWith('http')) {
+      return Image.network(
+        logoPath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(Icons.store, color: themeProvider.primaryMain, size: 28);
+        },
+      );
+    }
+
+    // For local file path
+    if (kIsWeb) {
+      // Web tidak support Image.file, gunakan network/asset saja
+      return Icon(Icons.store, color: themeProvider.primaryMain, size: 28);
+    } else {
+      // Mobile support Image.file
+      return Image.file(
+        File(logoPath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(Icons.store, color: themeProvider.primaryMain, size: 28);
+        },
+      );
+    }
   }
 }

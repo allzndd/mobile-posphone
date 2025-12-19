@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'auth/screens/login_screen.dart';
 import 'auth/providers/branding_provider.dart';
 import 'config/theme_provider.dart';
+import 'config/logo_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => BrandingProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LogoProvider()),
       ],
       child: MaterialApp(
         title: 'PosPhone',

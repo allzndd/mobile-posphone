@@ -456,10 +456,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
         decoration: InputDecoration(
           hintText: 'Cari transaksi / supplier...',
           hintStyle: TextStyle(color: themeProvider.textTertiary),
-          prefixIcon: Icon(
-            Icons.search,
-            color: context.read<ThemeProvider>().secondaryMain,
-          ),
+          prefixIcon: Icon(Icons.search, color: themeProvider.primaryMain),
           suffixIcon:
               _searchQuery.isNotEmpty
                   ? IconButton(
@@ -488,10 +485,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
       ),
       child: DropdownButton<String>(
         value: _filterStatus,
-        icon: Icon(
-          Icons.filter_list,
-          color: context.read<ThemeProvider>().secondaryMain,
-        ),
+        icon: Icon(Icons.filter_list, color: themeProvider.primaryMain),
         underline: const SizedBox(),
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
@@ -515,10 +509,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
       ),
       child: DropdownButton<String>(
         value: _filterPeriod,
-        icon: Icon(
-          Icons.calendar_today,
-          color: context.read<ThemeProvider>().secondaryMain,
-        ),
+        icon: Icon(Icons.calendar_today, color: themeProvider.primaryMain),
         underline: const SizedBox(),
         isExpanded: true,
         style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
@@ -553,10 +544,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
     final themeProvider = context.watch<ThemeProvider>();
     final isActive = _isListView == isList;
     return Material(
-      color:
-          isActive
-              ? context.read<ThemeProvider>().secondaryMain
-              : Colors.transparent,
+      color: isActive ? themeProvider.primaryMain : Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () => setState(() => _isListView = isList),
@@ -672,16 +660,12 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: context
-                                  .read<ThemeProvider>()
-                                  .secondaryMain
-                                  .withOpacity(0.1),
+                              color: themeProvider.primaryMain.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
                               Icons.shopping_cart_outlined,
-                              color:
-                                  context.read<ThemeProvider>().secondaryMain,
+                              color: themeProvider.primaryMain,
                               size: 20,
                             ),
                           ),
@@ -788,7 +772,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: context.read<ThemeProvider>().secondaryMain,
+                        color: themeProvider.primaryMain,
                       ),
                     ),
                   ],
@@ -838,7 +822,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                       ),
                       child: Icon(
                         Icons.arrow_upward_rounded,
-                        color: context.read<ThemeProvider>().secondaryMain,
+                        color: themeProvider.primaryMain,
                         size: 20,
                       ),
                     ),
@@ -905,7 +889,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: context.read<ThemeProvider>().secondaryMain,
+                        color: themeProvider.primaryMain,
                       ),
                     ),
                   ],
@@ -987,6 +971,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   void _showTransactionDetail(Map<String, dynamic> trx) {
+    final themeProvider = context.read<ThemeProvider>();
     showDialog(
       context: context,
       builder:
@@ -1009,8 +994,8 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                context.read<ThemeProvider>().secondaryDark,
-                                context.read<ThemeProvider>().secondaryMain,
+                                themeProvider.primaryDark,
+                                themeProvider.primaryMain,
                               ],
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -1106,7 +1091,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: context.read<ThemeProvider>().secondaryMain,
+                            color: themeProvider.primaryMain,
                           ),
                         ),
                       ],
@@ -1131,8 +1116,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                             icon: const Icon(Icons.check),
                             label: const Text('Tutup'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  context.read<ThemeProvider>().secondaryMain,
+                              backgroundColor: themeProvider.primaryMain,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),
@@ -1180,6 +1164,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
   }
 
   void _showNewTransaction() {
+    final themeProvider = context.read<ThemeProvider>();
     showDialog(
       context: context,
       builder:
@@ -1194,8 +1179,8 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        context.read<ThemeProvider>().secondaryDark,
-                        context.read<ThemeProvider>().secondaryMain,
+                        themeProvider.primaryDark,
+                        themeProvider.primaryMain,
                       ],
                     ),
                     borderRadius: BorderRadius.circular(10),
@@ -1220,7 +1205,7 @@ class _TransaksiKeluarScreenState extends State<TransaksiKeluarScreen> {
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.read<ThemeProvider>().secondaryMain,
+                  backgroundColor: themeProvider.primaryMain,
                 ),
                 child: const Text('Proses'),
               ),

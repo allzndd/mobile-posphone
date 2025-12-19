@@ -15,20 +15,21 @@ class CustomAppBar extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 400;
 
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: themeProvider.surfaceColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 12 : 20),
-      child: Row(
+    return SafeArea(
+      child: Container(
+        height: 70,
+        decoration: BoxDecoration(
+          color: themeProvider.surfaceColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.symmetric(horizontal: isNarrow ? 12 : 20),
+        child: Row(
         children: [
           if (!isDesktop)
             IconButton(
@@ -139,6 +140,7 @@ class CustomAppBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

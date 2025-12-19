@@ -65,7 +65,13 @@ class MobileBottomNav extends StatelessWidget {
                   icon: Icons.apps_rounded,
                   label: 'Lainnya',
                   index: -1,
-                  isSelected: selectedIndex == 1 || selectedIndex == 3 || selectedIndex == 4 || selectedIndex == 5 || selectedIndex == 7,
+                  isSelected:
+                      selectedIndex == 1 ||
+                      selectedIndex == 3 ||
+                      selectedIndex == 4 ||
+                      selectedIndex == 5 ||
+                      selectedIndex == 7 ||
+                      selectedIndex == 8,
                   showSubmenu: true,
                 ),
               ],
@@ -97,9 +103,10 @@ class MobileBottomNav extends StatelessWidget {
         },
         child: Container(
           decoration: BoxDecoration(
-            color: isSelected
-                ? themeProvider.primaryMain.withOpacity(0.1)
-                : Colors.transparent,
+            color:
+                isSelected
+                    ? themeProvider.primaryMain.withOpacity(0.1)
+                    : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           padding: const EdgeInsets.symmetric(vertical: 4),
@@ -109,7 +116,10 @@ class MobileBottomNav extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: isSelected ? themeProvider.primaryMain : themeProvider.textTertiary,
+                color:
+                    isSelected
+                        ? themeProvider.primaryMain
+                        : themeProvider.textTertiary,
                 size: 22,
               ),
               const SizedBox(height: 2),
@@ -118,7 +128,10 @@ class MobileBottomNav extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? themeProvider.primaryMain : themeProvider.textTertiary,
+                  color:
+                      isSelected
+                          ? themeProvider.primaryMain
+                          : themeProvider.textTertiary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -137,121 +150,137 @@ class MobileBottomNav extends StatelessWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.7,
-        ),
-        decoration: BoxDecoration(
-          color: themeProvider.surfaceColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: themeProvider.borderColor,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      builder:
+          (context) => Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            decoration: BoxDecoration(
+              color: themeProvider.surfaceColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
               ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [themeProvider.primaryMain, themeProvider.secondaryMain],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.apps_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+            ),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: themeProvider.borderColor,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Menu Lainnya',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: themeProvider.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildSubmenuItem(
-                        context: context,
-                        icon: Icons.inventory_2_rounded,
-                        title: 'Produk',
-                        subtitle: 'Kelola data produk & stok',
-                        color: AppTheme.primaryMain,
-                        index: 1,
-                        isSelected: selectedIndex == 1,
-                      ),
-                      const Divider(height: 1),
-                      _buildSubmenuItem(
-                        context: context,
-                        icon: Icons.people_rounded,
-                        title: 'Pelanggan',
-                        subtitle: 'Kelola data pelanggan',
-                        color: AppTheme.secondaryMain,
-                        index: 3,
-                        isSelected: selectedIndex == 3,
-                      ),
-                      const Divider(height: 1),
-                      _buildSubmenuItem(
-                        context: context,
-                        icon: Icons.analytics_rounded,
-                        title: 'Stok',
-                        subtitle: 'Kelola inventori & laporan stok',
-                        color: AppTheme.accentOrange,
-                        index: 4,
-                        isSelected: selectedIndex == 4,
-                      ),
-                      const Divider(height: 1),
-                      _buildSubmenuItem(
-                        context: context,
-                        icon: Icons.palette_rounded,
-                        title: 'Theme',
-                        subtitle: 'Personalisasi warna & tampilan',
-                        color: AppTheme.accentPurple,
-                        index: 7,
-                        isSelected: selectedIndex == 7,
-                      ),
-                      const Divider(height: 1),
-                      _buildSubmenuItem(
-                        context: context,
-                        icon: Icons.settings_rounded,
-                        title: 'Pengaturan',
-                        subtitle: 'Konfigurasi aplikasi & sistem',
-                        color: AppTheme.textSecondary,
-                        index: 5,
-                        isSelected: selectedIndex == 5,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                themeProvider.primaryMain,
+                                themeProvider.secondaryMain,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.apps_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Menu Lainnya',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: themeProvider.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.inventory_2_rounded,
+                            title: 'Produk',
+                            subtitle: 'Kelola data produk & stok',
+                            color: AppTheme.primaryMain,
+                            index: 1,
+                            isSelected: selectedIndex == 1,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.people_rounded,
+                            title: 'Pelanggan',
+                            subtitle: 'Kelola data pelanggan',
+                            color: AppTheme.secondaryMain,
+                            index: 3,
+                            isSelected: selectedIndex == 3,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.analytics_rounded,
+                            title: 'Stok',
+                            subtitle: 'Kelola inventori & laporan stok',
+                            color: AppTheme.accentOrange,
+                            index: 4,
+                            isSelected: selectedIndex == 4,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.palette_rounded,
+                            title: 'Theme',
+                            subtitle: 'Personalisasi warna & tampilan',
+                            color: AppTheme.accentPurple,
+                            index: 7,
+                            isSelected: selectedIndex == 7,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.branding_watermark_rounded,
+                            title: 'Logo & Branding',
+                            subtitle: 'Ubah logo & nama aplikasi',
+                            color: Colors.pink,
+                            index: 8,
+                            isSelected: selectedIndex == 8,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.settings_rounded,
+                            title: 'Pengaturan',
+                            subtitle: 'Konfigurasi aplikasi & sistem',
+                            color: AppTheme.textSecondary,
+                            index: 5,
+                            isSelected: selectedIndex == 5,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 

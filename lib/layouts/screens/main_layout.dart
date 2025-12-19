@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../widgets/desktop_sidebar.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/mobile_bottom_nav.dart';
-import '../../config/app_theme.dart';
 import '../../config/theme_provider.dart';
 import '../../dashboard/screens/dashboard_screen.dart';
 import '../../produk/screens/produk_screen.dart';
@@ -12,6 +11,7 @@ import '../../transaksi/screens/transaksikeluar_screen.dart';
 import '../../pelanggan/screens/pelanggan_screen.dart';
 import '../../stok/screens/stok_screen.dart';
 import '../../pengaturan/screens/pengaturan_screen.dart';
+import '../../pengaturan/screens/logo_branding_screen.dart';
 import '../../theme/screens/theme_customizer_screen.dart';
 // import '../../reports/screens/report_screen.dart';
 
@@ -51,6 +51,7 @@ class _MainLayoutState extends State<MainLayout> {
     const PengaturanScreen(),
     const TransaksiKeluarScreen(),
     const ThemeCustomizerScreen(),
+    const LogoBrandingScreen(),
   ];
 
   // Judul untuk setiap layar
@@ -63,6 +64,7 @@ class _MainLayoutState extends State<MainLayout> {
     'Pengaturan',
     'Transaksi Keluar',
     'Theme Customizer',
+    'Logo & Branding',
   ];
 
   void _onMenuItemTap(int index) {

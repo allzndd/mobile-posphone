@@ -8,6 +8,7 @@ import '../widgets/primary_button.dart';
 import '../widgets/social_login_button.dart';
 import '../widgets/divider_with_text.dart';
 import '../../config/app_theme.dart';
+import '../../config/logo_provider.dart';
 import 'register_screen.dart';
 import '../providers/branding_provider.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // Load branding config saat screen dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BrandingProvider>().loadThemeConfig();
+      context.read<LogoProvider>();
     });
   }
 
@@ -55,11 +57,12 @@ class _LoginScreenState extends State<LoginScreen> {
           // Navigate to MainLayout (POS system)
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => MainLayout(
-                child: Container(),
-                title: 'Dashboard Kasir',
-                selectedIndex: 0,
-              ),
+              builder:
+                  (context) => MainLayout(
+                    child: Container(),
+                    title: 'Dashboard Kasir',
+                    selectedIndex: 0,
+                  ),
             ),
           );
         }
@@ -72,6 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 600;
     final branding = context.watch<BrandingProvider>();
+    final logoProvider = context.watch<LogoProvider>();
 
     return Scaffold(
       body: AuthBackground(
@@ -92,8 +96,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       // Header
                       AuthHeader(
-                        title: branding.appName,
-                        subtitle: branding.appTagline,
+                        title: logoProvider.appName,
+                        subtitle: logoProvider.appTagline,
                         logoUrl: branding.logoUrl,
                         isDesktop: isDesktop,
                       ),

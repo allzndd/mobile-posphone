@@ -16,7 +16,7 @@ class _ProdukScreenState extends State<ProdukScreen>
   String _searchQuery = '';
   String _selectedCategory = 'Semua';
   String _sortBy = 'Terbaru';
-  bool _isGridView = true;
+  bool _isGridView = false;
 
   final List<String> _categories = [
     'Semua',
@@ -378,8 +378,8 @@ class _ProdukScreenState extends State<ProdukScreen>
       ),
       child: Row(
         children: [
-          _buildViewButton(Icons.grid_view_rounded, true),
           _buildViewButton(Icons.list_rounded, false),
+          _buildViewButton(Icons.grid_view_rounded, true),
         ],
       ),
     );
