@@ -71,7 +71,12 @@ class MobileBottomNav extends StatelessWidget {
                       selectedIndex == 4 ||
                       selectedIndex == 5 ||
                       selectedIndex == 7 ||
-                      selectedIndex == 8,
+                      selectedIndex == 8 ||
+                      selectedIndex == 9 ||
+                      selectedIndex == 10 ||
+                      selectedIndex == 11 ||
+                      selectedIndex == 12 ||
+                      selectedIndex == 13,
                   showSubmenu: true,
                 ),
               ],
@@ -261,6 +266,56 @@ class MobileBottomNav extends StatelessWidget {
                             color: Colors.pink,
                             index: 8,
                             isSelected: selectedIndex == 8,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.psychology_rounded,
+                            title: 'AI Chat',
+                            subtitle: 'Asisten AI untuk analisis bisnis',
+                            color: Colors.deepPurple,
+                            index: 9,
+                            isSelected: selectedIndex == 9,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.history,
+                            title: 'Stock History',
+                            subtitle: 'Riwayat perubahan stok',
+                            color: Colors.teal,
+                            index: 10,
+                            isSelected: selectedIndex == 10,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.build_circle_rounded,
+                            title: 'Service',
+                            subtitle: 'Kelola service & perbaikan',
+                            color: Colors.blue,
+                            index: 11,
+                            isSelected: selectedIndex == 11,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.swap_horiz_rounded,
+                            title: 'Trade In',
+                            subtitle: 'Tukar tambah produk',
+                            color: Colors.cyan,
+                            index: 12,
+                            isSelected: selectedIndex == 12,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.assessment_rounded,
+                            title: 'Report',
+                            subtitle: 'Laporan & analisis lengkap',
+                            color: Colors.indigo,
+                            index: 13,
+                            isSelected: selectedIndex == 13,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
