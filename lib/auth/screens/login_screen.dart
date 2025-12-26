@@ -11,6 +11,7 @@ import '../../config/app_theme.dart';
 import '../../config/logo_provider.dart';
 import 'register_screen.dart';
 import '../providers/branding_provider.dart';
+import '../services/auth_service.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -45,28 +46,52 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // Simulasi login - akan diganti dengan API call
-      Future.delayed(const Duration(seconds: 2), () {
+      try {
+        // Call API login
+        final loginResponse = await AuthService.login(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+
         if (mounted) {
           setState(() => _isLoading = false);
+
+          // Tampilkan pesan sukses
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Login berhasil! Selamat datang, ${loginResponse.user.nama}'),
+              backgroundColor: Colors.green,
+            ),
+          );
 
           // Navigate to MainLayout (POS system)
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder:
-                  (context) => MainLayout(
-                    child: Container(),
-                    title: 'Dashboard Kasir',
-                    selectedIndex: 0,
-                  ),
+              builder: (context) => MainLayout(
+                child: Container(),
+                title: 'Dashboard Kasir',
+                selectedIndex: 0,
+              ),
             ),
           );
         }
-      });
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+
+          // Tampilkan pesan error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll('Exception: ', '')),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
