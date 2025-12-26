@@ -18,14 +18,7 @@ class _ProdukScreenState extends State<ProdukScreen>
   String _sortBy = 'Terbaru';
   bool _isGridView = false;
 
-  final List<String> _categories = [
-    'Semua',
-    'Smartphone',
-    'Aksesoris',
-    'Audio',
-    'Charger',
-    'Case',
-  ];
+  final List<String> _categories = ['Semua', 'Apple', 'Samsung', 'Generic'];
 
   final List<String> _sortOptions = [
     'Terbaru',
@@ -36,66 +29,129 @@ class _ProdukScreenState extends State<ProdukScreen>
     'Stok Terbanyak',
   ];
 
-  // Sample product data
+  // Sample product data - Structure matched with web-posphone (pos_produk table)
+  // Fields: id, owner_id, pos_produk_merk_id, nama, slug, deskripsi, warna, penyimpanan,
+  // battery_health, harga_beli, harga_jual, biaya_tambahan, imei, aksesoris
   final List<Map<String, dynamic>> _products = [
     {
       'id': 1,
-      'name': 'iPhone 15 Pro Max',
-      'category': 'Smartphone',
-      'price': 21999000,
-      'stock': 15,
-      'sold': 45,
-      'image': 'https://via.placeholder.com/150',
+      'owner_id': 1,
+      'pos_produk_merk_id': 1, // Apple
+      'nama': 'iPhone 15 Pro Max',
+      'slug': 'iphone-15-pro-max',
+      'deskripsi': 'iPhone 15 Pro Max dengan chipset A17 Pro terbaru',
+      'warna': 'Titanium Black',
+      'penyimpanan': '256', // GB
+      'battery_health': '100', // %
+      'harga_beli': 18500000,
+      'harga_jual': 21999000,
+      'biaya_tambahan': [], // JSON array
+      'imei': '352015101234567',
+      'aksesoris': 'Charger, Cable, Box',
+      'stock': 15, // Calculated from pos_produk_stok
+      'sold': 45, // Calculated from transactions
+      'merk_nama': 'Apple', // From relationship
       'status': 'Tersedia',
     },
     {
       'id': 2,
-      'name': 'Samsung Galaxy S24 Ultra',
-      'category': 'Smartphone',
-      'price': 19999000,
+      'owner_id': 1,
+      'pos_produk_merk_id': 2, // Samsung
+      'nama': 'Samsung Galaxy S24 Ultra',
+      'slug': 'samsung-galaxy-s24-ultra',
+      'deskripsi': 'Samsung flagship dengan S Pen dan kamera 200MP',
+      'warna': 'Phantom Black',
+      'penyimpanan': '512',
+      'battery_health': '100',
+      'harga_beli': 16500000,
+      'harga_jual': 19999000,
+      'biaya_tambahan': [],
+      'imei': '352015201234567',
+      'aksesoris': 'Charger, Cable, S Pen',
       'stock': 8,
       'sold': 32,
-      'image': 'https://via.placeholder.com/150',
+      'merk_nama': 'Samsung',
       'status': 'Tersedia',
     },
     {
       'id': 3,
-      'name': 'AirPods Pro 2nd Gen',
-      'category': 'Audio',
-      'price': 3799000,
+      'owner_id': 1,
+      'pos_produk_merk_id': 1, // Apple
+      'nama': 'AirPods Pro 2nd Gen',
+      'slug': 'airpods-pro-2nd-gen',
+      'deskripsi':
+          'AirPods Pro generasi kedua dengan active noise cancellation',
+      'warna': 'White',
+      'penyimpanan': null,
+      'battery_health': null,
+      'harga_beli': 3200000,
+      'harga_jual': 3799000,
+      'biaya_tambahan': [],
+      'imei': null,
+      'aksesoris': 'Charging Case, Ear Tips',
       'stock': 25,
       'sold': 89,
-      'image': 'https://via.placeholder.com/150',
+      'merk_nama': 'Apple',
       'status': 'Tersedia',
     },
     {
       'id': 4,
-      'name': 'Case iPhone Clear',
-      'category': 'Case',
-      'price': 299000,
+      'owner_id': 1,
+      'pos_produk_merk_id': 1, // Apple
+      'nama': 'Case iPhone Clear',
+      'slug': 'case-iphone-clear',
+      'deskripsi': 'Case transparan resmi Apple dengan MagSafe',
+      'warna': 'Clear',
+      'penyimpanan': null,
+      'battery_health': null,
+      'harga_beli': 150000,
+      'harga_jual': 299000,
+      'biaya_tambahan': [],
+      'imei': null,
+      'aksesoris': null,
       'stock': 50,
       'sold': 120,
-      'image': 'https://via.placeholder.com/150',
+      'merk_nama': 'Apple',
       'status': 'Tersedia',
     },
     {
       'id': 5,
-      'name': 'Fast Charger 65W',
-      'category': 'Charger',
-      'price': 499000,
+      'owner_id': 1,
+      'pos_produk_merk_id': 3, // Generic
+      'nama': 'Fast Charger 65W',
+      'slug': 'fast-charger-65w',
+      'deskripsi': 'Charger cepat 65W universal dengan USB-C',
+      'warna': 'Black',
+      'penyimpanan': null,
+      'battery_health': null,
+      'harga_beli': 300000,
+      'harga_jual': 499000,
+      'biaya_tambahan': [],
+      'imei': null,
+      'aksesoris': 'Cable USB-C',
       'stock': 0,
       'sold': 67,
-      'image': 'https://via.placeholder.com/150',
+      'merk_nama': 'Generic',
       'status': 'Habis',
     },
     {
       'id': 6,
-      'name': 'Screen Protector Premium',
-      'category': 'Aksesoris',
-      'price': 149000,
+      'owner_id': 1,
+      'pos_produk_merk_id': 3, // Generic
+      'nama': 'Screen Protector Premium',
+      'slug': 'screen-protector-premium',
+      'deskripsi': 'Tempered glass premium 9H dengan coating anti fingerprint',
+      'warna': 'Clear',
+      'penyimpanan': null,
+      'battery_health': null,
+      'harga_beli': 75000,
+      'harga_jual': 149000,
+      'biaya_tambahan': [],
+      'imei': null,
+      'aksesoris': 'Cleaning Kit',
       'stock': 100,
       'sold': 234,
-      'image': 'https://via.placeholder.com/150',
+      'merk_nama': 'Generic',
       'status': 'Tersedia',
     },
   ];
@@ -115,29 +171,29 @@ class _ProdukScreenState extends State<ProdukScreen>
   List<Map<String, dynamic>> get _filteredProducts {
     var filtered =
         _products.where((product) {
-          final matchesSearch = product['name']
+          final matchesSearch = product['nama']
               .toString()
               .toLowerCase()
               .contains(_searchQuery.toLowerCase());
           final matchesCategory =
               _selectedCategory == 'Semua' ||
-              product['category'] == _selectedCategory;
+              product['merk_nama'] == _selectedCategory;
           return matchesSearch && matchesCategory;
         }).toList();
 
     // Sorting
     switch (_sortBy) {
       case 'Nama A-Z':
-        filtered.sort((a, b) => a['name'].compareTo(b['name']));
+        filtered.sort((a, b) => a['nama'].compareTo(b['nama']));
         break;
       case 'Nama Z-A':
-        filtered.sort((a, b) => b['name'].compareTo(a['name']));
+        filtered.sort((a, b) => b['nama'].compareTo(a['nama']));
         break;
       case 'Harga Terendah':
-        filtered.sort((a, b) => a['price'].compareTo(b['price']));
+        filtered.sort((a, b) => a['harga_jual'].compareTo(b['harga_jual']));
         break;
       case 'Harga Tertinggi':
-        filtered.sort((a, b) => b['price'].compareTo(a['price']));
+        filtered.sort((a, b) => b['harga_jual'].compareTo(a['harga_jual']));
         break;
       case 'Stok Terbanyak':
         filtered.sort((a, b) => b['stock'].compareTo(a['stock']));
@@ -778,7 +834,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        product['name'],
+                        product['nama'],
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -788,7 +844,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        product['category'],
+                        product['merk_nama'] ?? '-',
                         style: TextStyle(
                           fontSize: 11,
                           color: themeProvider.textTertiary,
@@ -800,7 +856,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                         children: [
                           Expanded(
                             child: Text(
-                              'Rp ${_formatPrice(product['price'])}',
+                              'Rp ${_formatPrice(product['harga_jual'])}',
                               style: TextStyle(
                                 color:
                                     context.read<ThemeProvider>().primaryMain,
@@ -893,7 +949,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        product['name'],
+                        product['nama'],
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -903,7 +959,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        product['category'],
+                        product['merk_nama'] ?? '-',
                         style: TextStyle(
                           fontSize: 13,
                           color: themeProvider.textTertiary,
@@ -918,7 +974,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                             color: AppTheme.primaryMain,
                           ),
                           Text(
-                            'Rp ${_formatPrice(product['price'])}',
+                            'Rp ${_formatPrice(product['harga_jual'])}',
                             style: TextStyle(
                               color: context.read<ThemeProvider>().primaryMain,
                               fontWeight: FontWeight.bold,
@@ -1043,12 +1099,34 @@ class _ProdukScreenState extends State<ProdukScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildDetailRow('Nama', product['name']),
-                  _buildDetailRow('Kategori', product['category']),
+                  _buildDetailRow('Nama', product['nama']),
+                  _buildDetailRow('Brand/Merk', product['merk_nama'] ?? '-'),
+                  _buildDetailRow('Deskripsi', product['deskripsi'] ?? '-'),
+                  _buildDetailRow('Warna', product['warna'] ?? '-'),
                   _buildDetailRow(
-                    'Harga',
-                    'Rp ${_formatPrice(product['price'])}',
+                    'Storage',
+                    product['penyimpanan'] != null
+                        ? '${product['penyimpanan']} GB'
+                        : '-',
                   ),
+                  _buildDetailRow(
+                    'Battery Health',
+                    product['battery_health'] != null
+                        ? '${product['battery_health']}%'
+                        : '-',
+                  ),
+                  _buildDetailRow('IMEI', product['imei'] ?? '-'),
+                  _buildDetailRow('Aksesoris', product['aksesoris'] ?? '-'),
+                  const Divider(height: 20),
+                  _buildDetailRow(
+                    'Harga Beli',
+                    'Rp ${_formatPrice(product['harga_beli'])}',
+                  ),
+                  _buildDetailRow(
+                    'Harga Jual',
+                    'Rp ${_formatPrice(product['harga_jual'])}',
+                  ),
+                  const Divider(height: 20),
                   _buildDetailRow('Stok', '${product['stock']} unit'),
                   _buildDetailRow('Terjual', '${product['sold']} unit'),
                   _buildDetailRow('Status', product['status']),
@@ -1258,7 +1336,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                 const Text('Edit Produk'),
               ],
             ),
-            content: Text('Form edit untuk: ${product['name']}'),
+            content: Text('Form edit untuk: ${product['nama']}'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -1299,7 +1377,7 @@ class _ProdukScreenState extends State<ProdukScreen>
               ],
             ),
             content: Text(
-              'Apakah Anda yakin ingin menghapus "${product['name']}"?',
+              'Apakah Anda yakin ingin menghapus "${product['nama']}"?',
             ),
             actions: [
               TextButton(
@@ -1314,7 +1392,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${product['name']} berhasil dihapus'),
+                      content: Text('${product['nama']} berhasil dihapus'),
                       backgroundColor: AppTheme.successColor,
                     ),
                   );
