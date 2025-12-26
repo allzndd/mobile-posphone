@@ -13,7 +13,11 @@ import '../../stok/screens/stok_screen.dart';
 import '../../pengaturan/screens/pengaturan_screen.dart';
 import '../../pengaturan/screens/logo_branding_screen.dart';
 import '../../theme/screens/theme_customizer_screen.dart';
-// import '../../reports/screens/report_screen.dart';
+import '../../chat_analysis/screens/chat_analysis_screen.dart';
+import '../../log_stok/screens/stock_history_screen.dart';
+import '../../services/screens/service_screen.dart';
+import '../../trade_in/screens/trade_in_screen.dart';
+import '../../reports/screens/report_screen.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget? child;
@@ -52,6 +56,11 @@ class _MainLayoutState extends State<MainLayout> {
     const TransaksiKeluarScreen(),
     const ThemeCustomizerScreen(),
     const LogoBrandingScreen(),
+    const ChatAnalysisScreen(),
+    const StockHistoryScreen(),
+    const ServiceScreen(),
+    const TradeInScreen(),
+    const ReportScreen(),
   ];
 
   // Judul untuk setiap layar
@@ -65,6 +74,11 @@ class _MainLayoutState extends State<MainLayout> {
     'Transaksi Keluar',
     'Theme Customizer',
     'Logo & Branding',
+    'AI Business Assistant',
+    'Riwayat Stok',
+    'Service & Perbaikan',
+    'Tukar Tambah',
+    'Laporan & Analisis',
   ];
 
   void _onMenuItemTap(int index) {
