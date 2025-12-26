@@ -14,104 +14,106 @@ class _PelangganScreenState extends State<PelangganScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _searchQuery = '';
-  String _filterType = 'Semua';
   String _sortBy = 'Nama A-Z';
   bool _isGridView = false;
-
-  final List<String> _typeOptions = ['Semua', 'Reguler', 'VIP', 'Wholesaler'];
 
   final List<String> _sortOptions = [
     'Nama A-Z',
     'Nama Z-A',
     'Terbaru',
     'Terlama',
-    'Transaksi Terbanyak',
-    'Total Belanja Tertinggi',
   ];
 
-  // Sample customer data
+  // Sample customer data - Structure matched with web-posphone (pos_pelanggan table)
+  // Fields: id, owner_id, nama, slug, nomor_hp, email, alamat, tanggal_bergabung
   final List<Map<String, dynamic>> _customers = [
     {
-      'id': 'CST001',
-      'name': 'Ahmad Yani',
+      'id': 1,
+      'owner_id': 1,
+      'nama': 'Ahmad Yani',
+      'slug': 'ahmad-yani',
+      'nomor_hp': '081234567890',
       'email': 'ahmad.yani@email.com',
-      'phone': '081234567890',
-      'address': 'Jl. Merdeka No. 123, Jakarta Pusat',
-      'type': 'VIP',
-      'totalTransactions': 45,
-      'totalSpending': 125000000,
-      'lastTransaction': '2025-12-04',
-      'joinDate': '2024-01-15',
+      'alamat': 'Jl. Merdeka No. 123, Jakarta Pusat',
+      'tanggal_bergabung': '2024-01-15',
+      'totalTransactions': 45, // Calculated from transactions
+      'totalSpending': 125000000, // Calculated from transactions
+      'lastTransaction': '2025-12-04', // Calculated from transactions
       'avatar': 'AY',
       'color': AppTheme.primaryMain,
     },
     {
-      'id': 'CST002',
-      'name': 'Siti Nurhaliza',
+      'id': 2,
+      'owner_id': 1,
+      'nama': 'Siti Nurhaliza',
+      'slug': 'siti-nurhaliza',
+      'nomor_hp': '081234567891',
       'email': 'siti.nur@email.com',
-      'phone': '081234567891',
-      'address': 'Jl. Sudirman No. 45, Jakarta Selatan',
-      'type': 'Reguler',
+      'alamat': 'Jl. Sudirman No. 45, Jakarta Selatan',
+      'tanggal_bergabung': '2024-06-20',
       'totalTransactions': 12,
       'totalSpending': 35000000,
       'lastTransaction': '2025-12-03',
-      'joinDate': '2024-06-20',
       'avatar': 'SN',
       'color': AppTheme.successColor,
     },
     {
-      'id': 'CST003',
-      'name': 'Budi Santoso',
+      'id': 3,
+      'owner_id': 1,
+      'nama': 'Budi Santoso',
+      'slug': 'budi-santoso',
+      'nomor_hp': '081234567892',
       'email': 'budi.santoso@email.com',
-      'phone': '081234567892',
-      'address': 'Jl. Thamrin No. 78, Jakarta Pusat',
-      'type': 'Wholesaler',
+      'alamat': 'Jl. Thamrin No. 78, Jakarta Pusat',
+      'tanggal_bergabung': '2023-11-10',
       'totalTransactions': 87,
       'totalSpending': 450000000,
       'lastTransaction': '2025-12-04',
-      'joinDate': '2023-11-10',
       'avatar': 'BS',
       'color': AppTheme.accentOrange,
     },
     {
-      'id': 'CST004',
-      'name': 'Dewi Lestari',
+      'id': 4,
+      'owner_id': 1,
+      'nama': 'Dewi Lestari',
+      'slug': 'dewi-lestari',
+      'nomor_hp': '081234567893',
       'email': 'dewi.lestari@email.com',
-      'phone': '081234567893',
-      'address': 'Jl. Gatot Subroto No. 90, Jakarta Selatan',
-      'type': 'VIP',
+      'alamat': 'Jl. Gatot Subroto No. 90, Jakarta Selatan',
+      'tanggal_bergabung': '2024-03-05',
       'totalTransactions': 34,
       'totalSpending': 89000000,
       'lastTransaction': '2025-12-02',
-      'joinDate': '2024-03-05',
       'avatar': 'DL',
       'color': AppTheme.secondaryMain,
     },
     {
-      'id': 'CST005',
-      'name': 'Rizki Ramadhan',
+      'id': 5,
+      'owner_id': 1,
+      'nama': 'Rizki Ramadhan',
+      'slug': 'rizki-ramadhan',
+      'nomor_hp': '081234567894',
       'email': 'rizki.r@email.com',
-      'phone': '081234567894',
-      'address': 'Jl. Kuningan No. 56, Jakarta Selatan',
-      'type': 'Reguler',
+      'alamat': 'Jl. Kuningan No. 56, Jakarta Selatan',
+      'tanggal_bergabung': '2024-08-12',
       'totalTransactions': 8,
       'totalSpending': 18500000,
       'lastTransaction': '2025-11-28',
-      'joinDate': '2024-08-12',
       'avatar': 'RR',
       'color': AppTheme.accentPurple,
     },
     {
-      'id': 'CST006',
-      'name': 'Rina Wijaya',
+      'id': 6,
+      'owner_id': 1,
+      'nama': 'Rina Wijaya',
+      'slug': 'rina-wijaya',
+      'nomor_hp': '081234567895',
       'email': 'rina.wijaya@email.com',
-      'phone': '081234567895',
-      'address': 'Jl. Rasuna Said No. 34, Jakarta Selatan',
-      'type': 'VIP',
+      'alamat': 'Jl. Rasuna Said No. 34, Jakarta Selatan',
+      'tanggal_bergabung': '2023-09-18',
       'totalTransactions': 56,
       'totalSpending': 178000000,
       'lastTransaction': '2025-12-04',
-      'joinDate': '2023-09-18',
       'avatar': 'RW',
       'color': AppTheme.errorColor,
     },
@@ -132,36 +134,30 @@ class _PelangganScreenState extends State<PelangganScreen>
   List<Map<String, dynamic>> get _filteredCustomers {
     return _customers.where((customer) {
         final matchesSearch =
-            customer['name'].toString().toLowerCase().contains(
+            customer['nama'].toString().toLowerCase().contains(
               _searchQuery.toLowerCase(),
             ) ||
-            customer['email'].toString().toLowerCase().contains(
+            (customer['email']?.toString().toLowerCase() ?? '').contains(
               _searchQuery.toLowerCase(),
             ) ||
-            customer['phone'].toString().toLowerCase().contains(
+            (customer['nomor_hp']?.toString().toLowerCase() ?? '').contains(
               _searchQuery.toLowerCase(),
             );
-        final matchesType =
-            _filterType == 'Semua' || customer['type'] == _filterType;
-        return matchesSearch && matchesType;
+        return matchesSearch;
       }).toList()
       ..sort((a, b) {
         switch (_sortBy) {
           case 'Nama A-Z':
-            return a['name'].toString().compareTo(b['name'].toString());
+            return a['nama'].toString().compareTo(b['nama'].toString());
           case 'Nama Z-A':
-            return b['name'].toString().compareTo(a['name'].toString());
+            return b['nama'].toString().compareTo(a['nama'].toString());
           case 'Terbaru':
-            return b['joinDate'].toString().compareTo(a['joinDate'].toString());
-          case 'Terlama':
-            return a['joinDate'].toString().compareTo(b['joinDate'].toString());
-          case 'Transaksi Terbanyak':
-            return (b['totalTransactions'] as int).compareTo(
-              a['totalTransactions'] as int,
+            return b['tanggal_bergabung'].toString().compareTo(
+              a['tanggal_bergabung'].toString(),
             );
-          case 'Total Belanja Tertinggi':
-            return (b['totalSpending'] as int).compareTo(
-              a['totalSpending'] as int,
+          case 'Terlama':
+            return a['tanggal_bergabung'].toString().compareTo(
+              b['tanggal_bergabung'].toString(),
             );
           default:
             return 0;
@@ -486,8 +482,6 @@ class _PelangganScreenState extends State<PelangganScreen>
               children: [
                 Expanded(flex: 2, child: _buildSearchBar()),
                 const SizedBox(width: 16),
-                Expanded(child: _buildTypeFilter()),
-                const SizedBox(width: 16),
                 Expanded(child: _buildSortFilter()),
                 const SizedBox(width: 16),
                 _buildViewToggle(),
@@ -498,8 +492,6 @@ class _PelangganScreenState extends State<PelangganScreen>
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildTypeFilter()),
-                const SizedBox(width: 12),
                 Expanded(child: _buildSortFilter()),
                 const SizedBox(width: 12),
                 _buildViewToggle(),
@@ -541,33 +533,6 @@ class _PelangganScreenState extends State<PelangganScreen>
             vertical: 14,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTypeFilter() {
-    final themeProvider = context.watch<ThemeProvider>();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: themeProvider.surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: themeProvider.borderColor),
-      ),
-      child: DropdownButton<String>(
-        value: _filterType,
-        icon: Icon(
-          Icons.filter_list,
-          color: context.read<ThemeProvider>().primaryMain,
-        ),
-        underline: const SizedBox(),
-        isExpanded: true,
-        style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-        onChanged: (value) => setState(() => _filterType = value!),
-        items:
-            _typeOptions.map((option) {
-              return DropdownMenuItem(value: option, child: Text(option));
-            }).toList(),
       ),
     );
   }
@@ -704,7 +669,6 @@ class _PelangganScreenState extends State<PelangganScreen>
 
   Widget _buildCustomerCard(Map<String, dynamic> customer, bool isDesktop) {
     final themeProvider = context.watch<ThemeProvider>();
-    final typeColor = _getTypeColor(customer['type']);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -752,28 +716,10 @@ class _PelangganScreenState extends State<PelangganScreen>
                             children: [
                               Expanded(
                                 child: Text(
-                                  customer['name'],
+                                  customer['nama'],
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: isDesktop ? 18 : 16,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: typeColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  customer['type'],
-                                  style: TextStyle(
-                                    color: typeColor,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
@@ -781,7 +727,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            customer['id'],
+                            'ID: ${customer['id']}',
                             style: TextStyle(
                               fontSize: 12,
                               color: themeProvider.textTertiary,
@@ -808,7 +754,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                       child: _buildInfoItem(
                         Icons.phone_outlined,
                         'Telepon',
-                        customer['phone'],
+                        customer['nomor_hp'] ?? '-',
                       ),
                     ),
                   ],
@@ -817,7 +763,7 @@ class _PelangganScreenState extends State<PelangganScreen>
                 _buildInfoItem(
                   Icons.location_on_outlined,
                   'Alamat',
-                  customer['address'],
+                  customer['alamat'] ?? '-',
                 ),
                 const SizedBox(height: 16),
                 const Divider(height: 1),
@@ -886,7 +832,6 @@ class _PelangganScreenState extends State<PelangganScreen>
 
   Widget _buildCustomerGridCard(Map<String, dynamic> customer, bool isDesktop) {
     final themeProvider = context.watch<ThemeProvider>();
-    final typeColor = _getTypeColor(customer['type']);
 
     return Container(
       decoration: BoxDecoration(
@@ -924,29 +869,11 @@ class _PelangganScreenState extends State<PelangganScreen>
                         ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: typeColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        customer['type'],
-                        style: TextStyle(
-                          color: typeColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  customer['name'],
+                  customer['nama'],
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
@@ -1075,20 +1002,6 @@ class _PelangganScreenState extends State<PelangganScreen>
     );
   }
 
-  Color _getTypeColor(String type) {
-    final themeProvider = context.read<ThemeProvider>();
-    switch (type) {
-      case 'VIP':
-        return AppTheme.accentOrange;
-      case 'Wholesaler':
-        return AppTheme.secondaryMain;
-      case 'Reguler':
-        return AppTheme.successColor;
-      default:
-        return themeProvider.textTertiary;
-    }
-  }
-
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
@@ -1141,14 +1054,14 @@ class _PelangganScreenState extends State<PelangganScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                customer['name'],
+                                customer['nama'],
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                customer['id'],
+                                'ID: ${customer['id']}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color:
@@ -1167,14 +1080,17 @@ class _PelangganScreenState extends State<PelangganScreen>
                       ],
                     ),
                     const SizedBox(height: 24),
-                    _buildDetailRow('Tipe', customer['type']),
-                    _buildDetailRow('Email', customer['email']),
-                    _buildDetailRow('Telepon', customer['phone']),
-                    _buildDetailRow('Alamat', customer['address']),
-                    _buildDetailRow('Bergabung Sejak', customer['joinDate']),
+                    _buildDetailRow('Nama', customer['nama']),
+                    _buildDetailRow('Email', customer['email'] ?? '-'),
+                    _buildDetailRow('Telepon', customer['nomor_hp'] ?? '-'),
+                    _buildDetailRow('Alamat', customer['alamat'] ?? '-'),
+                    _buildDetailRow(
+                      'Bergabung Sejak',
+                      customer['tanggal_bergabung'],
+                    ),
                     _buildDetailRow(
                       'Transaksi Terakhir',
-                      customer['lastTransaction'],
+                      customer['lastTransaction'] ?? '-',
                     ),
                     const SizedBox(height: 16),
                     const Divider(),
@@ -1403,7 +1319,7 @@ class _PelangganScreenState extends State<PelangganScreen>
               ],
             ),
             content: Text(
-              'Form edit pelanggan ${customer['name']} akan ditampilkan di sini',
+              'Form edit pelanggan ${customer['nama']} akan ditampilkan di sini',
             ),
             actions: [
               TextButton(
