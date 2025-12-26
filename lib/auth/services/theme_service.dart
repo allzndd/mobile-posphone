@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/theme_config.dart';
+import '../../core/api_config.dart';
 
 /// Service untuk mengelola tema aplikasi dan branding configuration
 class ThemeService {
   static ThemeConfig? _currentTheme;
-
-  // Laravel API URL (Laragon default: localhost:80)
-  static const String baseUrl = 'http://localhost';
 
   /// Get current theme configuration
   static ThemeConfig getCurrentTheme() {
@@ -20,8 +18,8 @@ class ThemeService {
       // Fetch dari API Laravel
       final response = await http
           .get(
-            Uri.parse('$baseUrl/api/branding-config/public'),
-            headers: {'Accept': 'application/json'},
+            Uri.parse(ApiConfig.getUrl(ApiConfig.brandingConfigEndpoint)),
+            headers: ApiConfig.defaultHeaders,
           )
           .timeout(const Duration(seconds: 10));
 
