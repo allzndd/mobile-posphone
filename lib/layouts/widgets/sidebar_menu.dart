@@ -45,6 +45,11 @@ class _SidebarMenuState extends State<SidebarMenu> {
     },
     {'icon': Icons.people_rounded, 'title': 'Pelanggan', 'index': 3},
     {'icon': Icons.analytics_rounded, 'title': 'Stok', 'index': 4},
+    {'icon': Icons.psychology_rounded, 'title': 'AI Chat', 'index': 9},
+    {'icon': Icons.history, 'title': 'Stock History', 'index': 10},
+    {'icon': Icons.build_circle_rounded, 'title': 'Service', 'index': 11},
+    {'icon': Icons.swap_horiz_rounded, 'title': 'Trade In', 'index': 12},
+    {'icon': Icons.assessment_rounded, 'title': 'Report', 'index': 13},
     {'icon': Icons.palette_rounded, 'title': 'Theme', 'index': 7},
     {
       'icon': Icons.branding_watermark_rounded,
