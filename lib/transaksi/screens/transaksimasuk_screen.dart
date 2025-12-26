@@ -32,75 +32,231 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
     'Semua',
   ];
 
-  // Sample transaction data
+  // Sample transaction data - Structure matched with web-posphone
+  // pos_transaksi table: id, owner_id, pos_toko_id, pos_pelanggan_id, pos_tukar_tambah_id,
+  // pos_supplier_id, is_transaksi_masuk (1=incoming/sales), invoice, total_harga, keterangan, status, metode_pembayaran
+  // pos_transaksi_item table: id, pos_transaksi_id, pos_produk_id, pos_service_id, quantity,
+  // harga_satuan, subtotal, diskon, garansi, garansi_expires_at, pajak
   final List<Map<String, dynamic>> _transactions = [
     {
-      'id': 'TRX001',
-      'date': '2025-12-04 10:30',
-      'customer': 'Ahmad Yani',
-      'items': 3,
-      'total': 23497000,
-      'payment': 'Tunai',
+      'id': 1,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_pelanggan_id': 1,
+      'pos_tukar_tambah_id': null,
+      'pos_supplier_id': null,
+      'is_transaksi_masuk': 1, // Incoming/Sales
+      'invoice': 'INV-20251204-001',
+      'total_harga': 23497000,
+      'keterangan': 'Pembelian paket iPhone bundle',
       'status': 'Selesai',
-      'cashier': 'Budi',
-      'products': [
-        {'name': 'iPhone 15 Pro Max', 'qty': 1, 'price': 21999000},
-        {'name': 'AirPods Pro', 'qty': 1, 'price': 3799000},
-        {'name': 'Case iPhone', 'qty': 1, 'price': 299000},
+      'metode_pembayaran': 'Tunai',
+      'created_at': '2025-12-04 10:30:00',
+      'customer_name': 'Ahmad Yani', // From relationship
+      'toko_name': 'Toko Pusat', // From relationship
+      'items': [
+        {
+          'id': 1,
+          'pos_transaksi_id': 1,
+          'pos_produk_id': 1,
+          'pos_service_id': null,
+          'quantity': 1,
+          'harga_satuan': 21999000,
+          'subtotal': 21999000,
+          'diskon': 0,
+          'garansi': 12, // months
+          'garansi_expires_at': '2026-12-04',
+          'pajak': 0,
+          'produk_nama': 'iPhone 15 Pro Max', // From relationship
+        },
+        {
+          'id': 2,
+          'pos_transaksi_id': 1,
+          'pos_produk_id': 3,
+          'pos_service_id': null,
+          'quantity': 1,
+          'harga_satuan': 3799000,
+          'subtotal': 3799000,
+          'diskon': 0,
+          'garansi': 12,
+          'garansi_expires_at': '2026-12-04',
+          'pajak': 0,
+          'produk_nama': 'AirPods Pro 2nd Gen',
+        },
+        {
+          'id': 3,
+          'pos_transaksi_id': 1,
+          'pos_produk_id': 4,
+          'pos_service_id': null,
+          'quantity': 1,
+          'harga_satuan': 299000,
+          'subtotal': 299000,
+          'diskon': 0,
+          'garansi': 0,
+          'garansi_expires_at': null,
+          'pajak': 0,
+          'produk_nama': 'Case iPhone Clear',
+        },
       ],
     },
     {
-      'id': 'TRX002',
-      'date': '2025-12-04 11:15',
-      'customer': 'Siti Nurhaliza',
-      'items': 2,
-      'total': 20498000,
-      'payment': 'QRIS',
+      'id': 2,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_pelanggan_id': 2,
+      'pos_tukar_tambah_id': null,
+      'pos_supplier_id': null,
+      'is_transaksi_masuk': 1,
+      'invoice': 'INV-20251204-002',
+      'total_harga': 20498000,
+      'keterangan': null,
       'status': 'Selesai',
-      'cashier': 'Andi',
-      'products': [
-        {'name': 'Samsung S24 Ultra', 'qty': 1, 'price': 19999000},
-        {'name': 'Fast Charger 65W', 'qty': 1, 'price': 499000},
+      'metode_pembayaran': 'QRIS',
+      'created_at': '2025-12-04 11:15:00',
+      'customer_name': 'Siti Nurhaliza',
+      'toko_name': 'Toko Pusat',
+      'items': [
+        {
+          'id': 4,
+          'pos_transaksi_id': 2,
+          'pos_produk_id': 2,
+          'pos_service_id': null,
+          'quantity': 1,
+          'harga_satuan': 19999000,
+          'subtotal': 19999000,
+          'diskon': 0,
+          'garansi': 12,
+          'garansi_expires_at': '2026-12-04',
+          'pajak': 0,
+          'produk_nama': 'Samsung Galaxy S24 Ultra',
+        },
+        {
+          'id': 5,
+          'pos_transaksi_id': 2,
+          'pos_produk_id': 5,
+          'pos_service_id': null,
+          'quantity': 1,
+          'harga_satuan': 499000,
+          'subtotal': 499000,
+          'diskon': 0,
+          'garansi': 6,
+          'garansi_expires_at': '2026-06-04',
+          'pajak': 0,
+          'produk_nama': 'Fast Charger 65W',
+        },
       ],
     },
     {
-      'id': 'TRX003',
-      'date': '2025-12-04 12:00',
-      'customer': 'Budi Santoso',
-      'items': 1,
-      'total': 3799000,
-      'payment': 'Debit',
+      'id': 3,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_pelanggan_id': 3,
+      'pos_tukar_tambah_id': null,
+      'pos_supplier_id': null,
+      'is_transaksi_masuk': 1,
+      'invoice': 'INV-20251204-003',
+      'total_harga': 3799000,
+      'keterangan': 'Menunggu pembayaran',
       'status': 'Pending',
-      'cashier': 'Budi',
-      'products': [
-        {'name': 'AirPods Pro 2nd Gen', 'qty': 1, 'price': 3799000},
+      'metode_pembayaran': 'Debit',
+      'created_at': '2025-12-04 12:00:00',
+      'customer_name': 'Budi Santoso',
+      'toko_name': 'Toko Pusat',
+      'items': [
+        {
+          'id': 6,
+          'pos_transaksi_id': 3,
+          'pos_produk_id': 3,
+          'pos_service_id': null,
+          'quantity': 1,
+          'harga_satuan': 3799000,
+          'subtotal': 3799000,
+          'diskon': 0,
+          'garansi': 12,
+          'garansi_expires_at': '2026-12-04',
+          'pajak': 0,
+          'produk_nama': 'AirPods Pro 2nd Gen',
+        },
       ],
     },
     {
-      'id': 'TRX004',
-      'date': '2025-12-04 13:45',
-      'customer': 'Dewi Lestari',
-      'items': 4,
-      'total': 1496000,
-      'payment': 'E-Wallet',
+      'id': 4,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_pelanggan_id': 4,
+      'pos_tukar_tambah_id': null,
+      'pos_supplier_id': null,
+      'is_transaksi_masuk': 1,
+      'invoice': 'INV-20251204-004',
+      'total_harga': 1496000,
+      'keterangan': null,
       'status': 'Selesai',
-      'cashier': 'Andi',
-      'products': [
-        {'name': 'Case iPhone Clear', 'qty': 2, 'price': 299000},
-        {'name': 'Screen Protector', 'qty': 2, 'price': 149000},
+      'metode_pembayaran': 'E-Wallet',
+      'created_at': '2025-12-04 13:45:00',
+      'customer_name': 'Dewi Lestari',
+      'toko_name': 'Toko Pusat',
+      'items': [
+        {
+          'id': 7,
+          'pos_transaksi_id': 4,
+          'pos_produk_id': 4,
+          'pos_service_id': null,
+          'quantity': 2,
+          'harga_satuan': 299000,
+          'subtotal': 598000,
+          'diskon': 0,
+          'garansi': 0,
+          'garansi_expires_at': null,
+          'pajak': 0,
+          'produk_nama': 'Case iPhone Clear',
+        },
+        {
+          'id': 8,
+          'pos_transaksi_id': 4,
+          'pos_produk_id': 6,
+          'pos_service_id': null,
+          'quantity': 6,
+          'harga_satuan': 149000,
+          'subtotal': 894000,
+          'diskon': 0,
+          'garansi': 0,
+          'garansi_expires_at': null,
+          'pajak': 4000,
+          'produk_nama': 'Screen Protector Premium',
+        },
       ],
     },
     {
-      'id': 'TRX005',
-      'date': '2025-12-03 15:20',
-      'customer': 'Rizki Ramadhan',
-      'items': 1,
-      'total': 21999000,
-      'payment': 'Tunai',
+      'id': 5,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_pelanggan_id': 5,
+      'pos_tukar_tambah_id': null,
+      'pos_supplier_id': null,
+      'is_transaksi_masuk': 1,
+      'invoice': 'INV-20251203-005',
+      'total_harga': 21999000,
+      'keterangan': 'Dibatalkan karena stok habis',
       'status': 'Dibatalkan',
-      'cashier': 'Budi',
-      'products': [
-        {'name': 'iPhone 15 Pro Max', 'qty': 1, 'price': 21999000},
+      'metode_pembayaran': 'Tunai',
+      'created_at': '2025-12-03 15:20:00',
+      'customer_name': 'Rizki Ramadhan',
+      'toko_name': 'Toko Pusat',
+      'items': [
+        {
+          'id': 9,
+          'pos_transaksi_id': 5,
+          'pos_produk_id': 1,
+          'pos_service_id': null,
+          'quantity': 1,
+          'harga_satuan': 21999000,
+          'subtotal': 21999000,
+          'diskon': 0,
+          'garansi': 12,
+          'garansi_expires_at': '2026-12-03',
+          'pajak': 0,
+          'produk_nama': 'iPhone 15 Pro Max',
+        },
       ],
     },
   ];
@@ -120,10 +276,10 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
   List<Map<String, dynamic>> get _filteredTransactions {
     return _transactions.where((trx) {
       final matchesSearch =
-          trx['customer'].toString().toLowerCase().contains(
+          (trx['customer_name']?.toString().toLowerCase() ?? '').contains(
             _searchQuery.toLowerCase(),
           ) ||
-          trx['id'].toString().toLowerCase().contains(
+          (trx['invoice']?.toString().toLowerCase() ?? '').contains(
             _searchQuery.toLowerCase(),
           );
       final matchesStatus =
@@ -262,7 +418,7 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
     final totalTransaksi = _transactions.length;
     final totalPendapatan = _transactions
         .where((t) => t['status'] == 'Selesai')
-        .fold<int>(0, (sum, t) => sum + (t['total'] as int));
+        .fold<int>(0, (sum, t) => sum + (t['total_harga'] as int));
     final transaksiHariIni =
         _transactions
             .where((t) => t['date'].toString().startsWith('2025-12-04'))
@@ -715,14 +871,14 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  trx['id'],
+                                  trx['invoice'] ?? 'INV-${trx['id']}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
                                 ),
                                 Text(
-                                  trx['date'],
+                                  trx['created_at'] ?? '-',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: themeProvider.textTertiary,
@@ -763,14 +919,14 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                       child: _buildInfoItem(
                         Icons.person,
                         'Customer',
-                        trx['customer'],
+                        trx['customer_name'] ?? '-',
                       ),
                     ),
                     Expanded(
                       child: _buildInfoItem(
                         Icons.shopping_bag_outlined,
                         'Items',
-                        '${trx['items']} produk',
+                        '${trx['items']?.length ?? 0} produk',
                       ),
                     ),
                   ],
@@ -782,14 +938,14 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                       child: _buildInfoItem(
                         Icons.payment,
                         'Pembayaran',
-                        trx['payment'],
+                        trx['metode_pembayaran'] ?? '-',
                       ),
                     ),
                     Expanded(
                       child: _buildInfoItem(
-                        Icons.person_outline,
-                        'Kasir',
-                        trx['cashier'],
+                        Icons.store,
+                        'Toko',
+                        trx['toko_name'] ?? '-',
                       ),
                     ),
                   ],
@@ -808,7 +964,7 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                       ),
                     ),
                     Text(
-                      'Rp ${_formatPrice(trx['total'])}',
+                      'Rp ${_formatPrice(trx['total_harga'])}',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -888,14 +1044,14 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  trx['id'],
+                  trx['invoice'],
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  trx['customer'],
+                  trx['customer_name'],
                   style: TextStyle(
                     fontSize: 12,
                     color: themeProvider.textTertiary,
@@ -905,7 +1061,7 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                 ),
                 const Spacer(),
                 Text(
-                  '${trx['items']} produk • ${trx['payment']}',
+                  '${trx['items'].length} produk • ${trx['metode_pembayaran']}',
                   style: TextStyle(
                     fontSize: 11,
                     color: themeProvider.textSecondary,
@@ -916,7 +1072,7 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Rp ${_formatPrice(trx['total'])}',
+                    'Rp ${_formatPrice(trx['total_harga'])}',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -1048,10 +1204,11 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                                 ),
                               ),
                               Text(
-                                trx['id'],
+                                trx['invoice'],
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: context.read<ThemeProvider>().primaryMain,
+                                  color:
+                                      context.read<ThemeProvider>().primaryMain,
                                 ),
                               ),
                             ],
@@ -1064,10 +1221,11 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                       ],
                     ),
                     const SizedBox(height: 24),
-                    _buildDetailRow('Tanggal', trx['date']),
-                    _buildDetailRow('Customer', trx['customer']),
-                    _buildDetailRow('Kasir', trx['cashier']),
-                    _buildDetailRow('Pembayaran', trx['payment']),
+                    _buildDetailRow('Invoice', trx['invoice']),
+                    _buildDetailRow('Tanggal', trx['created_at']),
+                    _buildDetailRow('Customer', trx['customer_name']),
+                    _buildDetailRow('Toko', trx['toko_name']),
+                    _buildDetailRow('Pembayaran', trx['metode_pembayaran']),
                     _buildDetailRow('Status', trx['status']),
                     const SizedBox(height: 16),
                     const Divider(),
@@ -1080,24 +1238,28 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ...(trx['products'] as List).map((product) {
+                    ...(trx['items'] as List).map((item) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
                           children: [
                             Expanded(
                               child: Text(
-                                '${product['qty']}x ${product['name']}',
+                                '${item['quantity']}x ${item['produk_nama']}',
                                 style: TextStyle(
-                                  color: context.read<ThemeProvider>().textSecondary,
+                                  color:
+                                      context
+                                          .read<ThemeProvider>()
+                                          .textSecondary,
                                 ),
                               ),
                             ),
                             Text(
-                              'Rp ${_formatPrice(product['price'] * product['qty'])}',
+                              'Rp ${_formatPrice(item['subtotal'])}',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: context.read<ThemeProvider>().textPrimary,
+                                color:
+                                    context.read<ThemeProvider>().textPrimary,
                               ),
                             ),
                           ],
@@ -1118,7 +1280,7 @@ class _TransaksiMasukScreenState extends State<TransaksiMasukScreen>
                           ),
                         ),
                         Text(
-                          'Rp ${_formatPrice(trx['total'])}',
+                          'Rp ${_formatPrice(trx['total_harga'])}',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
