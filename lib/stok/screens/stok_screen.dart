@@ -21,12 +21,12 @@ class _StokScreenState extends State<StokScreen>
 
   final List<String> _categoryOptions = [
     'Semua',
-    'Smartphone',
-    'Tablet',
-    'Aksesoris',
-    'Audio',
-    'Smartwatch',
-    'Laptop',
+    'Apple',
+    'Samsung',
+    'Xiaomi',
+    'OPPO',
+    'Vivo',
+    'Generic',
   ];
 
   final List<String> _statusOptions = [
@@ -46,91 +46,120 @@ class _StokScreenState extends State<StokScreen>
     'Harga Terendah',
   ];
 
-  // Sample stock data
+  // Sample stock data - Structure matched with web-posphone
+  // pos_produk_stok table: id, owner_id, pos_toko_id, pos_produk_id, stok
+  // With relationships to pos_produk (for product details) and pos_toko (for store/branch)
   final List<Map<String, dynamic>> _stockItems = [
     {
-      'id': 'PRD001',
-      'name': 'iPhone 15 Pro Max',
-      'category': 'Smartphone',
-      'currentStock': 25,
-      'minStock': 10,
-      'maxStock': 50,
-      'price': 21999000,
-      'location': 'Rak A-1',
-      'supplier': 'PT Elektronik Jaya',
-      'lastRestock': '2025-12-01',
+      'id': 1,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_produk_id': 1,
+      'stok': 25,
+      // From pos_produk relationship
+      'produk_nama': 'iPhone 15 Pro Max',
+      'produk_merk': 'Apple',
+      'produk_harga_beli': 18500000,
+      'produk_harga_jual': 21999000,
+      'produk_warna': 'Natural Titanium',
+      'produk_penyimpanan': '256GB',
+      // From pos_toko relationship
+      'toko_nama': 'Toko Pusat',
+      'toko_alamat': 'Jl. Merdeka No. 123, Jakarta',
+      // Calculated fields for display
+      'min_stock': 10,
       'status': 'Stok Aman',
       'color': AppTheme.successColor,
     },
     {
-      'id': 'PRD002',
-      'name': 'Samsung S24 Ultra',
-      'category': 'Smartphone',
-      'currentStock': 8,
-      'minStock': 10,
-      'maxStock': 40,
-      'price': 19999000,
-      'location': 'Rak A-2',
-      'supplier': 'PT Elektronik Jaya',
-      'lastRestock': '2025-11-28',
+      'id': 2,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_produk_id': 2,
+      'stok': 8,
+      'produk_nama': 'Samsung S24 Ultra',
+      'produk_merk': 'Samsung',
+      'produk_harga_beli': 16000000,
+      'produk_harga_jual': 19999000,
+      'produk_warna': 'Titanium Gray',
+      'produk_penyimpanan': '512GB',
+      'toko_nama': 'Toko Pusat',
+      'toko_alamat': 'Jl. Merdeka No. 123, Jakarta',
+      'min_stock': 10,
       'status': 'Stok Menipis',
       'color': AppTheme.warningColor,
     },
     {
-      'id': 'PRD003',
-      'name': 'AirPods Pro 2nd Gen',
-      'category': 'Audio',
-      'currentStock': 0,
-      'minStock': 15,
-      'maxStock': 60,
-      'price': 3799000,
-      'location': 'Rak C-3',
-      'supplier': 'CV Aksesoris Handphone',
-      'lastRestock': '2025-11-20',
+      'id': 3,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_produk_id': 3,
+      'stok': 0,
+      'produk_nama': 'AirPods Pro 2nd Gen',
+      'produk_merk': 'Apple',
+      'produk_harga_beli': 3200000,
+      'produk_harga_jual': 3799000,
+      'produk_warna': 'White',
+      'produk_penyimpanan': '-',
+      'toko_nama': 'Toko Pusat',
+      'toko_alamat': 'Jl. Merdeka No. 123, Jakarta',
+      'min_stock': 15,
       'status': 'Stok Habis',
       'color': AppTheme.errorColor,
     },
     {
-      'id': 'PRD004',
-      'name': 'iPad Pro 12.9"',
-      'category': 'Tablet',
-      'currentStock': 45,
-      'minStock': 8,
-      'maxStock': 30,
-      'price': 18999000,
-      'location': 'Rak B-1',
-      'supplier': 'PT Elektronik Jaya',
-      'lastRestock': '2025-12-03',
+      'id': 4,
+      'owner_id': 1,
+      'pos_toko_id': 2,
+      'pos_produk_id': 1,
+      'stok': 45,
+      'produk_nama': 'iPhone 15 Pro Max',
+      'produk_merk': 'Apple',
+      'produk_harga_beli': 18500000,
+      'produk_harga_jual': 21999000,
+      'produk_warna': 'Natural Titanium',
+      'produk_penyimpanan': '256GB',
+      'toko_nama': 'Toko Cabang Selatan',
+      'toko_alamat': 'Jl. Sudirman No. 45, Jakarta Selatan',
+      'min_stock': 8,
       'status': 'Overstock',
-      'color': AppTheme.accentPurple,
+      'color': AppTheme.accentOrange,
     },
     {
-      'id': 'PRD005',
-      'name': 'Apple Watch Series 9',
-      'category': 'Smartwatch',
-      'currentStock': 18,
-      'minStock': 12,
-      'maxStock': 35,
-      'price': 6999000,
-      'location': 'Rak D-2',
-      'supplier': 'UD Audio Premium',
-      'lastRestock': '2025-11-30',
+      'id': 5,
+      'owner_id': 1,
+      'pos_toko_id': 1,
+      'pos_produk_id': 4,
+      'stok': 15,
+      'produk_nama': 'Case iPhone Clear',
+      'produk_merk': 'Generic',
+      'produk_harga_beli': 250000,
+      'produk_harga_jual': 299000,
+      'produk_warna': 'Clear',
+      'produk_penyimpanan': '-',
+      'toko_nama': 'Toko Pusat',
+      'toko_alamat': 'Jl. Merdeka No. 123, Jakarta',
+      'min_stock': 20,
       'status': 'Stok Aman',
       'color': AppTheme.successColor,
     },
     {
-      'id': 'PRD006',
-      'name': 'Fast Charger 65W',
-      'category': 'Aksesoris',
-      'currentStock': 3,
-      'minStock': 20,
-      'maxStock': 100,
-      'price': 499000,
-      'location': 'Rak E-5',
-      'supplier': 'PT Charger Solution',
-      'lastRestock': '2025-11-15',
-      'status': 'Stok Menipis',
-      'color': AppTheme.warningColor,
+      'id': 6,
+      'owner_id': 1,
+      'pos_toko_id': 2,
+      'pos_produk_id': 2,
+      'stok': 12,
+      'produk_nama': 'Samsung S24 Ultra',
+      'produk_merk': 'Samsung',
+      'produk_harga_beli': 16000000,
+      'produk_harga_jual': 19999000,
+      'produk_warna': 'Titanium Gray',
+      'produk_penyimpanan': '512GB',
+      'toko_nama': 'Toko Cabang Selatan',
+      'toko_alamat': 'Jl. Sudirman No. 45, Jakarta Selatan',
+      'min_stock': 10,
+      'status': 'Stok Aman',
+      'color': AppTheme.successColor,
     },
   ];
 
@@ -149,14 +178,15 @@ class _StokScreenState extends State<StokScreen>
   List<Map<String, dynamic>> get _filteredStock {
     return _stockItems.where((item) {
         final matchesSearch =
-            item['name'].toString().toLowerCase().contains(
+            item['produk_nama'].toString().toLowerCase().contains(
               _searchQuery.toLowerCase(),
             ) ||
-            item['id'].toString().toLowerCase().contains(
+            item['toko_nama'].toString().toLowerCase().contains(
               _searchQuery.toLowerCase(),
             );
         final matchesCategory =
-            _filterCategory == 'Semua' || item['category'] == _filterCategory;
+            _filterCategory == 'Semua' ||
+            item['produk_merk'] == _filterCategory;
         final matchesStatus =
             _filterStatus == 'Semua' || item['status'] == _filterStatus;
         return matchesSearch && matchesCategory && matchesStatus;
@@ -164,21 +194,25 @@ class _StokScreenState extends State<StokScreen>
       ..sort((a, b) {
         switch (_sortBy) {
           case 'Nama A-Z':
-            return a['name'].toString().compareTo(b['name'].toString());
+            return a['produk_nama'].toString().compareTo(
+              b['produk_nama'].toString(),
+            );
           case 'Nama Z-A':
-            return b['name'].toString().compareTo(a['name'].toString());
+            return b['produk_nama'].toString().compareTo(
+              a['produk_nama'].toString(),
+            );
           case 'Stok Terbanyak':
-            return (b['currentStock'] as int).compareTo(
-              a['currentStock'] as int,
-            );
+            return (b['stok'] as int).compareTo(a['stok'] as int);
           case 'Stok Tersedikit':
-            return (a['currentStock'] as int).compareTo(
-              b['currentStock'] as int,
-            );
+            return (a['stok'] as int).compareTo(b['stok'] as int);
           case 'Harga Tertinggi':
-            return (b['price'] as int).compareTo(a['price'] as int);
+            return (b['produk_harga_jual'] as int).compareTo(
+              a['produk_harga_jual'] as int,
+            );
           case 'Harga Terendah':
-            return (a['price'] as int).compareTo(b['price'] as int);
+            return (a['produk_harga_jual'] as int).compareTo(
+              b['produk_harga_jual'] as int,
+            );
           default:
             return 0;
         }
@@ -319,7 +353,7 @@ class _StokScreenState extends State<StokScreen>
     final totalItems = _stockItems.length;
     final totalStock = _stockItems.fold<int>(
       0,
-      (sum, item) => sum + (item['currentStock'] as int),
+      (sum, item) => sum + (item['stok'] as int),
     );
     final lowStock =
         _stockItems.where((item) => item['status'] == 'Stok Menipis').length;
@@ -860,8 +894,10 @@ class _StokScreenState extends State<StokScreen>
 
   Widget _buildStockCard(Map<String, dynamic> item, bool isDesktop) {
     final themeProvider = context.watch<ThemeProvider>();
-    final stockPercentage =
-        (item['currentStock'] / item['maxStock'] * 100).toInt();
+    // Calculate stock percentage based on min_stock as baseline (100% = 2x min_stock)
+    final stockPercentage = ((item['stok'] / (item['min_stock'] * 2)) * 100)
+        .toInt()
+        .clamp(0, 100);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -906,7 +942,7 @@ class _StokScreenState extends State<StokScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item['name'],
+                            item['produk_nama'],
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: isDesktop ? 16 : 15,
@@ -914,7 +950,7 @@ class _StokScreenState extends State<StokScreen>
                             ),
                           ),
                           Text(
-                            '${item['id']} • ${item['category']}',
+                            '${item['id']} • ${item['produk_merk']}',
                             style: TextStyle(
                               fontSize: 12,
                               color: themeProvider.textTertiary,
@@ -959,7 +995,7 @@ class _StokScreenState extends State<StokScreen>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${item['currentStock']} Unit',
+                            '${item['stok']} Unit',
                             style: TextStyle(
                               fontSize: isDesktop ? 20 : 18,
                               fontWeight: FontWeight.bold,
@@ -988,7 +1024,7 @@ class _StokScreenState extends State<StokScreen>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${item['minStock']} / ${item['maxStock']}',
+                            '${item['min_stock']} / ${item['min_stock'] * 2}',
                             style: TextStyle(
                               fontSize: isDesktop ? 16 : 14,
                               fontWeight: FontWeight.w600,
@@ -1045,11 +1081,11 @@ class _StokScreenState extends State<StokScreen>
                   children: [
                     _buildInfoChip(
                       Icons.location_on_outlined,
-                      item['location'],
+                      item['toko_nama'],
                     ),
                     _buildInfoChip(
                       Icons.attach_money,
-                      'Rp ${_formatPrice(item['price'])}',
+                      'Rp ${_formatPrice(item['produk_harga_jual'])}',
                     ),
                   ],
                 ),
@@ -1064,7 +1100,7 @@ class _StokScreenState extends State<StokScreen>
   Widget _buildStockGridCard(Map<String, dynamic> item, bool isDesktop) {
     final themeProvider = context.watch<ThemeProvider>();
     final stockPercentage =
-        (item['currentStock'] / item['maxStock'] * 100).toInt();
+        (item['stok'] / item['min_stock'] * 2 * 100).toInt();
 
     return Container(
       decoration: BoxDecoration(
@@ -1125,7 +1161,7 @@ class _StokScreenState extends State<StokScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  item['name'],
+                  item['produk_nama'],
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -1136,7 +1172,7 @@ class _StokScreenState extends State<StokScreen>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  item['category'],
+                  item['produk_merk'],
                   style: TextStyle(
                     fontSize: 11,
                     color: themeProvider.textTertiary,
@@ -1144,7 +1180,7 @@ class _StokScreenState extends State<StokScreen>
                 ),
                 const Spacer(),
                 Text(
-                  '${item['currentStock']} Unit',
+                  '${item['stok']} Unit',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -1262,7 +1298,7 @@ class _StokScreenState extends State<StokScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                item['name'],
+                                item['produk_nama'],
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -1270,7 +1306,7 @@ class _StokScreenState extends State<StokScreen>
                                 ),
                               ),
                               Text(
-                                item['id'],
+                                'ID: ${item['id']}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: themeProvider.textTertiary,
@@ -1286,15 +1322,23 @@ class _StokScreenState extends State<StokScreen>
                       ],
                     ),
                     const SizedBox(height: 24),
-                    _buildDetailRow('Kategori', item['category']),
+                    _buildDetailRow('Brand', item['produk_merk']),
                     _buildDetailRow('Status', item['status']),
-                    _buildDetailRow('Lokasi', item['location']),
-                    _buildDetailRow('Supplier', item['supplier']),
+                    _buildDetailRow('Toko', item['toko_nama']),
+                    _buildDetailRow('Alamat', item['toko_alamat'] ?? '-'),
+                    _buildDetailRow('Warna', item['produk_warna'] ?? '-'),
                     _buildDetailRow(
-                      'Harga',
-                      'Rp ${_formatPrice(item['price'])}',
+                      'Storage',
+                      item['produk_penyimpanan'] ?? '-',
                     ),
-                    _buildDetailRow('Restock Terakhir', item['lastRestock']),
+                    _buildDetailRow(
+                      'Harga Beli',
+                      'Rp ${_formatPrice(item['produk_harga_beli'])}',
+                    ),
+                    _buildDetailRow(
+                      'Harga Jual',
+                      'Rp ${_formatPrice(item['produk_harga_jual'])}',
+                    ),
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
@@ -1310,7 +1354,7 @@ class _StokScreenState extends State<StokScreen>
                             child: Column(
                               children: [
                                 Text(
-                                  '${item['currentStock']}',
+                                  '${item['stok']}',
                                   style: TextStyle(
                                     fontSize: 28,
                                     fontWeight: FontWeight.bold,
@@ -1340,7 +1384,7 @@ class _StokScreenState extends State<StokScreen>
                             child: Column(
                               children: [
                                 Text(
-                                  '${item['minStock']} - ${item['maxStock']}',
+                                  '${item['min_stock']} - ${item['min_stock'] * 2}',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
