@@ -7,6 +7,51 @@ import '../../core/api_config.dart';
 /// Service untuk mengelola autentikasi
 class AuthService {
 
+  /// Register user baru
+  static Future<LoginResponse> register(
+    String nama,
+    String email,
+    String password,
+    String passwordConfirmation,
+  ) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse(ApiConfig.getUrl(ApiConfig.registerEndpoint)),
+            headers: ApiConfig.defaultHeaders,
+            body: jsonEncode({
+              'nama': nama,
+              'email': email,
+              'password': password,
+              'password_confirmation': passwordConfirmation,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 201) {
+        final loginResponse = LoginResponse.fromJson(jsonDecode(response.body));
+
+        // Tidak menyimpan token, user harus login manual
+        // await _saveAuthData(loginResponse);
+
+        return loginResponse;
+      } else if (response.statusCode == 422) {
+        // Validation error
+        final json = jsonDecode(response.body);
+        final errors = json['errors'] as Map<String, dynamic>?;
+        final errorMessage = errors?.values.first[0] ?? 'Registrasi gagal';
+        throw Exception(errorMessage);
+      } else {
+        throw Exception('Registrasi gagal. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is Exception) {
+        rethrow;
+      }
+      throw Exception('Terjadi kesalahan: $e');
+    }
+  }
+
   /// Login user
   static Future<LoginResponse> login(String email, String password) async {
     try {

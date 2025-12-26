@@ -2,9 +2,10 @@
 class ApiConfig {
   /// Base URL untuk Laravel API
   /// Sesuaikan dengan server Laravel yang berjalan
-  static const String baseUrl = 'http://127.0.0.1:8000';
+  static const String baseUrl = 'http://192.168.1.9:8000';
 
   /// API endpoints
+  static const String registerEndpoint = '/api/register';
   static const String loginEndpoint = '/api/login';
   static const String logoutEndpoint = '/api/logout';
   static const String userEndpoint = '/api/user';

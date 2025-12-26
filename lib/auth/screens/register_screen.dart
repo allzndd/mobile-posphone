@@ -8,6 +8,8 @@ import '../widgets/social_login_button.dart';
 import '../widgets/divider_with_text.dart';
 import '../../config/app_theme.dart';
 import '../providers/branding_provider.dart';
+import '../services/auth_service.dart';
+import '../../layouts/screens/main_layout.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -37,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
       if (!_agreeToTerms) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,18 +53,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       setState(() => _isLoading = true);
 
-      // TODO: Implement register logic
-      Future.delayed(const Duration(seconds: 2), () {
+      try {
+        // Call API register
+        final loginResponse = await AuthService.register(
+          _nameController.text.trim(),
+          _emailController.text.trim(),
+          _passwordController.text,
+          _confirmPasswordController.text,
+        );
+
         if (mounted) {
           setState(() => _isLoading = false);
+
+          // Tampilkan pesan sukses
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Registrasi berhasil!'),
-              backgroundColor: AppTheme.primaryMain,
+            SnackBar(
+              content: Text('Registrasi berhasil! Silakan login dengan akun Anda'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+
+          // Navigate to LoginScreen
+          Navigator.of(context).pop(); // Kembali ke login screen
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          
+          // Tampilkan error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceFirst('Exception: ', '')),
+              backgroundColor: Colors.red,
             ),
           );
         }
-      });
+      }
     }
   }
 

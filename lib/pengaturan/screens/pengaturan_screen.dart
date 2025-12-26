@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/theme_provider.dart';
 import '../../config/theme_schemes.dart';
+import '../../auth/services/auth_service.dart';
+import '../../auth/screens/login_screen.dart';
 
 class PengaturanScreen extends StatefulWidget {
   const PengaturanScreen({super.key});
@@ -1152,9 +1154,34 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                 child: const Text('Batal'),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  // Close confirmation dialog first
                   Navigator.pop(context);
-                  // Navigate to login
+                  
+                  try {
+                    // Call logout API (akan otomatis hapus token)
+                    await AuthService.logout();
+                    
+                    // Navigate to login screen
+                    if (mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                        (route) => false, // Remove all previous routes
+                      );
+                    }
+                  } catch (e) {
+                    // Jika error, tetap navigate ke login karena token sudah dihapus
+                    if (mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.errorColor,
