@@ -47,6 +47,12 @@ class ThemeProvider extends ChangeNotifier {
   Color get borderColor =>
       _isDarkMode ? const Color(0xFF3D3D3D) : const Color(0xFFE5E7EB);
 
+  // Status colors (fixed - tidak terpengaruh dark mode)
+  Color get successMain => const Color(0xFF10B981); // Green
+  Color get errorMain => const Color(0xFFEF4444); // Red
+  Color get warningMain => const Color(0xFFF59E0B); // Orange/Yellow
+  Color get infoMain => const Color(0xFF3B82F6); // Blue
+
   Future<void> _loadTheme() async {
     try {
       final prefs = await SharedPreferences.getInstance();
