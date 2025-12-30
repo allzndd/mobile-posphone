@@ -9,7 +9,6 @@ import '../widgets/divider_with_text.dart';
 import '../../config/app_theme.dart';
 import '../providers/branding_provider.dart';
 import '../services/auth_service.dart';
-import '../../layouts/screens/main_layout.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
