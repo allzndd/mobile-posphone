@@ -57,8 +57,8 @@ class MobileBottomNav extends StatelessWidget {
                   context: context,
                   icon: Icons.arrow_upward_rounded,
                   label: 'Keluar',
-                  index: 6,
-                  isSelected: selectedIndex == 6,
+                  index: 5,
+                  isSelected: selectedIndex == 5,
                 ),
                 _buildNavItem(
                   context: context,
@@ -69,14 +69,13 @@ class MobileBottomNav extends StatelessWidget {
                       selectedIndex == 1 ||
                       selectedIndex == 3 ||
                       selectedIndex == 4 ||
-                      selectedIndex == 5 ||
+                      selectedIndex == 6 ||
                       selectedIndex == 7 ||
                       selectedIndex == 8 ||
                       selectedIndex == 9 ||
                       selectedIndex == 10 ||
                       selectedIndex == 11 ||
-                      selectedIndex == 12 ||
-                      selectedIndex == 13,
+                      selectedIndex == 12,
                   showSubmenu: true,
                 ),
               ],
@@ -238,24 +237,15 @@ class MobileBottomNav extends StatelessWidget {
                             isSelected: selectedIndex == 3,
                           ),
                           const Divider(height: 1),
-                          _buildSubmenuItem(
-                            context: context,
-                            icon: Icons.analytics_rounded,
-                            title: 'Stok',
-                            subtitle: 'Kelola inventori & laporan stok',
-                            color: AppTheme.accentOrange,
-                            index: 4,
-                            isSelected: selectedIndex == 4,
-                          ),
-                          const Divider(height: 1),
+
                           _buildSubmenuItem(
                             context: context,
                             icon: Icons.palette_rounded,
                             title: 'Theme',
                             subtitle: 'Personalisasi warna & tampilan',
                             color: AppTheme.accentPurple,
-                            index: 7,
-                            isSelected: selectedIndex == 7,
+                            index: 6,
+                            isSelected: selectedIndex == 6,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -264,8 +254,8 @@ class MobileBottomNav extends StatelessWidget {
                             title: 'Logo & Branding',
                             subtitle: 'Ubah logo & nama aplikasi',
                             color: Colors.pink,
-                            index: 8,
-                            isSelected: selectedIndex == 8,
+                            index: 7,
+                            isSelected: selectedIndex == 7,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -274,18 +264,18 @@ class MobileBottomNav extends StatelessWidget {
                             title: 'AI Chat',
                             subtitle: 'Asisten AI untuk analisis bisnis',
                             color: Colors.deepPurple,
-                            index: 9,
-                            isSelected: selectedIndex == 9,
+                            index: 8,
+                            isSelected: selectedIndex == 8,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
                             context: context,
-                            icon: Icons.history,
-                            title: 'Stock History',
-                            subtitle: 'Riwayat perubahan stok',
+                            icon: Icons.store,
+                            title: 'Store',
+                            subtitle: 'Kelola data toko',
                             color: Colors.teal,
-                            index: 10,
-                            isSelected: selectedIndex == 10,
+                            index: 9,
+                            isSelected: selectedIndex == 9,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -294,8 +284,8 @@ class MobileBottomNav extends StatelessWidget {
                             title: 'Service',
                             subtitle: 'Kelola service & perbaikan',
                             color: Colors.blue,
-                            index: 11,
-                            isSelected: selectedIndex == 11,
+                            index: 10,
+                            isSelected: selectedIndex == 10,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -304,8 +294,8 @@ class MobileBottomNav extends StatelessWidget {
                             title: 'Trade In',
                             subtitle: 'Tukar tambah produk',
                             color: Colors.cyan,
-                            index: 12,
-                            isSelected: selectedIndex == 12,
+                            index: 11,
+                            isSelected: selectedIndex == 11,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -314,8 +304,8 @@ class MobileBottomNav extends StatelessWidget {
                             title: 'Report',
                             subtitle: 'Laporan & analisis lengkap',
                             color: Colors.indigo,
-                            index: 13,
-                            isSelected: selectedIndex == 13,
+                            index: 12,
+                            isSelected: selectedIndex == 12,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -324,8 +314,8 @@ class MobileBottomNav extends StatelessWidget {
                             title: 'Pengaturan',
                             subtitle: 'Konfigurasi aplikasi & sistem',
                             color: AppTheme.textSecondary,
-                            index: 5,
-                            isSelected: selectedIndex == 5,
+                            index: 4,
+                            isSelected: selectedIndex == 4,
                           ),
                           const SizedBox(height: 16),
                         ],

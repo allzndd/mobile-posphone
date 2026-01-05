@@ -9,12 +9,11 @@ import '../../produk/screens/produk_screen.dart';
 import '../../transaksi/screens/transaksimasuk_screen.dart';
 import '../../transaksi/screens/transaksikeluar_screen.dart';
 import '../../pelanggan/screens/pelanggan_screen.dart';
-import '../../stok/screens/stok_screen.dart';
 import '../../pengaturan/screens/pengaturan_screen.dart';
 import '../../pengaturan/screens/logo_branding_screen.dart';
 import '../../theme/screens/theme_customizer_screen.dart';
 import '../../chat_analysis/screens/chat_analysis_screen.dart';
-import '../../log_stok/screens/stock_history_screen.dart';
+import '../../store/screens/index.screen.dart';
 import '../../services/screens/service_screen.dart';
 import '../../trade_in/screens/trade_in_screen.dart';
 import '../../reports/screens/report_screen.dart';
@@ -47,38 +46,36 @@ class _MainLayoutState extends State<MainLayout> {
 
   // Daftar layar untuk navigasi
   final List<Widget> _screens = [
-    const DashboardScreen(),
-    const ProdukScreen(),
-    const TransaksiMasukScreen(),
-    const PelangganScreen(),
-    const StokScreen(),
-    const PengaturanScreen(),
-    const TransaksiKeluarScreen(),
-    const ThemeCustomizerScreen(),
-    const LogoBrandingScreen(),
-    const ChatAnalysisScreen(),
-    const StockHistoryScreen(),
-    const ServiceScreen(),
-    const TradeInScreen(),
-    const ReportScreen(),
+    const DashboardScreen(),        // 0
+    const ProdukScreen(),           // 1  
+    const TransaksiMasukScreen(),   // 2
+    const PelangganScreen(),        // 3
+    const PengaturanScreen(),       // 4
+    const TransaksiKeluarScreen(),  // 5
+    const ThemeCustomizerScreen(),  // 6
+    const LogoBrandingScreen(),     // 7
+    const ChatAnalysisScreen(),     // 8
+    const StoreIndexScreen(),       // 9
+    const ServiceScreen(),          // 10
+    const TradeInScreen(),          // 11
+    const ReportScreen(),           // 12
   ];
 
   // Judul untuk setiap layar
   final List<String> _screenTitles = [
-    'Dashboard',
-    'Produk',
-    'Transaksi Masuk',
-    'Pelanggan',
-    'Stok',
-    'Pengaturan',
-    'Transaksi Keluar',
-    'Theme Customizer',
-    'Logo & Branding',
-    'AI Business Assistant',
-    'Riwayat Stok',
-    'Service & Perbaikan',
-    'Tukar Tambah',
-    'Laporan & Analisis',
+    'Dashboard',              // 0
+    'Produk',                // 1
+    'Transaksi Masuk',       // 2
+    'Pelanggan',             // 3
+    'Pengaturan',            // 4
+    'Transaksi Keluar',      // 5
+    'Theme Customizer',      // 6
+    'Logo & Branding',       // 7
+    'AI Business Assistant', // 8
+    'Toko',                 // 9
+    'Service & Perbaikan',   // 10
+    'Tukar Tambah',         // 11
+    'Laporan & Analisis',   // 12
   ];
 
   void _onMenuItemTap(int index) {

@@ -2,7 +2,7 @@
 class ApiConfig {
   /// Base URL untuk Laravel API
   /// Sesuaikan dengan server Laravel yang berjalan
-  static const String baseUrl = 'http://192.168.1.9:8000';
+  static const String baseUrl = 'http://192.168.0.107:8000';
 
   /// API endpoints
   static const String registerEndpoint = '/api/register';
@@ -10,6 +10,12 @@ class ApiConfig {
   static const String logoutEndpoint = '/api/logout';
   static const String userEndpoint = '/api/user';
   static const String brandingConfigEndpoint = '/api/branding-config/public';
+  
+  // Product endpoints
+  static const String allProductsEndpoint = '/api/products';
+  static const String productBrandsEndpoint = '/api/product-brands';
+  static const String stockManagementEndpoint = '/api/stock-management';
+  static const String stockHistoryEndpoint = '/api/stock-history';
 
   /// Get full URL untuk endpoint
   static String getUrl(String endpoint) {
