@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
-import '../models/store.dart';
+import '../models/supplier.dart';
 import 'edit.screen.dart';
 
-class StoreDetailScreen extends StatelessWidget {
-  final Store store;
+class SupplierDetailScreen extends StatelessWidget {
+  final Supplier supplier;
 
-  const StoreDetailScreen({super.key, required this.store});
+  const SupplierDetailScreen({super.key, required this.supplier});
 
-  static void show(BuildContext context, Store store) {
+  static void show(BuildContext context, Supplier supplier) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -20,7 +20,7 @@ class StoreDetailScreen extends StatelessWidget {
               horizontal: MediaQuery.of(context).size.width > 600 ? 40 : 16,
               vertical: 24,
             ),
-            child: StoreDetailScreen(store: store),
+            child: SupplierDetailScreen(supplier: supplier),
           ),
     );
   }
@@ -53,8 +53,8 @@ class StoreDetailScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header with Store Icon
-            _buildStoreHeader(themeProvider, isMobile),
+            // Header with Supplier Icon
+            _buildSupplierHeader(themeProvider, isMobile),
 
             // Scrollable Content
             Flexible(
@@ -63,13 +63,13 @@ class StoreDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Store Name & Title
-                    _buildStoreTitle(themeProvider, isMobile),
+                    // Supplier Name & Title
+                    _buildSupplierTitle(themeProvider, isMobile),
 
                     SizedBox(height: isMobile ? 16 : 20),
 
-                    // Store Information Section
-                    _buildStoreInfoSection(themeProvider, isMobile),
+                    // Supplier Information Section
+                    _buildSupplierInfoSection(themeProvider, isMobile),
                   ],
                 ),
               ),
@@ -83,7 +83,7 @@ class StoreDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreHeader(ThemeProvider themeProvider, bool isMobile) {
+  Widget _buildSupplierHeader(ThemeProvider themeProvider, bool isMobile) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 16 : 24),
@@ -99,7 +99,7 @@ class StoreDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Store Icon
+          // Supplier Icon
           Container(
             width: isMobile ? 60 : 80,
             height: isMobile ? 60 : 80,
@@ -108,7 +108,7 @@ class StoreDetailScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
             ),
             child: Icon(
-              Icons.store_rounded,
+              Icons.local_shipping_rounded,
               color: Colors.white,
               size: isMobile ? 32 : 40,
             ),
@@ -116,7 +116,7 @@ class StoreDetailScreen extends StatelessWidget {
 
           SizedBox(width: isMobile ? 12 : 16),
 
-          // Store Badge
+          // Supplier Badge
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
@@ -163,12 +163,12 @@ class StoreDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreTitle(ThemeProvider themeProvider, bool isMobile) {
+  Widget _buildSupplierTitle(ThemeProvider themeProvider, bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          store.nama,
+          supplier.nama,
           style: TextStyle(
             fontSize: isMobile ? 20 : 24,
             fontWeight: FontWeight.bold,
@@ -187,7 +187,7 @@ class StoreDetailScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            'Store Location',
+            'Supplier Partner',
             style: TextStyle(
               fontSize: isMobile ? 12 : 14,
               fontWeight: FontWeight.w500,
@@ -199,12 +199,12 @@ class StoreDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreInfoSection(ThemeProvider themeProvider, bool isMobile) {
+  Widget _buildSupplierInfoSection(ThemeProvider themeProvider, bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(
-          'Store Information',
+          'Supplier Information',
           Icons.business_rounded,
           themeProvider,
           isMobile,
@@ -224,21 +224,51 @@ class StoreDetailScreen extends StatelessWidget {
             children: [
               _buildInfoItem(
                 Icons.business,
-                'Store Name',
-                store.nama,
+                'Supplier Name',
+                supplier.nama,
                 themeProvider,
                 isMobile,
               ),
-              SizedBox(height: isMobile ? 12 : 16),
-              _buildInfoItem(
-                Icons.location_on_rounded,
-                'Address',
-                store.alamat?.isNotEmpty == true
-                    ? store.alamat!
-                    : 'No address provided',
-                themeProvider,
-                isMobile,
-              ),
+              if (supplier.nomorHp?.isNotEmpty == true) ...[
+                SizedBox(height: isMobile ? 12 : 16),
+                _buildInfoItem(
+                  Icons.phone_rounded,
+                  'Phone Number',
+                  supplier.nomorHp!,
+                  themeProvider,
+                  isMobile,
+                ),
+              ],
+              if (supplier.email?.isNotEmpty == true) ...[
+                SizedBox(height: isMobile ? 12 : 16),
+                _buildInfoItem(
+                  Icons.email_rounded,
+                  'Email',
+                  supplier.email!,
+                  themeProvider,
+                  isMobile,
+                ),
+              ],
+              if (supplier.alamat?.isNotEmpty == true) ...[
+                SizedBox(height: isMobile ? 12 : 16),
+                _buildInfoItem(
+                  Icons.location_on_rounded,
+                  'Address',
+                  supplier.alamat!,
+                  themeProvider,
+                  isMobile,
+                ),
+              ],
+              if (supplier.keterangan?.isNotEmpty == true) ...[
+                SizedBox(height: isMobile ? 12 : 16),
+                _buildInfoItem(
+                  Icons.note_rounded,
+                  'Notes',
+                  supplier.keterangan!,
+                  themeProvider,
+                  isMobile,
+                ),
+              ],
             ],
           ),
         ),
@@ -367,7 +397,8 @@ class StoreDetailScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => StoreEditScreen(store: store),
+                    builder:
+                        (context) => SupplierEditScreen(supplier: supplier),
                   ),
                 );
               },

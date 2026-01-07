@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
-import '../models/store.dart';
+import '../../component/validation_handler.dart';
+import '../models/service.dart';
+import '../services/service_service.dart';
 import 'edit.screen.dart';
 
-class StoreDetailScreen extends StatelessWidget {
-  final Store store;
+class ServiceDetailScreen extends StatelessWidget {
+  final Service service;
 
-  const StoreDetailScreen({super.key, required this.store});
+  const ServiceDetailScreen({super.key, required this.service});
 
-  static void show(BuildContext context, Store store) {
+  static void show(BuildContext context, Service service) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -20,7 +22,7 @@ class StoreDetailScreen extends StatelessWidget {
               horizontal: MediaQuery.of(context).size.width > 600 ? 40 : 16,
               vertical: 24,
             ),
-            child: StoreDetailScreen(store: store),
+            child: ServiceDetailScreen(service: service),
           ),
     );
   }
@@ -53,8 +55,8 @@ class StoreDetailScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header with Store Icon
-            _buildStoreHeader(themeProvider, isMobile),
+            // Header with Service Icon
+            _buildServiceHeader(themeProvider, isMobile),
 
             // Scrollable Content
             Flexible(
@@ -63,13 +65,13 @@ class StoreDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Store Name & Title
-                    _buildStoreTitle(themeProvider, isMobile),
+                    // Service Name & Title
+                    _buildServiceTitle(themeProvider, isMobile),
 
                     SizedBox(height: isMobile ? 16 : 20),
 
-                    // Store Information Section
-                    _buildStoreInfoSection(themeProvider, isMobile),
+                    // Service Information Section
+                    _buildServiceInfoSection(themeProvider, isMobile),
                   ],
                 ),
               ),
@@ -83,7 +85,7 @@ class StoreDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreHeader(ThemeProvider themeProvider, bool isMobile) {
+  Widget _buildServiceHeader(ThemeProvider themeProvider, bool isMobile) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 16 : 24),
@@ -99,7 +101,7 @@ class StoreDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Store Icon
+          // Service Icon
           Container(
             width: isMobile ? 60 : 80,
             height: isMobile ? 60 : 80,
@@ -108,7 +110,7 @@ class StoreDetailScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
             ),
             child: Icon(
-              Icons.store_rounded,
+              Icons.build_rounded,
               color: Colors.white,
               size: isMobile ? 32 : 40,
             ),
@@ -116,7 +118,7 @@ class StoreDetailScreen extends StatelessWidget {
 
           SizedBox(width: isMobile ? 12 : 16),
 
-          // Store Badge
+          // Service Badge
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
@@ -146,7 +148,7 @@ class StoreDetailScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 4),
                     Text(
-                      'Active',
+                      'Service',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -163,12 +165,12 @@ class StoreDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreTitle(ThemeProvider themeProvider, bool isMobile) {
+  Widget _buildServiceTitle(ThemeProvider themeProvider, bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          store.nama,
+          service.nama,
           style: TextStyle(
             fontSize: isMobile ? 20 : 24,
             fontWeight: FontWeight.bold,
@@ -187,7 +189,7 @@ class StoreDetailScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            'Store Location',
+            'Service Details',
             style: TextStyle(
               fontSize: isMobile ? 12 : 14,
               fontWeight: FontWeight.w500,
@@ -199,13 +201,13 @@ class StoreDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreInfoSection(ThemeProvider themeProvider, bool isMobile) {
+  Widget _buildServiceInfoSection(ThemeProvider themeProvider, bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(
-          'Store Information',
-          Icons.business_rounded,
+          'Service Information',
+          Icons.build_rounded,
           themeProvider,
           isMobile,
         ),
@@ -223,19 +225,35 @@ class StoreDetailScreen extends StatelessWidget {
           child: Column(
             children: [
               _buildInfoItem(
-                Icons.business,
-                'Store Name',
-                store.nama,
+                Icons.build,
+                'Service Name',
+                service.nama,
+                themeProvider,
+                isMobile,
+              ),
+              if (service.keterangan?.isNotEmpty == true) ...[
+                SizedBox(height: isMobile ? 12 : 16),
+                _buildInfoItem(
+                  Icons.info_outline,
+                  'Description',
+                  service.keterangan!,
+                  themeProvider,
+                  isMobile,
+                ),
+              ],
+              SizedBox(height: isMobile ? 12 : 16),
+              _buildInfoItem(
+                Icons.schedule,
+                'Duration',
+                '${service.durasi} minutes',
                 themeProvider,
                 isMobile,
               ),
               SizedBox(height: isMobile ? 12 : 16),
               _buildInfoItem(
-                Icons.location_on_rounded,
-                'Address',
-                store.alamat?.isNotEmpty == true
-                    ? store.alamat!
-                    : 'No address provided',
+                Icons.attach_money,
+                'Price',
+                'Rp ${_formatCurrency(service.harga.toInt())}',
                 themeProvider,
                 isMobile,
               ),
@@ -362,15 +380,7 @@ class StoreDetailScreen extends StatelessWidget {
           SizedBox(width: isMobile ? 12 : 16),
           Expanded(
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => StoreEditScreen(store: store),
-                  ),
-                );
-              },
+              onPressed: () => _editService(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: themeProvider.primaryMain,
                 foregroundColor: Colors.white,
@@ -398,6 +408,25 @@ class StoreDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _editService(BuildContext context) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ServiceEditScreen(service: service),
+      ),
+    );
+
+    if (result == true) {
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  String _formatCurrency(int amount) {
+    return amount.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match match) => '${match[1]}.',
     );
   }
 

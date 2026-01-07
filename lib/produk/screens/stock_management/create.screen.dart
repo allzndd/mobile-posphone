@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../../config/theme_provider.dart';
+import '../../../core/api_config.dart';
 import '../../../component/validation_handler.dart';
-import '../../models/stock_management.dart';
+import '../../../auth/services/auth_service.dart';
 import '../../services/management_service.dart';
 import '../../services/product_service.dart';
-import '../../models/product.dart';
 
 class StockCreateScreen extends StatefulWidget {
   const StockCreateScreen({super.key});
@@ -143,7 +145,43 @@ class _StockCreateScreenState extends State<StockCreateScreen> {
         }).toList();
       }
       
-      // Load stores from stock data
+      // Load stores directly from Store API
+      try {
+        final storesResponse = await http.get(
+          Uri.parse('${ApiConfig.baseUrl}/api/stores'),
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ${await AuthService.getToken()}',
+          },
+        );
+        
+        if (storesResponse.statusCode == 200) {
+          final Map<String, dynamic> responseBody = jsonDecode(storesResponse.body);
+          if (responseBody['success'] == true && responseBody['data'] != null) {
+            final List<dynamic> storeData = responseBody['data'];
+            _stores = storeData.map<Map<String, dynamic>>((store) => {
+              'id': store['id'],
+              'nama': store['nama'],
+            }).toList();
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading stores: $e');
+        // Fallback: Load stores from stock data if direct API fails
+        await _loadStoresFromStockData();
+      }
+    } catch (e) {
+      debugPrint('Error loading data: $e');
+      if (mounted) {
+        await _showErrorMessage('Failed to load data: $e');
+      }
+    } finally {
+      setState(() => _isDataLoading = false);
+    }
+  }
+
+  Future<void> _loadStoresFromStockData() async {
+    try {
       final stocksResponse = await StockService.getStocks(
         page: 1,
         perPage: 1000,
@@ -178,12 +216,7 @@ class _StockCreateScreenState extends State<StockCreateScreen> {
         _stores = uniqueStores;
       }
     } catch (e) {
-      debugPrint('Error loading data: $e');
-      if (mounted) {
-        await _showErrorMessage('Failed to load data: $e');
-      }
-    } finally {
-      setState(() => _isDataLoading = false);
+      debugPrint('Error loading stores from stock data: $e');
     }
   }
 

@@ -8,13 +8,14 @@ import '../../dashboard/screens/dashboard_screen.dart';
 import '../../produk/screens/produk_screen.dart';
 import '../../transaksi/screens/transaksimasuk_screen.dart';
 import '../../transaksi/screens/transaksikeluar_screen.dart';
-import '../../pelanggan/screens/pelanggan_screen.dart';
+import '../../customers/screens/index.screen.dart';
 import '../../pengaturan/screens/pengaturan_screen.dart';
 import '../../pengaturan/screens/logo_branding_screen.dart';
 import '../../theme/screens/theme_customizer_screen.dart';
 import '../../chat_analysis/screens/chat_analysis_screen.dart';
 import '../../store/screens/index.screen.dart';
-import '../../services/screens/service_screen.dart';
+import '../../services/screens/index.screen.dart';
+import '../../suppliers/screens/index.screen.dart';
 import '../../trade_in/screens/trade_in_screen.dart';
 import '../../reports/screens/report_screen.dart';
 
@@ -44,38 +45,40 @@ class _MainLayoutState extends State<MainLayout> {
     _currentIndex = widget.selectedIndex;
   }
 
-  // Daftar layar untuk navigasi
+  // Screen list for navigation
   final List<Widget> _screens = [
-    const DashboardScreen(),        // 0
-    const ProdukScreen(),           // 1  
-    const TransaksiMasukScreen(),   // 2
-    const PelangganScreen(),        // 3
-    const PengaturanScreen(),       // 4
-    const TransaksiKeluarScreen(),  // 5
-    const ThemeCustomizerScreen(),  // 6
-    const LogoBrandingScreen(),     // 7
-    const ChatAnalysisScreen(),     // 8
-    const StoreIndexScreen(),       // 9
-    const ServiceScreen(),          // 10
-    const TradeInScreen(),          // 11
-    const ReportScreen(),           // 12
+    const DashboardScreen(), // 0
+    const ProdukScreen(), // 1
+    const TransaksiMasukScreen(), // 2
+    const CustomerIndexScreen(), // 3
+    const PengaturanScreen(), // 4
+    const TransaksiKeluarScreen(), // 5
+    const ThemeCustomizerScreen(), // 6
+    const LogoBrandingScreen(), // 7
+    const ChatAnalysisScreen(), // 8
+    const StoreIndexScreen(), // 9
+    const ServiceIndexScreen(), // 10
+    const SupplierIndexScreen(), // 11
+    const TradeInScreen(), // 12
+    const ReportScreen(), // 13
   ];
 
-  // Judul untuk setiap layar
+  // Title for each screen
   final List<String> _screenTitles = [
-    'Dashboard',              // 0
-    'Produk',                // 1
-    'Transaksi Masuk',       // 2
-    'Pelanggan',             // 3
-    'Pengaturan',            // 4
-    'Transaksi Keluar',      // 5
-    'Theme Customizer',      // 6
-    'Logo & Branding',       // 7
+    'Dashboard', // 0
+    'Products', // 1
+    'Incoming Transaction', // 2
+    'Customers', // 3
+    'Settings', // 4
+    'Outgoing Transaction', // 5
+    'Theme Customizer', // 6
+    'Logo & Branding', // 7
     'AI Business Assistant', // 8
-    'Toko',                 // 9
-    'Service & Perbaikan',   // 10
-    'Tukar Tambah',         // 11
-    'Laporan & Analisis',   // 12
+    'Stores', // 9
+    'Services & Repairs', // 10
+    'Suppliers', // 11
+    'Trade In', // 12
+    'Reports & Analytics', // 13
   ];
 
   void _onMenuItemTap(int index) {
@@ -85,7 +88,7 @@ class _MainLayoutState extends State<MainLayout> {
   }
 
   void _onLogout() {
-    // Implementasi logout
+    // Logout implementation
     Navigator.of(context).pushReplacementNamed('/login');
   }
 

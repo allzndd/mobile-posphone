@@ -2,22 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
 import '../../component/validation_handler.dart';
-import '../models/store.dart';
-import '../services/store_service.dart';
+import '../models/supplier.dart';
+import '../services/supplier_service.dart';
 
-class StoreEditScreen extends StatefulWidget {
-  final Store store;
+class SupplierEditScreen extends StatefulWidget {
+  final Supplier supplier;
 
-  const StoreEditScreen({super.key, required this.store});
+  const SupplierEditScreen({super.key, required this.supplier});
 
   @override
-  State<StoreEditScreen> createState() => _StoreEditScreenState();
+  State<SupplierEditScreen> createState() => _SupplierEditScreenState();
 }
 
-class _StoreEditScreenState extends State<StoreEditScreen> {
+class _SupplierEditScreenState extends State<SupplierEditScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _namaController;
+  late final TextEditingController _nomorHpController;
+  late final TextEditingController _emailController;
   late final TextEditingController _alamatController;
+  late final TextEditingController _keteranganController;
 
   bool _isLoading = false;
   Map<String, String> _fieldErrors = {};
@@ -25,14 +28,26 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
   @override
   void initState() {
     super.initState();
-    _namaController = TextEditingController(text: widget.store.nama);
-    _alamatController = TextEditingController(text: widget.store.alamat ?? '');
+    _namaController = TextEditingController(text: widget.supplier.nama);
+    _nomorHpController = TextEditingController(
+      text: widget.supplier.nomorHp ?? '',
+    );
+    _emailController = TextEditingController(text: widget.supplier.email ?? '');
+    _alamatController = TextEditingController(
+      text: widget.supplier.alamat ?? '',
+    );
+    _keteranganController = TextEditingController(
+      text: widget.supplier.keterangan ?? '',
+    );
   }
 
   @override
   void dispose() {
     _namaController.dispose();
+    _nomorHpController.dispose();
+    _emailController.dispose();
     _alamatController.dispose();
+    _keteranganController.dispose();
     super.dispose();
   }
 
@@ -49,7 +64,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
         backgroundColor: themeProvider.surfaceColor,
         elevation: 0,
         title: Text(
-          'Edit Store',
+          'Edit Supplier',
           style: TextStyle(
             color: themeProvider.textPrimary,
             fontWeight: FontWeight.w600,
@@ -59,7 +74,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
         actions: [
           if (!_isLoading)
             TextButton(
-              onPressed: _updateStore,
+              onPressed: _updateSupplier,
               child: Text(
                 'Save',
                 style: TextStyle(
@@ -79,9 +94,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
               child: _buildHeaderCard(themeProvider, isMobile),
             ),
 
-            // Store Information Section
+            // Supplier Information Section
             SliverToBoxAdapter(
-              child: _buildStoreInfoSection(themeProvider, isMobile),
+              child: _buildSupplierInfoSection(themeProvider, isMobile),
             ),
 
             // Submit Button Section
@@ -137,7 +152,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Edit Store',
+                  'Edit Supplier',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: isMobile ? 18 : 22,
@@ -146,7 +161,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Update store information and details',
+                  'Update supplier information and details',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
                     fontSize: isMobile ? 12 : 14,
@@ -155,7 +170,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
               ],
             ),
           ),
-          // Store ID Badge
+          // Supplier ID Badge
           Container(
             padding: EdgeInsets.symmetric(
               horizontal: isMobile ? 8 : 12,
@@ -166,7 +181,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              '#${widget.store.id}',
+              '#${widget.supplier.id}',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -179,7 +194,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
     );
   }
 
-  Widget _buildStoreInfoSection(ThemeProvider themeProvider, bool isMobile) {
+  Widget _buildSupplierInfoSection(ThemeProvider themeProvider, bool isMobile) {
     return Container(
       margin: EdgeInsets.fromLTRB(
         isMobile ? 16 : 24,
@@ -188,20 +203,20 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
         isMobile ? 16 : 24,
       ),
       child: _buildSectionCard(
-        title: 'Store Information',
-        icon: Icons.store_rounded,
+        title: 'Supplier Information',
+        icon: Icons.local_shipping_rounded,
         children: [
           _buildModernTextField(
             controller: _namaController,
-            label: 'Store Name',
-            hint: 'Enter store name',
-            icon: Icons.store,
+            label: 'Supplier Name',
+            hint: 'Enter supplier name',
+            icon: Icons.business,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Store name is required';
+                return 'Supplier name is required';
               }
               if (value.trim().length < 3) {
-                return 'Store name must be at least 3 characters';
+                return 'Supplier name must be at least 3 characters';
               }
               return null;
             },
@@ -211,18 +226,62 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
           ),
           SizedBox(height: isMobile ? 16 : 20),
           _buildModernTextField(
-            controller: _alamatController,
-            label: 'Store Address',
-            hint: 'Enter complete store address',
-            icon: Icons.location_on_rounded,
-            maxLines: 3,
+            controller: _nomorHpController,
+            label: 'Phone Number',
+            hint: 'Enter phone number',
+            icon: Icons.phone_rounded,
+            keyboardType: TextInputType.phone,
             validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Address is required';
+              if (value != null && value.trim().isNotEmpty) {
+                if (value.trim().length < 10) {
+                  return 'Phone number must be at least 10 digits';
+                }
               }
               return null;
             },
+            errorText: _fieldErrors['nomor_hp'],
+            themeProvider: themeProvider,
+            isMobile: isMobile,
+          ),
+          SizedBox(height: isMobile ? 16 : 20),
+          _buildModernTextField(
+            controller: _emailController,
+            label: 'Email',
+            hint: 'Enter email address',
+            icon: Icons.email_rounded,
+            keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+              if (value != null && value.trim().isNotEmpty) {
+                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                if (!emailRegex.hasMatch(value.trim())) {
+                  return 'Please enter a valid email address';
+                }
+              }
+              return null;
+            },
+            errorText: _fieldErrors['email'],
+            themeProvider: themeProvider,
+            isMobile: isMobile,
+          ),
+          SizedBox(height: isMobile ? 16 : 20),
+          _buildModernTextField(
+            controller: _alamatController,
+            label: 'Address',
+            hint: 'Enter complete supplier address',
+            icon: Icons.location_on_rounded,
+            maxLines: 3,
             errorText: _fieldErrors['alamat'],
+            themeProvider: themeProvider,
+            isMobile: isMobile,
+          ),
+          SizedBox(height: isMobile ? 16 : 20),
+          _buildModernTextField(
+            controller: _keteranganController,
+            label: 'Notes',
+            hint: 'Enter additional notes or description',
+            icon: Icons.note_rounded,
+            maxLines: 3,
+            errorText: _fieldErrors['keterangan'],
             themeProvider: themeProvider,
             isMobile: isMobile,
           ),
@@ -404,7 +463,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
       ),
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _updateStore,
+        onPressed: _isLoading ? null : _updateSupplier,
         style: ElevatedButton.styleFrom(
           backgroundColor: themeProvider.primaryMain,
           foregroundColor: Colors.white,
@@ -425,7 +484,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                   ),
                 )
                 : Text(
-                  'Update Store',
+                  'Update Supplier',
                   style: TextStyle(
                     fontSize: isMobile ? 16 : 18,
                     fontWeight: FontWeight.w600,
@@ -435,7 +494,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
     );
   }
 
-  Future<void> _updateStore() async {
+  Future<void> _updateSupplier() async {
     setState(() {
       _fieldErrors.clear();
     });
@@ -447,14 +506,17 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
     });
 
     try {
-      final storeData = {
+      final supplierData = {
         'nama': _namaController.text.trim(),
+        'nomor_hp': _nomorHpController.text.trim(),
+        'email': _emailController.text.trim(),
         'alamat': _alamatController.text.trim(),
+        'keterangan': _keteranganController.text.trim(),
       };
 
-      final response = await StoreService.updateStore(
-        widget.store.id,
-        storeData,
+      final response = await SupplierService.updateSupplier(
+        widget.supplier.id,
+        supplierData,
       );
 
       if (response['success'] == true) {
@@ -462,7 +524,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
           await ValidationHandler.showSuccessDialog(
             context: context,
             title: 'Success',
-            message: response['message'] ?? 'Store has been updated successfully!',
+            message:
+                response['message'] ??
+                'Supplier has been updated successfully!',
             onPressed: () {
               Navigator.of(context).pop(); // Close dialog
               Navigator.pop(context, true); // Return to previous screen
@@ -479,7 +543,7 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
                 ),
               );
             });
-            
+
             // Show error dialog for validation errors
             await ValidationHandler.showErrorDialog(
               context: context,
@@ -490,7 +554,9 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
             await ValidationHandler.showErrorDialog(
               context: context,
               title: 'Error',
-              message: response['message'] ?? 'Failed to update store. Please try again.',
+              message:
+                  response['message'] ??
+                  'Failed to update supplier. Please try again.',
             );
           }
         }
@@ -500,7 +566,8 @@ class _StoreEditScreenState extends State<StoreEditScreen> {
         await ValidationHandler.showErrorDialog(
           context: context,
           title: 'Network Error',
-          message: 'Failed to connect to server. Please check your internet connection and try again.',
+          message:
+              'Failed to connect to server. Please check your internet connection and try again.',
         );
       }
     } finally {

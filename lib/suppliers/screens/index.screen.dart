@@ -4,25 +4,25 @@ import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
 import '../../component/validation_handler.dart';
 import '../../layouts/screens/main_layout.dart';
-import '../services/store_service.dart';
-import '../models/store.dart';
+import '../services/supplier_service.dart';
+import '../models/supplier.dart';
 import 'create.screen.dart';
 import 'show.screen.dart';
 import 'edit.screen.dart';
 
-class StoreIndexScreen extends StatefulWidget {
-  const StoreIndexScreen({super.key});
+class SupplierIndexScreen extends StatefulWidget {
+  const SupplierIndexScreen({super.key});
 
   @override
-  State<StoreIndexScreen> createState() => _StoreIndexScreenState();
+  State<SupplierIndexScreen> createState() => _SupplierIndexScreenState();
 }
 
-class _StoreIndexScreenState extends State<StoreIndexScreen>
+class _SupplierIndexScreenState extends State<SupplierIndexScreen>
     with TickerProviderStateMixin {
   Timer? _debounceTimer;
   String _searchQuery = '';
   bool _isLoading = false;
-  List<Store> _stores = [];
+  List<Supplier> _suppliers = [];
   String? _error;
   int _currentPage = 1;
   bool _hasMoreData = true;
@@ -42,7 +42,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
-    _loadStores(isRefresh: true);
+    _loadSuppliers(isRefresh: true);
     _fadeController.forward();
   }
 
@@ -53,11 +53,11 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     super.dispose();
   }
 
-  Future<void> _loadStores({bool isRefresh = false}) async {
+  Future<void> _loadSuppliers({bool isRefresh = false}) async {
     if (isRefresh) {
       _currentPage = 1;
       _hasMoreData = true;
-      _stores.clear();
+      _suppliers.clear();
     }
 
     if (!_hasMoreData || _isLoading) return;
@@ -69,31 +69,31 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     });
 
     try {
-      final response = await StoreService.getStores(
+      final response = await SupplierService.getSuppliers(
         page: _currentPage,
         perPage: _perPage,
-        search: _searchQuery.isNotEmpty ? _searchQuery : null,
+        nama: _searchQuery.isNotEmpty ? _searchQuery : null,
       );
 
       if (response['success'] == true) {
-        final List<dynamic> storeData = response['data'] ?? [];
-        final List<Store> newStores =
-            storeData.map((json) => Store.fromJson(json)).toList();
+        final List<dynamic> supplierData = response['data'] ?? [];
+        final List<Supplier> newSuppliers =
+            supplierData.map((json) => Supplier.fromJson(json)).toList();
 
         setState(() {
           if (isRefresh || _currentPage == 1) {
-            _stores = newStores;
+            _suppliers = newSuppliers;
           } else {
-            _stores.addAll(newStores);
+            _suppliers.addAll(newSuppliers);
           }
 
           // Check if has more data
-          _hasMoreData = newStores.length >= _perPage;
+          _hasMoreData = newSuppliers.length >= _perPage;
           if (_hasMoreData) _currentPage++;
         });
       } else {
         setState(() {
-          _error = response['message'] ?? 'Failed to load stores';
+          _error = response['message'] ?? 'Failed to load suppliers';
         });
       }
     } catch (e) {
@@ -111,7 +111,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
   void _debounceSearch() {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      _loadStores(isRefresh: true);
+      _loadSuppliers(isRefresh: true);
     });
   }
 
@@ -130,36 +130,35 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => const MainLayout(
-                title: 'Dashboard',
-                selectedIndex: 0,
-              ),
+              builder:
+                  (context) =>
+                      const MainLayout(title: 'Dashboard', selectedIndex: 0),
             ),
           );
         }
       },
       child: Scaffold(
-      backgroundColor: themeProvider.backgroundColor,
-      body: RefreshIndicator(
-        onRefresh: () => _loadStores(isRefresh: true),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildModernHeader(isDesktop),
-                _buildStatsCards(isDesktop, isTablet),
-                _buildSearchSection(isDesktop),
-                _buildStoresContentContainer(isDesktop, isTablet),
-              ],
+        backgroundColor: themeProvider.backgroundColor,
+        body: RefreshIndicator(
+          onRefresh: () => _loadSuppliers(isRefresh: true),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  _buildModernHeader(isDesktop),
+                  _buildStatsCards(isDesktop, isTablet),
+                  _buildSearchSection(isDesktop),
+                  _buildSuppliersContentContainer(isDesktop, isTablet),
+                ],
+              ),
             ),
           ),
         ),
+        floatingActionButton: _buildModernFAB(themeProvider),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
-      floatingActionButton: _buildModernFAB(themeProvider),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    ),
     );
   }
 
@@ -193,7 +192,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Icons.store_rounded,
+                    Icons.local_shipping_rounded,
                     color: Colors.white,
                     size: isDesktop ? 28 : 24,
                   ),
@@ -204,7 +203,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Store Management',
+                        'Supplier Management',
                         style: TextStyle(
                           fontSize: isDesktop ? 24 : 20,
                           fontWeight: FontWeight.bold,
@@ -213,7 +212,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                       ),
                       SizedBox(height: isDesktop ? 4 : 2),
                       Text(
-                        'Manage your store locations and information',
+                        'Manage your suppliers and vendor information',
                         style: TextStyle(
                           fontSize: isDesktop ? 14 : 12,
                           color: Colors.white.withOpacity(0.8),
@@ -232,24 +231,25 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
 
   Widget _buildStatsCards(bool isDesktop, bool isTablet) {
     final themeProvider = context.watch<ThemeProvider>();
-    final activeStores = _stores.length;
+    final activeSuppliers = _suppliers.length;
     final totalSearchResults =
-        _searchQuery.isNotEmpty ? _stores.length : activeStores;
+        _searchQuery.isNotEmpty ? _suppliers.length : activeSuppliers;
 
     List<Map<String, dynamic>> stats = [
       {
-        'title': 'Total Stores',
-        'value': '$activeStores',
-        'icon': Icons.store_rounded,
+        'title': 'Total Suppliers',
+        'value': '$activeSuppliers',
+        'icon': Icons.local_shipping_rounded,
         'color': Colors.blue,
-        'subtitle': 'Active locations',
+        'subtitle': 'Active vendors',
       },
       {
         'title': 'Search Results',
         'value': '$totalSearchResults',
         'icon': Icons.search_rounded,
         'color': Colors.green,
-        'subtitle': _searchQuery.isNotEmpty ? 'Found stores' : 'All stores',
+        'subtitle':
+            _searchQuery.isNotEmpty ? 'Found suppliers' : 'All suppliers',
       },
     ];
 
@@ -264,9 +264,8 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                 children:
                     stats
                         .map(
-                          (stat) => Expanded(
-                            child: _buildStatCard(stat, isDesktop),
-                          ),
+                          (stat) =>
+                              Expanded(child: _buildStatCard(stat, isDesktop)),
                         )
                         .toList(),
               )
@@ -302,15 +301,12 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         },
         style: TextStyle(color: themeProvider.textPrimary),
         decoration: InputDecoration(
-          hintText: 'Search stores by name or location...',
+          hintText: 'Search suppliers by name...',
           hintStyle: TextStyle(
             color: themeProvider.textSecondary,
             fontSize: 14,
           ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: themeProvider.textSecondary,
-          ),
+          prefixIcon: Icon(Icons.search, color: themeProvider.textSecondary),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 16,
@@ -321,14 +317,13 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: themeProvider.borderColor.withOpacity(0.3)),
+            borderSide: BorderSide(
+              color: themeProvider.borderColor.withOpacity(0.3),
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: themeProvider.primaryMain,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: themeProvider.primaryMain, width: 2),
           ),
           filled: true,
           fillColor: themeProvider.surfaceColor,
@@ -361,7 +356,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         ),
         const SizedBox(height: 20),
         ElevatedButton.icon(
-          onPressed: () => _loadStores(isRefresh: true),
+          onPressed: () => _loadSuppliers(isRefresh: true),
           icon: const Icon(Icons.refresh),
           label: const Text('Retry'),
           style: ElevatedButton.styleFrom(
@@ -444,8 +439,8 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     );
   }
 
-  Widget _buildStoresContentContainer(bool isDesktop, bool isTablet) {
-    if (_isLoading && _stores.isEmpty) {
+  Widget _buildSuppliersContentContainer(bool isDesktop, bool isTablet) {
+    if (_isLoading && _suppliers.isEmpty) {
       return Container(
         height: MediaQuery.of(context).size.height * 0.4,
         child: const Center(child: CircularProgressIndicator()),
@@ -459,22 +454,25 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
       );
     }
 
-    if (_stores.isEmpty && !_isLoading) {
+    if (_suppliers.isEmpty && !_isLoading) {
       return Container(
         height: MediaQuery.of(context).size.height * 0.4,
         child: _buildEmptyState(),
       );
     }
 
-    return _buildStoresListContainer(isDesktop, isTablet);
+    return _buildSuppliersListContainer(isDesktop, isTablet);
   }
 
-  Widget _buildStoresListContainer(bool isDesktop, bool isTablet) {
+  Widget _buildSuppliersListContainer(bool isDesktop, bool isTablet) {
     // Calculate height based on available screen space
     final screenHeight = MediaQuery.of(context).size.height;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final availableHeight = screenHeight - keyboardHeight - 400; // Approximate space for header, stats, search
-    
+    final availableHeight =
+        screenHeight -
+        keyboardHeight -
+        400; // Approximate space for header, stats, search
+
     return Container(
       height: availableHeight > 200 ? availableHeight : 200,
       child: ListView.builder(
@@ -484,9 +482,9 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
           isDesktop ? 20 : 16,
           80, // Extra bottom padding for FAB clearance
         ),
-        itemCount: _stores.length + (_isLoadingMore ? 1 : 0),
+        itemCount: _suppliers.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _stores.length) {
+          if (index >= _suppliers.length) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -494,13 +492,13 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
               ),
             );
           }
-          return _buildModernStoreCard(_stores[index], isDesktop);
+          return _buildModernSupplierCard(_suppliers[index], isDesktop);
         },
       ),
     );
   }
 
-  Widget _buildModernStoreCard(Store store, bool isDesktop) {
+  Widget _buildModernSupplierCard(Supplier supplier, bool isDesktop) {
     final themeProvider = context.watch<ThemeProvider>();
 
     return TweenAnimationBuilder<double>(
@@ -527,14 +525,14 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => _showStoreDetail(store),
+                  onTap: () => _showSupplierDetail(supplier),
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
                     padding: EdgeInsets.all(isDesktop ? 20 : 16),
                     child: Row(
                       children: [
                         Hero(
-                          tag: 'store-${store.id}',
+                          tag: 'supplier-${supplier.id}',
                           child: Container(
                             width: isDesktop ? 60 : 50,
                             height: isDesktop ? 60 : 50,
@@ -559,7 +557,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                               ],
                             ),
                             child: Icon(
-                              Icons.store_rounded,
+                              Icons.local_shipping_rounded,
                               color: Colors.white,
                               size: isDesktop ? 28 : 24,
                             ),
@@ -571,7 +569,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                store.nama,
+                                supplier.nama,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: isDesktop ? 18 : 16,
@@ -581,24 +579,49 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                                 overflow: TextOverflow.ellipsis,
                               ),
                               SizedBox(height: isDesktop ? 4 : 2),
-                              if (store.alamat != null &&
-                                  store.alamat!.isNotEmpty) ...[
+                              if (supplier.nomorHp != null &&
+                                  supplier.nomorHp!.isNotEmpty) ...[
                                 Row(
                                   children: [
                                     Icon(
-                                      Icons.location_on_rounded,
+                                      Icons.phone_rounded,
                                       size: isDesktop ? 16 : 14,
                                       color: themeProvider.textSecondary,
                                     ),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
-                                        store.alamat!,
+                                        supplier.nomorHp!,
                                         style: TextStyle(
                                           fontSize: isDesktop ? 14 : 12,
                                           color: themeProvider.textSecondary,
                                         ),
-                                        maxLines: 2,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              if (supplier.email != null &&
+                                  supplier.email!.isNotEmpty) ...[
+                                SizedBox(height: isDesktop ? 2 : 1),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.email_rounded,
+                                      size: isDesktop ? 16 : 14,
+                                      color: themeProvider.textSecondary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        supplier.email!,
+                                        style: TextStyle(
+                                          fontSize: isDesktop ? 14 : 12,
+                                          color: themeProvider.textSecondary,
+                                        ),
+                                        maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -609,7 +632,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                           ),
                         ),
                         IconButton(
-                          onPressed: () => _deleteStore(store),
+                          onPressed: () => _deleteSupplier(supplier),
                           icon: Icon(
                             Icons.delete,
                             size: isDesktop ? 20 : 18,
@@ -618,7 +641,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           visualDensity: VisualDensity.compact,
-                          tooltip: 'Delete Store',
+                          tooltip: 'Delete Supplier',
                         ),
                       ],
                     ),
@@ -632,8 +655,8 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     );
   }
 
-  void _showStoreDetail(Store store) {
-    StoreDetailScreen.show(context, store);
+  void _showSupplierDetail(Supplier supplier) {
+    SupplierDetailScreen.show(context, supplier);
   }
 
   Widget _buildModernFAB(ThemeProvider themeProvider) {
@@ -649,7 +672,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
             elevation: 8,
             icon: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
             label: const Text(
-              'Add Store',
+              'Add Supplier',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -674,14 +697,14 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
             borderRadius: BorderRadius.circular(50),
           ),
           child: Icon(
-            Icons.store_outlined,
+            Icons.local_shipping_outlined,
             size: 64,
             color: themeProvider.primaryMain,
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          _searchQuery.isNotEmpty ? 'No stores found' : 'No stores yet',
+          _searchQuery.isNotEmpty ? 'No suppliers found' : 'No suppliers yet',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -692,7 +715,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         Text(
           _searchQuery.isNotEmpty
               ? 'Try adjusting your search terms'
-              : 'Get started by adding your first store',
+              : 'Get started by adding your first supplier',
           style: TextStyle(fontSize: 14, color: themeProvider.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -701,7 +724,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
           ElevatedButton.icon(
             onPressed: () => _navigateToCreate(),
             icon: const Icon(Icons.add),
-            label: const Text('Add First Store'),
+            label: const Text('Add First Supplier'),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
@@ -713,30 +736,33 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
   void _navigateToCreate() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const StoreCreateScreen()),
+      MaterialPageRoute(builder: (context) => const SupplierCreateScreen()),
     );
 
     if (result != null && mounted) {
-      await _loadStores(isRefresh: true);
+      await _loadSuppliers(isRefresh: true);
     }
   }
 
-  void _navigateToEdit(Store store) async {
+  void _navigateToEdit(Supplier supplier) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => StoreEditScreen(store: store)),
+      MaterialPageRoute(
+        builder: (context) => SupplierEditScreen(supplier: supplier),
+      ),
     );
 
     if (result != null && mounted) {
-      await _loadStores(isRefresh: true);
+      await _loadSuppliers(isRefresh: true);
     }
   }
 
-  Future<void> _deleteStore(Store store) async {
+  Future<void> _deleteSupplier(Supplier supplier) async {
     // Show confirmation dialog using context extension method
     final bool? shouldDelete = await context.showConfirmation(
-      title: 'Delete Store',
-      message: 'Are you sure you want to delete "${store.nama}"?\n\nThis action cannot be undone.',
+      title: 'Delete Supplier',
+      message:
+          'Are you sure you want to delete "${supplier.nama}"?\n\nThis action cannot be undone.',
       confirmText: 'Delete',
       cancelText: 'Cancel',
       confirmColor: Colors.red,
@@ -745,17 +771,17 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     if (shouldDelete != true) return;
 
     try {
-      final response = await StoreService.deleteStore(store.id);
+      final response = await SupplierService.deleteSupplier(supplier.id);
 
       if (response['success'] == true) {
         // Reload data to ensure we have latest from server
-        await _loadStores(isRefresh: true);
+        await _loadSuppliers(isRefresh: true);
 
         if (mounted) {
           await ValidationHandler.showSuccessDialog(
             context: context,
             title: 'Success',
-            message: 'Store deleted successfully',
+            message: 'Supplier deleted successfully',
           );
         }
       } else {
@@ -763,7 +789,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
           await ValidationHandler.showErrorDialog(
             context: context,
             title: 'Error',
-            message: response['message'] ?? 'Failed to delete store',
+            message: response['message'] ?? 'Failed to delete supplier',
           );
         }
       }
@@ -772,7 +798,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         await ValidationHandler.showErrorDialog(
           context: context,
           title: 'Error',
-          message: 'Error deleting store: $e',
+          message: 'Error deleting supplier: $e',
         );
       }
     }

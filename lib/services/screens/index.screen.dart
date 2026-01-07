@@ -4,25 +4,25 @@ import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
 import '../../component/validation_handler.dart';
 import '../../layouts/screens/main_layout.dart';
-import '../services/store_service.dart';
-import '../models/store.dart';
+import '../services/service_service.dart';
+import '../models/service.dart';
 import 'create.screen.dart';
 import 'show.screen.dart';
 import 'edit.screen.dart';
 
-class StoreIndexScreen extends StatefulWidget {
-  const StoreIndexScreen({super.key});
+class ServiceIndexScreen extends StatefulWidget {
+  const ServiceIndexScreen({super.key});
 
   @override
-  State<StoreIndexScreen> createState() => _StoreIndexScreenState();
+  State<ServiceIndexScreen> createState() => _ServiceIndexScreenState();
 }
 
-class _StoreIndexScreenState extends State<StoreIndexScreen>
+class _ServiceIndexScreenState extends State<ServiceIndexScreen>
     with TickerProviderStateMixin {
   Timer? _debounceTimer;
   String _searchQuery = '';
   bool _isLoading = false;
-  List<Store> _stores = [];
+  List<Service> _services = [];
   String? _error;
   int _currentPage = 1;
   bool _hasMoreData = true;
@@ -42,7 +42,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
-    _loadStores(isRefresh: true);
+    _loadServices(isRefresh: true);
     _fadeController.forward();
   }
 
@@ -53,11 +53,11 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     super.dispose();
   }
 
-  Future<void> _loadStores({bool isRefresh = false}) async {
+  Future<void> _loadServices({bool isRefresh = false}) async {
     if (isRefresh) {
       _currentPage = 1;
       _hasMoreData = true;
-      _stores.clear();
+      _services.clear();
     }
 
     if (!_hasMoreData || _isLoading) return;
@@ -69,31 +69,31 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     });
 
     try {
-      final response = await StoreService.getStores(
+      final response = await ServiceService.getServices(
         page: _currentPage,
         perPage: _perPage,
         search: _searchQuery.isNotEmpty ? _searchQuery : null,
       );
 
       if (response['success'] == true) {
-        final List<dynamic> storeData = response['data'] ?? [];
-        final List<Store> newStores =
-            storeData.map((json) => Store.fromJson(json)).toList();
+        final List<dynamic> serviceData = response['data'] ?? [];
+        final List<Service> newServices =
+            serviceData.map((json) => Service.fromJson(json)).toList();
 
         setState(() {
           if (isRefresh || _currentPage == 1) {
-            _stores = newStores;
+            _services = newServices;
           } else {
-            _stores.addAll(newStores);
+            _services.addAll(newServices);
           }
 
           // Check if has more data
-          _hasMoreData = newStores.length >= _perPage;
+          _hasMoreData = newServices.length >= _perPage;
           if (_hasMoreData) _currentPage++;
         });
       } else {
         setState(() {
-          _error = response['message'] ?? 'Failed to load stores';
+          _error = response['message'] ?? 'Failed to load services';
         });
       }
     } catch (e) {
@@ -111,7 +111,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
   void _debounceSearch() {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      _loadStores(isRefresh: true);
+      _loadServices(isRefresh: true);
     });
   }
 
@@ -130,36 +130,35 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => const MainLayout(
-                title: 'Dashboard',
-                selectedIndex: 0,
-              ),
+              builder:
+                  (context) =>
+                      const MainLayout(title: 'Dashboard', selectedIndex: 0),
             ),
           );
         }
       },
       child: Scaffold(
-      backgroundColor: themeProvider.backgroundColor,
-      body: RefreshIndicator(
-        onRefresh: () => _loadStores(isRefresh: true),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildModernHeader(isDesktop),
-                _buildStatsCards(isDesktop, isTablet),
-                _buildSearchSection(isDesktop),
-                _buildStoresContentContainer(isDesktop, isTablet),
-              ],
+        backgroundColor: themeProvider.backgroundColor,
+        body: RefreshIndicator(
+          onRefresh: () => _loadServices(isRefresh: true),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  _buildModernHeader(isDesktop),
+                  _buildStatsCards(isDesktop, isTablet),
+                  _buildSearchSection(isDesktop),
+                  _buildServicesContentContainer(isDesktop, isTablet),
+                ],
+              ),
             ),
           ),
         ),
+        floatingActionButton: _buildModernFAB(themeProvider),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
-      floatingActionButton: _buildModernFAB(themeProvider),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    ),
     );
   }
 
@@ -193,7 +192,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Icons.store_rounded,
+                    Icons.build_rounded,
                     color: Colors.white,
                     size: isDesktop ? 28 : 24,
                   ),
@@ -204,7 +203,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Store Management',
+                        'Service Management',
                         style: TextStyle(
                           fontSize: isDesktop ? 24 : 20,
                           fontWeight: FontWeight.bold,
@@ -213,7 +212,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                       ),
                       SizedBox(height: isDesktop ? 4 : 2),
                       Text(
-                        'Manage your store locations and information',
+                        'Manage service orders and repairs',
                         style: TextStyle(
                           fontSize: isDesktop ? 14 : 12,
                           color: Colors.white.withOpacity(0.8),
@@ -232,24 +231,24 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
 
   Widget _buildStatsCards(bool isDesktop, bool isTablet) {
     final themeProvider = context.watch<ThemeProvider>();
-    final activeStores = _stores.length;
+    final activeServices = _services.length;
     final totalSearchResults =
-        _searchQuery.isNotEmpty ? _stores.length : activeStores;
+        _searchQuery.isNotEmpty ? _services.length : activeServices;
 
     List<Map<String, dynamic>> stats = [
       {
-        'title': 'Total Stores',
-        'value': '$activeStores',
-        'icon': Icons.store_rounded,
+        'title': 'Total Services',
+        'value': '$activeServices',
+        'icon': Icons.build_rounded,
         'color': Colors.blue,
-        'subtitle': 'Active locations',
+        'subtitle': 'Active services',
       },
       {
         'title': 'Search Results',
         'value': '$totalSearchResults',
         'icon': Icons.search_rounded,
         'color': Colors.green,
-        'subtitle': _searchQuery.isNotEmpty ? 'Found stores' : 'All stores',
+        'subtitle': _searchQuery.isNotEmpty ? 'Found services' : 'All services',
       },
     ];
 
@@ -264,9 +263,8 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                 children:
                     stats
                         .map(
-                          (stat) => Expanded(
-                            child: _buildStatCard(stat, isDesktop),
-                          ),
+                          (stat) =>
+                              Expanded(child: _buildStatCard(stat, isDesktop)),
                         )
                         .toList(),
               )
@@ -302,15 +300,12 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         },
         style: TextStyle(color: themeProvider.textPrimary),
         decoration: InputDecoration(
-          hintText: 'Search stores by name or location...',
+          hintText: 'Search services by name...',
           hintStyle: TextStyle(
             color: themeProvider.textSecondary,
             fontSize: 14,
           ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: themeProvider.textSecondary,
-          ),
+          prefixIcon: Icon(Icons.search, color: themeProvider.textSecondary),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 16,
@@ -321,14 +316,13 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: themeProvider.borderColor.withOpacity(0.3)),
+            borderSide: BorderSide(
+              color: themeProvider.borderColor.withOpacity(0.3),
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: themeProvider.primaryMain,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: themeProvider.primaryMain, width: 2),
           ),
           filled: true,
           fillColor: themeProvider.surfaceColor,
@@ -361,7 +355,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         ),
         const SizedBox(height: 20),
         ElevatedButton.icon(
-          onPressed: () => _loadStores(isRefresh: true),
+          onPressed: () => _loadServices(isRefresh: true),
           icon: const Icon(Icons.refresh),
           label: const Text('Retry'),
           style: ElevatedButton.styleFrom(
@@ -444,8 +438,8 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     );
   }
 
-  Widget _buildStoresContentContainer(bool isDesktop, bool isTablet) {
-    if (_isLoading && _stores.isEmpty) {
+  Widget _buildServicesContentContainer(bool isDesktop, bool isTablet) {
+    if (_isLoading && _services.isEmpty) {
       return Container(
         height: MediaQuery.of(context).size.height * 0.4,
         child: const Center(child: CircularProgressIndicator()),
@@ -459,22 +453,22 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
       );
     }
 
-    if (_stores.isEmpty && !_isLoading) {
+    if (_services.isEmpty && !_isLoading) {
       return Container(
         height: MediaQuery.of(context).size.height * 0.4,
         child: _buildEmptyState(),
       );
     }
 
-    return _buildStoresListContainer(isDesktop, isTablet);
+    return _buildServicesListContainer(isDesktop, isTablet);
   }
 
-  Widget _buildStoresListContainer(bool isDesktop, bool isTablet) {
+  Widget _buildServicesListContainer(bool isDesktop, bool isTablet) {
     // Calculate height based on available screen space
     final screenHeight = MediaQuery.of(context).size.height;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final availableHeight = screenHeight - keyboardHeight - 400; // Approximate space for header, stats, search
-    
+    final availableHeight = screenHeight - keyboardHeight - 400;
+
     return Container(
       height: availableHeight > 200 ? availableHeight : 200,
       child: ListView.builder(
@@ -484,9 +478,9 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
           isDesktop ? 20 : 16,
           80, // Extra bottom padding for FAB clearance
         ),
-        itemCount: _stores.length + (_isLoadingMore ? 1 : 0),
+        itemCount: _services.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _stores.length) {
+          if (index >= _services.length) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -494,13 +488,13 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
               ),
             );
           }
-          return _buildModernStoreCard(_stores[index], isDesktop);
+          return _buildModernServiceCard(_services[index], isDesktop);
         },
       ),
     );
   }
 
-  Widget _buildModernStoreCard(Store store, bool isDesktop) {
+  Widget _buildModernServiceCard(Service service, bool isDesktop) {
     final themeProvider = context.watch<ThemeProvider>();
 
     return TweenAnimationBuilder<double>(
@@ -527,14 +521,14 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => _showStoreDetail(store),
+                  onTap: () => _showServiceDetail(service),
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
                     padding: EdgeInsets.all(isDesktop ? 20 : 16),
                     child: Row(
                       children: [
                         Hero(
-                          tag: 'store-${store.id}',
+                          tag: 'service-${service.id}',
                           child: Container(
                             width: isDesktop ? 60 : 50,
                             height: isDesktop ? 60 : 50,
@@ -559,7 +553,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                               ],
                             ),
                             child: Icon(
-                              Icons.store_rounded,
+                              Icons.build_rounded,
                               color: Colors.white,
                               size: isDesktop ? 28 : 24,
                             ),
@@ -571,7 +565,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                store.nama,
+                                service.nama,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: isDesktop ? 18 : 16,
@@ -581,19 +575,19 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                                 overflow: TextOverflow.ellipsis,
                               ),
                               SizedBox(height: isDesktop ? 4 : 2),
-                              if (store.alamat != null &&
-                                  store.alamat!.isNotEmpty) ...[
+                              if (service.keterangan != null &&
+                                  service.keterangan!.isNotEmpty) ...[
                                 Row(
                                   children: [
                                     Icon(
-                                      Icons.location_on_rounded,
+                                      Icons.info_outline,
                                       size: isDesktop ? 16 : 14,
                                       color: themeProvider.textSecondary,
                                     ),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
-                                        store.alamat!,
+                                        service.keterangan!,
                                         style: TextStyle(
                                           fontSize: isDesktop ? 14 : 12,
                                           color: themeProvider.textSecondary,
@@ -604,12 +598,45 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                                     ),
                                   ],
                                 ),
+                                SizedBox(height: isDesktop ? 2 : 1),
                               ],
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.attach_money,
+                                    size: isDesktop ? 16 : 14,
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Rp ${_formatCurrency(service.harga.toInt())}',
+                                    style: TextStyle(
+                                      fontSize: isDesktop ? 14 : 12,
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Icon(
+                                    Icons.schedule,
+                                    size: isDesktop ? 16 : 14,
+                                    color: themeProvider.textSecondary,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${service.durasi} menit',
+                                    style: TextStyle(
+                                      fontSize: isDesktop ? 14 : 12,
+                                      color: themeProvider.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
                         IconButton(
-                          onPressed: () => _deleteStore(store),
+                          onPressed: () => _deleteService(service),
                           icon: Icon(
                             Icons.delete,
                             size: isDesktop ? 20 : 18,
@@ -618,7 +645,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           visualDensity: VisualDensity.compact,
-                          tooltip: 'Delete Store',
+                          tooltip: 'Delete Service',
                         ),
                       ],
                     ),
@@ -632,8 +659,8 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     );
   }
 
-  void _showStoreDetail(Store store) {
-    StoreDetailScreen.show(context, store);
+  void _showServiceDetail(Service service) {
+    ServiceDetailScreen.show(context, service);
   }
 
   Widget _buildModernFAB(ThemeProvider themeProvider) {
@@ -649,7 +676,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
             elevation: 8,
             icon: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
             label: const Text(
-              'Add Store',
+              'Add Service',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -674,14 +701,14 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
             borderRadius: BorderRadius.circular(50),
           ),
           child: Icon(
-            Icons.store_outlined,
+            Icons.build_outlined,
             size: 64,
             color: themeProvider.primaryMain,
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          _searchQuery.isNotEmpty ? 'No stores found' : 'No stores yet',
+          _searchQuery.isNotEmpty ? 'No services found' : 'No services yet',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -692,7 +719,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         Text(
           _searchQuery.isNotEmpty
               ? 'Try adjusting your search terms'
-              : 'Get started by adding your first store',
+              : 'Get started by adding your first service',
           style: TextStyle(fontSize: 14, color: themeProvider.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -701,7 +728,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
           ElevatedButton.icon(
             onPressed: () => _navigateToCreate(),
             icon: const Icon(Icons.add),
-            label: const Text('Add First Store'),
+            label: const Text('Add First Service'),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
@@ -713,30 +740,33 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
   void _navigateToCreate() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const StoreCreateScreen()),
+      MaterialPageRoute(builder: (context) => const ServiceCreateScreen()),
     );
 
     if (result != null && mounted) {
-      await _loadStores(isRefresh: true);
+      await _loadServices(isRefresh: true);
     }
   }
 
-  void _navigateToEdit(Store store) async {
+  void _navigateToEdit(Service service) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => StoreEditScreen(store: store)),
+      MaterialPageRoute(
+        builder: (context) => ServiceEditScreen(service: service),
+      ),
     );
 
     if (result != null && mounted) {
-      await _loadStores(isRefresh: true);
+      await _loadServices(isRefresh: true);
     }
   }
 
-  Future<void> _deleteStore(Store store) async {
-    // Show confirmation dialog using context extension method
+  Future<void> _deleteService(Service service) async {
+    // Show confirmation dialog
     final bool? shouldDelete = await context.showConfirmation(
-      title: 'Delete Store',
-      message: 'Are you sure you want to delete "${store.nama}"?\n\nThis action cannot be undone.',
+      title: 'Delete Service',
+      message:
+          'Are you sure you want to delete "${service.nama}"?\n\nThis action cannot be undone.',
       confirmText: 'Delete',
       cancelText: 'Cancel',
       confirmColor: Colors.red,
@@ -745,17 +775,17 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
     if (shouldDelete != true) return;
 
     try {
-      final response = await StoreService.deleteStore(store.id);
+      final response = await ServiceService.deleteService(service.id!);
 
       if (response['success'] == true) {
         // Reload data to ensure we have latest from server
-        await _loadStores(isRefresh: true);
+        await _loadServices(isRefresh: true);
 
         if (mounted) {
           await ValidationHandler.showSuccessDialog(
             context: context,
             title: 'Success',
-            message: 'Store deleted successfully',
+            message: 'Service deleted successfully',
           );
         }
       } else {
@@ -763,7 +793,7 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
           await ValidationHandler.showErrorDialog(
             context: context,
             title: 'Error',
-            message: response['message'] ?? 'Failed to delete store',
+            message: response['message'] ?? 'Failed to delete service',
           );
         }
       }
@@ -772,9 +802,16 @@ class _StoreIndexScreenState extends State<StoreIndexScreen>
         await ValidationHandler.showErrorDialog(
           context: context,
           title: 'Error',
-          message: 'Error deleting store: $e',
+          message: 'Error deleting service: $e',
         );
       }
     }
+  }
+
+  String _formatCurrency(int amount) {
+    return amount.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

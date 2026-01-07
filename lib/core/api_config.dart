@@ -2,7 +2,7 @@
 class ApiConfig {
   /// Base URL untuk Laravel API
   /// Sesuaikan dengan server Laravel yang berjalan
-  static const String baseUrl = 'http://192.168.0.107:8000';
+  static const String baseUrl = 'https://backend.posphonee.com/public';
 
   /// API endpoints
   static const String registerEndpoint = '/api/register';

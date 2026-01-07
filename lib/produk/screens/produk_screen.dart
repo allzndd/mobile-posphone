@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
+import '../../layouts/screens/main_layout.dart';
 import '../services/product_service.dart';
 import '../services/management_service.dart';
 import '../services/stock_history_service.dart';
@@ -182,7 +183,23 @@ class _ProdukScreenState extends State<ProdukScreen>
     final isTablet = screenSize.width > 768;
     final isMobile = screenSize.width < 640;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        // Navigate ke dashboard (index 0)
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const MainLayout(
+                title: 'Dashboard',
+                selectedIndex: 0,
+              ),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
       backgroundColor: themeProvider.backgroundColor,
       body: SafeArea(
         child: RefreshIndicator(
@@ -199,15 +216,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                   child: Container(
                     margin: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          themeProvider.primaryMain,
-                          themeProvider.primaryMain.withOpacity(0.8),
-                          Colors.deepPurple.shade400,
-                        ],
-                      ),
+                      color: themeProvider.primaryMain,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
@@ -430,6 +439,7 @@ class _ProdukScreenState extends State<ProdukScreen>
           ),
         ),
       ),
+    ),
     ),
     );
   }

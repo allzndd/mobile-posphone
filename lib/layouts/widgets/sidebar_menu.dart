@@ -24,38 +24,31 @@ class _SidebarMenuState extends State<SidebarMenu> {
 
   final List<Map<String, dynamic>> menuItems = [
     {'icon': Icons.dashboard_rounded, 'title': 'Dashboard', 'index': 0},
-    {'icon': Icons.inventory_2_rounded, 'title': 'Produk', 'index': 1},
+    {'icon': Icons.inventory_2_rounded, 'title': 'Products', 'index': 1},
     {
       'icon': Icons.point_of_sale_rounded,
-      'title': 'Transaksi',
+      'title': 'Transactions',
       'index': 2,
       'hasSubmenu': true,
       'submenu': [
-        {
-          'title': 'Transaksi Masuk',
-          'index': 2,
-          'icon': Icons.arrow_downward_rounded,
-        },
-        {
-          'title': 'Transaksi Keluar',
-          'index': 5,
-          'icon': Icons.arrow_upward_rounded,
-        },
+        {'title': 'Incoming', 'index': 2, 'icon': Icons.arrow_downward_rounded},
+        {'title': 'Outgoing', 'index': 5, 'icon': Icons.arrow_upward_rounded},
       ],
     },
-    {'icon': Icons.people_rounded, 'title': 'Pelanggan', 'index': 3},
+    {'icon': Icons.people_rounded, 'title': 'Customers', 'index': 3},
     {'icon': Icons.psychology_rounded, 'title': 'AI Chat', 'index': 8},
-    {'icon': Icons.store, 'title': 'Store', 'index': 9},
-    {'icon': Icons.build_circle_rounded, 'title': 'Service', 'index': 10},
-    {'icon': Icons.swap_horiz_rounded, 'title': 'Trade In', 'index': 11},
-    {'icon': Icons.assessment_rounded, 'title': 'Report', 'index': 12},
+    {'icon': Icons.store, 'title': 'Stores', 'index': 9},
+    {'icon': Icons.build_circle_rounded, 'title': 'Services', 'index': 10},
+    {'icon': Icons.local_shipping_rounded, 'title': 'Suppliers', 'index': 11},
+    {'icon': Icons.swap_horiz_rounded, 'title': 'Trade In', 'index': 12},
+    {'icon': Icons.assessment_rounded, 'title': 'Reports', 'index': 13},
     {'icon': Icons.palette_rounded, 'title': 'Theme', 'index': 6},
     {
       'icon': Icons.branding_watermark_rounded,
       'title': 'Logo & Branding',
       'index': 7,
     },
-    {'icon': Icons.settings_rounded, 'title': 'Pengaturan', 'index': 4},
+    {'icon': Icons.settings_rounded, 'title': 'Settings', 'index': 4},
   ];
 
   @override

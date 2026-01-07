@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../auth/screens/login_screen.dart';
+import '../../auth/services/auth_service.dart';
 import '../../config/logo_provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/theme_provider.dart';
@@ -22,7 +24,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final themeProvider = context.watch<ThemeProvider>();
     final isDark = themeProvider.isDarkMode;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        _showLogoutDialog();
+      },
+      child: Scaffold(
       backgroundColor: themeProvider.backgroundColor,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -88,6 +96,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _paymentShortcuts(),
           ],
         ),
+      ),
+    ),
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.logout, color: Colors.red),
+            ),
+            const SizedBox(width: 12),
+            const Text('Konfirmasi Logout'),
+          ],
+        ),
+        content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Close confirmation dialog first
+              Navigator.pop(context);
+              
+              try {
+                // Call logout API
+                await AuthService.logout();
+                
+                // Navigate to login screen
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                    (route) => false, // Remove all previous routes
+                  );
+                }
+              } catch (e) {
+                // Jika error, tetap navigate ke login karena token sudah dihapus
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                    (route) => false,
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Logout'),
+          ),
+        ],
       ),
     );
   }

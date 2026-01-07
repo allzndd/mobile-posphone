@@ -211,7 +211,7 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
               Icons.inventory,
               'Products',
               '$totalProducts',
-              Colors.blue,
+              Colors.red,
               isMobile,
             ),
           ),
@@ -405,7 +405,7 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
         title: 'Cannot Delete Brand', 
         message: 'Brand "$brandName" has $produkCount products. You cannot delete it.',
         confirmText: 'OK',
-        confirmColor: Colors.blue,
+        confirmColor: Colors.red,
       );
     } else {
       // Show delete confirmation dialog
