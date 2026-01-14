@@ -60,25 +60,6 @@ class MobileBottomNav extends StatelessWidget {
                   index: 5,
                   isSelected: selectedIndex == 5,
                 ),
-                _buildNavItem(
-                  context: context,
-                  icon: Icons.apps_rounded,
-                  label: 'More',
-                  index: -1,
-                  isSelected:
-                      selectedIndex == 1 ||
-                      selectedIndex == 3 ||
-                      selectedIndex == 4 ||
-                      selectedIndex == 6 ||
-                      selectedIndex == 7 ||
-                      selectedIndex == 8 ||
-                      selectedIndex == 9 ||
-                      selectedIndex == 10 ||
-                      selectedIndex == 11 ||
-                      selectedIndex == 12 ||
-                      selectedIndex == 13,
-                  showSubmenu: true,
-                ),
               ],
             ),
           ),
@@ -93,18 +74,13 @@ class MobileBottomNav extends StatelessWidget {
     required String label,
     required int index,
     required bool isSelected,
-    bool showSubmenu = false,
   }) {
     final themeProvider = context.watch<ThemeProvider>();
 
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          if (showSubmenu) {
-            _showMenuLainnya(context);
-          } else {
-            onMenuItemTap(index);
-          }
+          onMenuItemTap(index);
         },
         child: Container(
           decoration: BoxDecoration(

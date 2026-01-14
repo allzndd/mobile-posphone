@@ -6,18 +6,18 @@ import '../widgets/mobile_bottom_nav.dart';
 import '../../config/theme_provider.dart';
 import '../../dashboard/screens/dashboard_screen.dart';
 import '../../produk/screens/produk_screen.dart';
-import '../../transaksi/screens/transaksimasuk_screen.dart';
-import '../../transaksi/screens/transaksikeluar_screen.dart';
+import '../../transaksi/screens/incoming_transaction_screen.dart/index.screen.dart';
+import '../../transaksi/screens/outgoing_transaction_screen.dart/index.screen.dart';
 import '../../customers/screens/index.screen.dart';
 import '../../pengaturan/screens/pengaturan_screen.dart';
-import '../../pengaturan/screens/logo_branding_screen.dart';
+import '../../brand/screens/index.screen.dart';
 import '../../theme/screens/theme_customizer_screen.dart';
 import '../../chat_analysis/screens/chat_analysis_screen.dart';
 import '../../store/screens/index.screen.dart';
 import '../../services/screens/index.screen.dart';
 import '../../suppliers/screens/index.screen.dart';
-import '../../trade_in/screens/trade_in_screen.dart';
-import '../../reports/screens/report_screen.dart';
+import '../../trade_in/screens/index.screen.dart';
+import '../../reports/screens/index.screen.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget? child;
@@ -49,18 +49,18 @@ class _MainLayoutState extends State<MainLayout> {
   final List<Widget> _screens = [
     const DashboardScreen(), // 0
     const ProdukScreen(), // 1
-    const TransaksiMasukScreen(), // 2
+    const IncomingTransactionIndexScreen(), // 2
     const CustomerIndexScreen(), // 3
     const PengaturanScreen(), // 4
-    const TransaksiKeluarScreen(), // 5
+    const OutgoingTransactionIndexScreen(), // 5
     const ThemeCustomizerScreen(), // 6
-    const LogoBrandingScreen(), // 7
+    const BrandingIndexScreen(), // 7
     const ChatAnalysisScreen(), // 8
     const StoreIndexScreen(), // 9
     const ServiceIndexScreen(), // 10
     const SupplierIndexScreen(), // 11
-    const TradeInScreen(), // 12
-    const ReportScreen(), // 13
+    const TradeInIndexScreen(), // 12
+    const ReportsIndexScreen(), // 13
   ];
 
   // Title for each screen

@@ -50,6 +50,9 @@ dependencies:
   
   # Image picker
   image_picker: ^1.0.7
+  
+  # Path provider for file storage
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:

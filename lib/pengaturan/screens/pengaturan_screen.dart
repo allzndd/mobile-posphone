@@ -239,178 +239,217 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
   }
 
   Widget _buildSettingsSections(bool isDesktop) {
+    final notificationCard = _buildSettingsCard(
+      title: 'Notifikasi',
+      icon: Icons.notifications_rounded,
+      color: AppTheme.accentOrange,
+      isDesktop: isDesktop,
+      children: [
+        _buildSwitchTile(
+          'Push Notification',
+          'Terima notifikasi real-time',
+          Icons.notifications_active,
+          _notificationEnabled,
+          (value) => setState(() => _notificationEnabled = value),
+          isDesktop,
+        ),
+        const Divider(height: 1),
+        _buildSwitchTile(
+          'Email Notification',
+          'Kirim notifikasi ke email',
+          Icons.email_outlined,
+          _emailNotification,
+          (value) => setState(() => _emailNotification = value),
+          isDesktop,
+        ),
+        const Divider(height: 1),
+        _buildSwitchTile(
+          'Sound',
+          'Aktifkan suara notifikasi',
+          Icons.volume_up,
+          _soundEnabled,
+          (value) => setState(() => _soundEnabled = value),
+          isDesktop,
+        ),
+      ],
+    );
+
+    final tampilanCard = _buildSettingsCard(
+      title: 'Tampilan',
+      icon: Icons.palette_rounded,
+      color: AppTheme.accentPurple,
+      isDesktop: isDesktop,
+      children: [
+        _buildThemeModeTile(isDesktop),
+        const Divider(height: 1),
+        _buildThemeSelector(isDesktop),
+        const Divider(height: 1),
+        _buildDropdownTile(
+          'Bahasa',
+          'Pilih bahasa aplikasi',
+          Icons.language,
+          _language,
+          _languages,
+          (value) => setState(() => _language = value!),
+          isDesktop,
+        ),
+        const Divider(height: 1),
+        _buildDropdownTile(
+          'Format Tanggal',
+          'Format tampilan tanggal',
+          Icons.calendar_today,
+          _dateFormat,
+          _dateFormats,
+          (value) => setState(() => _dateFormat = value!),
+          isDesktop,
+        ),
+      ],
+    );
+
+    final sistemCard = _buildSettingsCard(
+      title: 'Sistem',
+      icon: Icons.settings_applications,
+      color: AppTheme.primaryMain,
+      isDesktop: isDesktop,
+      children: [
+        _buildDropdownTile(
+          'Mata Uang',
+          'Mata uang default',
+          Icons.attach_money,
+          _currency,
+          _currencies,
+          (value) => setState(() => _currency = value!),
+          isDesktop,
+        ),
+        const Divider(height: 1),
+        _buildSwitchTile(
+          'Auto Backup',
+          'Backup otomatis setiap hari',
+          Icons.backup,
+          _autoBackup,
+          (value) => setState(() => _autoBackup = value),
+          isDesktop,
+        ),
+        const Divider(height: 1),
+        _buildActionTile(
+          'Clear Cache',
+          'Hapus data cache aplikasi',
+          Icons.delete_sweep,
+          AppTheme.warningColor,
+          () => _showClearCacheDialog(),
+          isDesktop,
+        ),
+      ],
+    );
+
+    final keamananCard = _buildSettingsCard(
+      title: 'Keamanan',
+      icon: Icons.security_rounded,
+      color: AppTheme.successColor,
+      isDesktop: isDesktop,
+      children: [
+        _buildActionTile(
+          'Ubah Password',
+          'Perbarui kata sandi akun',
+          Icons.lock_outline,
+          AppTheme.primaryMain,
+          () => _showChangePassword(),
+          isDesktop,
+        ),
+        const Divider(height: 1),
+        _buildActionTile(
+          'Riwayat Login',
+          'Lihat aktivitas login',
+          Icons.history,
+          AppTheme.textSecondary,
+          () => _showLoginHistory(),
+          isDesktop,
+        ),
+      ],
+    );
+
+    final lainnyaCard = _buildSettingsCard(
+      title: 'Lainnya',
+      icon: Icons.more_horiz,
+      color: AppTheme.textSecondary,
+      isDesktop: isDesktop,
+      children: [
+        _buildActionTile(
+          'Tentang Aplikasi',
+          'Informasi & lisensi',
+          Icons.info_outline,
+          AppTheme.infoColor,
+          () => _showAboutDialog(),
+          isDesktop,
+        ),
+        const Divider(height: 1),
+        _buildActionTile(
+          'Bantuan & Dukungan',
+          'FAQ & hubungi support',
+          Icons.help_outline,
+          AppTheme.secondaryMain,
+          () => _showHelp(),
+          isDesktop,
+        ),
+        const Divider(height: 1),
+        _buildActionTile(
+          'Logout',
+          'Keluar dari akun',
+          Icons.logout,
+          AppTheme.errorColor,
+          () => _showLogoutDialog(),
+          isDesktop,
+        ),
+      ],
+    );
+
     return Container(
-      margin: EdgeInsets.only(
-        left: isDesktop ? 24 : 12,
-        right: isDesktop ? 24 : 12,
-        bottom: isDesktop ? 24 : 12,
-      ),
-      child: Column(
-        children: [
-          _buildSettingsCard(
-            title: 'Notifikasi',
-            icon: Icons.notifications_rounded,
-            color: AppTheme.accentOrange,
-            isDesktop: isDesktop,
-            children: [
-              _buildSwitchTile(
-                'Push Notification',
-                'Terima notifikasi real-time',
-                Icons.notifications_active,
-                _notificationEnabled,
-                (value) => setState(() => _notificationEnabled = value),
-                isDesktop,
-              ),
-              const Divider(height: 1),
-              _buildSwitchTile(
-                'Email Notification',
-                'Kirim notifikasi ke email',
-                Icons.email_outlined,
-                _emailNotification,
-                (value) => setState(() => _emailNotification = value),
-                isDesktop,
-              ),
-              const Divider(height: 1),
-              _buildSwitchTile(
-                'Sound',
-                'Aktifkan suara notifikasi',
-                Icons.volume_up,
-                _soundEnabled,
-                (value) => setState(() => _soundEnabled = value),
-                isDesktop,
-              ),
-            ],
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
+      child: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: isDesktop ? 1400 : double.infinity,
           ),
-          const SizedBox(height: 16),
-          _buildSettingsCard(
-            title: 'Tampilan',
-            icon: Icons.palette_rounded,
-            color: AppTheme.accentPurple,
-            isDesktop: isDesktop,
-            children: [
-              _buildThemeModeTile(isDesktop),
-              const Divider(height: 1),
-              _buildThemeSelector(isDesktop),
-              const Divider(height: 1),
-              _buildDropdownTile(
-                'Bahasa',
-                'Pilih bahasa aplikasi',
-                Icons.language,
-                _language,
-                _languages,
-                (value) => setState(() => _language = value!),
-                isDesktop,
-              ),
-              const Divider(height: 1),
-              _buildDropdownTile(
-                'Format Tanggal',
-                'Format tampilan tanggal',
-                Icons.calendar_today,
-                _dateFormat,
-                _dateFormats,
-                (value) => setState(() => _dateFormat = value!),
-                isDesktop,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildSettingsCard(
-            title: 'Sistem',
-            icon: Icons.settings_applications,
-            color: AppTheme.primaryMain,
-            isDesktop: isDesktop,
-            children: [
-              _buildDropdownTile(
-                'Mata Uang',
-                'Mata uang default',
-                Icons.attach_money,
-                _currency,
-                _currencies,
-                (value) => setState(() => _currency = value!),
-                isDesktop,
-              ),
-              const Divider(height: 1),
-              _buildSwitchTile(
-                'Auto Backup',
-                'Backup otomatis setiap hari',
-                Icons.backup,
-                _autoBackup,
-                (value) => setState(() => _autoBackup = value),
-                isDesktop,
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                'Clear Cache',
-                'Hapus data cache aplikasi',
-                Icons.delete_sweep,
-                AppTheme.warningColor,
-                () => _showClearCacheDialog(),
-                isDesktop,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildSettingsCard(
-            title: 'Keamanan',
-            icon: Icons.security_rounded,
-            color: AppTheme.successColor,
-            isDesktop: isDesktop,
-            children: [
-              _buildActionTile(
-                'Ubah Password',
-                'Perbarui kata sandi akun',
-                Icons.lock_outline,
-                AppTheme.primaryMain,
-                () => _showChangePassword(),
-                isDesktop,
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                'Riwayat Login',
-                'Lihat aktivitas login',
-                Icons.history,
-                AppTheme.textSecondary,
-                () => _showLoginHistory(),
-                isDesktop,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildSettingsCard(
-            title: 'Lainnya',
-            icon: Icons.more_horiz,
-            color: AppTheme.textSecondary,
-            isDesktop: isDesktop,
-            children: [
-              _buildActionTile(
-                'Tentang Aplikasi',
-                'Informasi & lisensi',
-                Icons.info_outline,
-                AppTheme.infoColor,
-                () => _showAboutDialog(),
-                isDesktop,
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                'Bantuan & Dukungan',
-                'FAQ & hubungi support',
-                Icons.help_outline,
-                AppTheme.secondaryMain,
-                () => _showHelp(),
-                isDesktop,
-              ),
-              const Divider(height: 1),
-              _buildActionTile(
-                'Logout',
-                'Keluar dari akun',
-                Icons.logout,
-                AppTheme.errorColor,
-                () => _showLogoutDialog(),
-                isDesktop,
-              ),
-            ],
-          ),
-        ],
+          child:
+              isDesktop
+                  ? Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: notificationCard),
+                          const SizedBox(width: 20),
+                          Expanded(child: tampilanCard),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: sistemCard),
+                          const SizedBox(width: 20),
+                          Expanded(child: keamananCard),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      lainnyaCard,
+                    ],
+                  )
+                  : Column(
+                    children: [
+                      notificationCard,
+                      const SizedBox(height: 16),
+                      tampilanCard,
+                      const SizedBox(height: 16),
+                      sistemCard,
+                      const SizedBox(height: 16),
+                      keamananCard,
+                      const SizedBox(height: 16),
+                      lainnyaCard,
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+        ),
       ),
     );
   }
@@ -428,11 +467,15 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
       decoration: BoxDecoration(
         color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: themeProvider.borderColor.withOpacity(0.3),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -1157,11 +1200,11 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                 onPressed: () async {
                   // Close confirmation dialog first
                   Navigator.pop(context);
-                  
+
                   try {
                     // Call logout API (akan otomatis hapus token)
                     await AuthService.logout();
-                    
+
                     // Navigate to login screen
                     if (mounted) {
                       Navigator.of(context).pushAndRemoveUntil(

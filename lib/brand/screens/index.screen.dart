@@ -7,14 +7,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../config/theme_provider.dart';
 import '../../config/logo_provider.dart';
 
-class LogoBrandingScreen extends StatefulWidget {
-  const LogoBrandingScreen({super.key});
+class BrandingIndexScreen extends StatefulWidget {
+  const BrandingIndexScreen({super.key});
 
   @override
-  State<LogoBrandingScreen> createState() => _LogoBrandingScreenState();
+  State<BrandingIndexScreen> createState() => _BrandingIndexScreenState();
 }
 
-class _LogoBrandingScreenState extends State<LogoBrandingScreen> {
+class _BrandingIndexScreenState extends State<BrandingIndexScreen> {
   final _appNameController = TextEditingController();
   final _appTaglineController = TextEditingController();
   final _imagePicker = ImagePicker();
@@ -246,19 +246,63 @@ class _LogoBrandingScreenState extends State<LogoBrandingScreen> {
     LogoProvider logoProvider,
     bool isDesktop,
   ) {
-    return Container(
-      margin: EdgeInsets.all(isDesktop ? 24 : 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildLogoSection(themeProvider, logoProvider, isDesktop),
-          const SizedBox(height: 24),
-          _buildAppInfoSection(themeProvider, isDesktop),
-          const SizedBox(height: 24),
-          _buildPreviewSection(themeProvider, logoProvider, isDesktop),
-          const SizedBox(height: 24),
-          _buildActionButtons(themeProvider, isDesktop),
-        ],
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
+      child: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: isDesktop ? 1200 : double.infinity,
+          ),
+          child:
+              isDesktop
+                  ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          children: [
+                            _buildLogoSection(
+                              themeProvider,
+                              logoProvider,
+                              isDesktop,
+                            ),
+                            const SizedBox(height: 24),
+                            _buildAppInfoSection(themeProvider, isDesktop),
+                            const SizedBox(height: 24),
+                            _buildActionButtons(themeProvider, isDesktop),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        flex: 1,
+                        child: _buildPreviewSection(
+                          themeProvider,
+                          logoProvider,
+                          isDesktop,
+                        ),
+                      ),
+                    ],
+                  )
+                  : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildLogoSection(themeProvider, logoProvider, isDesktop),
+                      const SizedBox(height: 16),
+                      _buildAppInfoSection(themeProvider, isDesktop),
+                      const SizedBox(height: 16),
+                      _buildPreviewSection(
+                        themeProvider,
+                        logoProvider,
+                        isDesktop,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildActionButtons(themeProvider, isDesktop),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+        ),
       ),
     );
   }
@@ -269,15 +313,19 @@ class _LogoBrandingScreenState extends State<LogoBrandingScreen> {
     bool isDesktop,
   ) {
     return Container(
-      padding: EdgeInsets.all(isDesktop ? 24 : 20),
+      padding: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
         color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: themeProvider.borderColor.withOpacity(0.3),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -502,39 +550,54 @@ class _LogoBrandingScreenState extends State<LogoBrandingScreen> {
     bool isDesktop,
   ) {
     return Container(
-      padding: EdgeInsets.all(isDesktop ? 24 : 20),
+      padding: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
         color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: themeProvider.borderColor.withOpacity(0.3),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Preview',
-            style: TextStyle(
-              fontSize: isDesktop ? 18 : 16,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(child: _buildLoginPreview(themeProvider, logoProvider)),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSidebarPreview(themeProvider, logoProvider),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: themeProvider.primaryMain.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.visibility_outlined,
+                  color: themeProvider.primaryMain,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Preview Tampilan',
+                style: TextStyle(
+                  fontSize: isDesktop ? 18 : 16,
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.textPrimary,
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 24),
+          _buildLoginPreview(themeProvider, logoProvider),
+          const SizedBox(height: 16),
+          _buildSidebarPreview(themeProvider, logoProvider),
         ],
       ),
     );
