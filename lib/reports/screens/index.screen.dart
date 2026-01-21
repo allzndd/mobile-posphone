@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
+import '../../layouts/screens/main_layout.dart';
 import 'report_screen.dart';
 import 'sales_report.screen.dart';
 import 'tradein_report.screen.dart';
 import 'product_report.screen.dart';
+import 'stock_report.screen.dart';
+import 'customer_report.screen.dart';
+import 'financial_report.screen.dart';
 
 class ReportsIndexScreen extends StatefulWidget {
   const ReportsIndexScreen({super.key});
@@ -103,25 +107,41 @@ class _ReportsIndexScreenState extends State<ReportsIndexScreen>
     final isDesktop = screenWidth > 900;
     final isTablet = screenWidth > 600 && screenWidth <= 900;
 
-    return Scaffold(
-      backgroundColor: themeProvider.backgroundColor,
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await Future.delayed(const Duration(milliseconds: 500));
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildModernHeader(isDesktop),
-                _buildStatsCards(isDesktop, isTablet),
-                _buildDateRangePicker(isDesktop),
-                _buildSearchSection(isDesktop),
-                _buildReportsGrid(isDesktop, isTablet),
-                const SizedBox(height: 80), // Extra bottom padding
-              ],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        // Navigate ke dashboard (index 0)
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      const MainLayout(title: 'Dashboard', selectedIndex: 0),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: themeProvider.backgroundColor,
+        body: RefreshIndicator(
+          onRefresh: () async {
+            await Future.delayed(const Duration(milliseconds: 500));
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  _buildModernHeader(isDesktop),
+                  _buildStatsCards(isDesktop, isTablet),
+                  _buildDateRangePicker(isDesktop),
+                  _buildSearchSection(isDesktop),
+                  _buildReportsGrid(isDesktop, isTablet),
+                  const SizedBox(height: 80), // Extra bottom padding
+                ],
+              ),
             ),
           ),
         ),
@@ -223,27 +243,28 @@ class _ReportsIndexScreenState extends State<ReportsIndexScreen>
         horizontal: isDesktop ? 20 : 16,
         vertical: 8,
       ),
-      child: isDesktop
-          ? Row(
-              children: stats
-                  .map(
-                    (stat) => Expanded(
-                      child: _buildStatCard(stat, isDesktop),
-                    ),
-                  )
-                  .toList(),
-            )
-          : Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: _buildStatCard(stats[0], false)),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildStatCard(stats[1], false)),
-                  ],
-                ),
-              ],
-            ),
+      child:
+          isDesktop
+              ? Row(
+                children:
+                    stats
+                        .map(
+                          (stat) =>
+                              Expanded(child: _buildStatCard(stat, isDesktop)),
+                        )
+                        .toList(),
+              )
+              : Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: _buildStatCard(stats[0], false)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildStatCard(stats[1], false)),
+                    ],
+                  ),
+                ],
+              ),
     );
   }
 
@@ -331,9 +352,7 @@ class _ReportsIndexScreenState extends State<ReportsIndexScreen>
       decoration: BoxDecoration(
         color: themeProvider.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: themeProvider.primaryMain.withOpacity(0.3),
-        ),
+        border: Border.all(color: themeProvider.primaryMain.withOpacity(0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -406,7 +425,9 @@ class _ReportsIndexScreenState extends State<ReportsIndexScreen>
               }, themeProvider),
               _buildQuickDateChip('30 Days', () {
                 setState(() {
-                  _startDate = DateTime.now().subtract(const Duration(days: 30));
+                  _startDate = DateTime.now().subtract(
+                    const Duration(days: 30),
+                  );
                   _endDate = DateTime.now();
                 });
               }, themeProvider),
@@ -516,23 +537,18 @@ class _ReportsIndexScreenState extends State<ReportsIndexScreen>
             color: themeProvider.textSecondary,
             fontSize: 14,
           ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: themeProvider.textSecondary,
-          ),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: Icon(
-                    Icons.clear,
-                    color: themeProvider.textSecondary,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _searchQuery = '';
-                    });
-                  },
-                )
-              : null,
+          prefixIcon: Icon(Icons.search, color: themeProvider.textSecondary),
+          suffixIcon:
+              _searchQuery.isNotEmpty
+                  ? IconButton(
+                    icon: Icon(Icons.clear, color: themeProvider.textSecondary),
+                    onPressed: () {
+                      setState(() {
+                        _searchQuery = '';
+                      });
+                    },
+                  )
+                  : null,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 16,
@@ -549,10 +565,7 @@ class _ReportsIndexScreenState extends State<ReportsIndexScreen>
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: themeProvider.primaryMain,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: themeProvider.primaryMain, width: 2),
           ),
           filled: true,
           fillColor: themeProvider.surfaceColor,
@@ -788,27 +801,44 @@ class _ReportsIndexScreenState extends State<ReportsIndexScreen>
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => SalesReportScreen(
-            startDate: _startDate,
-            endDate: _endDate,
-          ),
+          builder:
+              (context) =>
+                  SalesReportScreen(startDate: _startDate, endDate: _endDate),
         ),
       );
     } else if (reportId == 'trade-in') {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TradeInReportScreen(
-            startDate: _startDate,
-            endDate: _endDate,
-          ),
+          builder:
+              (context) =>
+                  TradeInReportScreen(startDate: _startDate, endDate: _endDate),
         ),
       );
     } else if (reportId == 'products') {
       Navigator.push(
         context,
+        MaterialPageRoute(builder: (context) => const ProductReportScreen()),
+      );
+    } else if (reportId == 'stock') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const StockReportScreen()),
+      );
+    } else if (reportId == 'customers') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CustomerReportScreen()),
+      );
+    } else if (reportId == 'financial') {
+      Navigator.push(
+        context,
         MaterialPageRoute(
-          builder: (context) => const ProductReportScreen(),
+          builder:
+              (context) => FinancialReportScreen(
+                startDate: _startDate,
+                endDate: _endDate,
+              ),
         ),
       );
     } else {
@@ -816,12 +846,13 @@ class _ReportsIndexScreenState extends State<ReportsIndexScreen>
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ReportDetailScreen(
-            reportId: reportId,
-            reportTitle: reportTitles[reportId] ?? 'Report',
-            startDate: _startDate,
-            endDate: _endDate,
-          ),
+          builder:
+              (context) => ReportDetailScreen(
+                reportId: reportId,
+                reportTitle: reportTitles[reportId] ?? 'Report',
+                startDate: _startDate,
+                endDate: _endDate,
+              ),
         ),
       );
     }

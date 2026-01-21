@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../auth/services/auth_service.dart';
+import '../../auth/models/user_model.dart';
 import '../../config/logo_provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/theme_provider.dart';
@@ -34,11 +35,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'month': 0,
     'year': 0,
   };
+  UserModel? _currentUser;
 
   @override
   void initState() {
     super.initState();
     _loadDashboardData();
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final user = await AuthService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+      });
+    }
   }
 
   Future<void> _loadDashboardData() async {
@@ -1086,7 +1098,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final crossAxisCount = screenWidth > 600 ? 4 : 4;
 
-    final menuItems = [
+    final menuItems = <Map<String, dynamic>>[
       {
         'icon': Icons.inventory_2_rounded,
         'title': 'Products',
@@ -1118,12 +1130,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'index': 7,
       },
       {
-        'icon': Icons.store_rounded,
-        'title': 'Stores',
-        'color': const Color(0xFF00BCD4),
-        'index': 9,
-      },
-      {
         'icon': Icons.build_circle_rounded,
         'title': 'Services',
         'color': const Color(0xFF3F51B5),
@@ -1141,13 +1147,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'color': const Color(0xFF00BCD4),
         'index': 12,
       },
-      {
+    ];
+
+    // Add Stores only for owner (role_id = 2)
+    if (_currentUser?.roleId == 2) {
+      menuItems.add({
+        'icon': Icons.store_rounded,
+        'title': 'Stores',
+        'color': const Color(0xFF00BCD4),
+        'index': 9,
+      });
+    }
+
+    // Add Reports only for owner (role_id = 2)
+    if (_currentUser?.roleId == 2) {
+      menuItems.add({
         'icon': Icons.assessment_rounded,
         'title': 'Reports',
         'color': const Color(0xFF673AB7),
         'index': 13,
-      },
-    ];
+      });
+    }
+
+    // Add User Management only for owners (role_id = 2)
+    if (_currentUser?.roleId == 2) {
+      menuItems.add({
+        'icon': Icons.manage_accounts_rounded,
+        'title': 'Users',
+        'color': const Color(0xFF9C27B0),
+        'index': 14,
+      });
+    }
 
     return GridView.builder(
       shrinkWrap: true,
@@ -1249,6 +1279,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       11: 'Suppliers',
       12: 'Trade In',
       13: 'Reports & Analytics',
+      14: 'User Management',
     };
     return titles[index] ?? 'Dashboard';
   }

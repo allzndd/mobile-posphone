@@ -5,6 +5,7 @@ import '../../config/theme_provider.dart';
 import '../../config/theme_schemes.dart';
 import '../../auth/services/auth_service.dart';
 import '../../auth/screens/login_screen.dart';
+import '../../layouts/screens/main_layout.dart';
 
 class PengaturanScreen extends StatefulWidget {
   const PengaturanScreen({super.key});
@@ -14,18 +15,6 @@ class PengaturanScreen extends StatefulWidget {
 }
 
 class _PengaturanScreenState extends State<PengaturanScreen> {
-  bool _notificationEnabled = true;
-  bool _emailNotification = false;
-  bool _soundEnabled = true;
-  bool _autoBackup = true;
-  String _language = 'Indonesia';
-  String _currency = 'IDR';
-  String _dateFormat = 'DD/MM/YYYY';
-
-  final List<String> _languages = ['Indonesia', 'English', 'Malaysia'];
-  final List<String> _currencies = ['IDR', 'USD', 'MYR'];
-  final List<String> _dateFormats = ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'];
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -33,14 +22,30 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
 
     final themeProvider = context.watch<ThemeProvider>();
 
-    return Scaffold(
-      backgroundColor: themeProvider.backgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _buildHeader(isDesktop)),
-          SliverToBoxAdapter(child: _buildProfileSection(isDesktop)),
-          SliverToBoxAdapter(child: _buildSettingsSections(isDesktop)),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        // Navigate ke dashboard (index 0)
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      const MainLayout(title: 'Dashboard', selectedIndex: 0),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: themeProvider.backgroundColor,
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: _buildHeader(isDesktop)),
+            SliverToBoxAdapter(child: _buildProfileSection(isDesktop)),
+            SliverToBoxAdapter(child: _buildSettingsSections(isDesktop)),
+          ],
+        ),
       ),
     );
   }
@@ -49,80 +54,65 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
     final themeProvider = context.watch<ThemeProvider>();
 
     return Container(
-      padding: EdgeInsets.all(isDesktop ? 24 : 12),
+      margin: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [themeProvider.primaryMain, themeProvider.primaryDark],
-        ),
+        color: themeProvider.primaryMain,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: themeProvider.primaryMain.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(isDesktop ? 12 : 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.settings_rounded,
-              color: Colors.white,
-              size: isDesktop ? 28 : 24,
-            ),
-          ),
-          SizedBox(width: isDesktop ? 16 : 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: EdgeInsets.all(isDesktop ? 28 : 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  'Pengaturan',
-                  style: TextStyle(
+                Container(
+                  padding: EdgeInsets.all(isDesktop ? 12 : 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.settings_rounded,
                     color: Colors.white,
-                    fontSize: isDesktop ? 24 : 18,
-                    fontWeight: FontWeight.bold,
+                    size: isDesktop ? 28 : 24,
                   ),
                 ),
-                Text(
-                  'Kelola preferensi & konfigurasi aplikasi',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: isDesktop ? 14 : 12,
+                SizedBox(width: isDesktop ? 16 : 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isDesktop ? 28 : 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Manage your preferences',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: isDesktop ? 15 : 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-          if (isDesktop)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: const [
-                  Icon(Icons.verified_user, color: Colors.white, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Version 1.0.0',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -187,95 +177,17 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                     color: themeProvider.textTertiary,
                   ),
                 ),
-                if (!isDesktop) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryMain.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Administrator',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppTheme.primaryMain,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
-          if (isDesktop) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryMain.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                'Administrator',
-                style: TextStyle(
-                  color: AppTheme.primaryMain,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            IconButton(
-              onPressed: () => _showEditProfile(),
-              icon: Icon(Icons.edit, color: AppTheme.primaryMain),
-              tooltip: 'Edit Profil',
-            ),
-          ],
         ],
       ),
     );
   }
 
   Widget _buildSettingsSections(bool isDesktop) {
-    final notificationCard = _buildSettingsCard(
-      title: 'Notifikasi',
-      icon: Icons.notifications_rounded,
-      color: AppTheme.accentOrange,
-      isDesktop: isDesktop,
-      children: [
-        _buildSwitchTile(
-          'Push Notification',
-          'Terima notifikasi real-time',
-          Icons.notifications_active,
-          _notificationEnabled,
-          (value) => setState(() => _notificationEnabled = value),
-          isDesktop,
-        ),
-        const Divider(height: 1),
-        _buildSwitchTile(
-          'Email Notification',
-          'Kirim notifikasi ke email',
-          Icons.email_outlined,
-          _emailNotification,
-          (value) => setState(() => _emailNotification = value),
-          isDesktop,
-        ),
-        const Divider(height: 1),
-        _buildSwitchTile(
-          'Sound',
-          'Aktifkan suara notifikasi',
-          Icons.volume_up,
-          _soundEnabled,
-          (value) => setState(() => _soundEnabled = value),
-          isDesktop,
-        ),
-      ],
-    );
-
     final tampilanCard = _buildSettingsCard(
-      title: 'Tampilan',
+      title: 'Display',
       icon: Icons.palette_rounded,
       color: AppTheme.accentPurple,
       isDesktop: isDesktop,
@@ -283,100 +195,18 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
         _buildThemeModeTile(isDesktop),
         const Divider(height: 1),
         _buildThemeSelector(isDesktop),
-        const Divider(height: 1),
-        _buildDropdownTile(
-          'Bahasa',
-          'Pilih bahasa aplikasi',
-          Icons.language,
-          _language,
-          _languages,
-          (value) => setState(() => _language = value!),
-          isDesktop,
-        ),
-        const Divider(height: 1),
-        _buildDropdownTile(
-          'Format Tanggal',
-          'Format tampilan tanggal',
-          Icons.calendar_today,
-          _dateFormat,
-          _dateFormats,
-          (value) => setState(() => _dateFormat = value!),
-          isDesktop,
-        ),
-      ],
-    );
-
-    final sistemCard = _buildSettingsCard(
-      title: 'Sistem',
-      icon: Icons.settings_applications,
-      color: AppTheme.primaryMain,
-      isDesktop: isDesktop,
-      children: [
-        _buildDropdownTile(
-          'Mata Uang',
-          'Mata uang default',
-          Icons.attach_money,
-          _currency,
-          _currencies,
-          (value) => setState(() => _currency = value!),
-          isDesktop,
-        ),
-        const Divider(height: 1),
-        _buildSwitchTile(
-          'Auto Backup',
-          'Backup otomatis setiap hari',
-          Icons.backup,
-          _autoBackup,
-          (value) => setState(() => _autoBackup = value),
-          isDesktop,
-        ),
-        const Divider(height: 1),
-        _buildActionTile(
-          'Clear Cache',
-          'Hapus data cache aplikasi',
-          Icons.delete_sweep,
-          AppTheme.warningColor,
-          () => _showClearCacheDialog(),
-          isDesktop,
-        ),
-      ],
-    );
-
-    final keamananCard = _buildSettingsCard(
-      title: 'Keamanan',
-      icon: Icons.security_rounded,
-      color: AppTheme.successColor,
-      isDesktop: isDesktop,
-      children: [
-        _buildActionTile(
-          'Ubah Password',
-          'Perbarui kata sandi akun',
-          Icons.lock_outline,
-          AppTheme.primaryMain,
-          () => _showChangePassword(),
-          isDesktop,
-        ),
-        const Divider(height: 1),
-        _buildActionTile(
-          'Riwayat Login',
-          'Lihat aktivitas login',
-          Icons.history,
-          AppTheme.textSecondary,
-          () => _showLoginHistory(),
-          isDesktop,
-        ),
       ],
     );
 
     final lainnyaCard = _buildSettingsCard(
-      title: 'Lainnya',
+      title: 'Other',
       icon: Icons.more_horiz,
       color: AppTheme.textSecondary,
       isDesktop: isDesktop,
       children: [
         _buildActionTile(
-          'Tentang Aplikasi',
-          'Informasi & lisensi',
+          'About Application',
+          'Information & license',
           Icons.info_outline,
           AppTheme.infoColor,
           () => _showAboutDialog(),
@@ -384,8 +214,8 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
         ),
         const Divider(height: 1),
         _buildActionTile(
-          'Bantuan & Dukungan',
-          'FAQ & hubungi support',
+          'Help & Support',
+          'FAQ & contact support',
           Icons.help_outline,
           AppTheme.secondaryMain,
           () => _showHelp(),
@@ -394,7 +224,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
         const Divider(height: 1),
         _buildActionTile(
           'Logout',
-          'Keluar dari akun',
+          'Sign out from account',
           Icons.logout,
           AppTheme.errorColor,
           () => _showLogoutDialog(),
@@ -404,11 +234,14 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
     );
 
     return Container(
-      padding: EdgeInsets.all(isDesktop ? 24 : 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? 20 : 16,
+        vertical: isDesktop ? 20 : 16,
+      ),
       child: Center(
         child: Container(
           constraints: BoxConstraints(
-            maxWidth: isDesktop ? 1400 : double.infinity,
+            maxWidth: isDesktop ? 1200 : double.infinity,
           ),
           child:
               isDesktop
@@ -417,33 +250,16 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(child: notificationCard),
-                          const SizedBox(width: 20),
                           Expanded(child: tampilanCard),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: sistemCard),
                           const SizedBox(width: 20),
-                          Expanded(child: keamananCard),
+                          Expanded(child: lainnyaCard),
                         ],
                       ),
-                      const SizedBox(height: 20),
-                      lainnyaCard,
                     ],
                   )
                   : Column(
                     children: [
-                      notificationCard,
-                      const SizedBox(height: 16),
                       tampilanCard,
-                      const SizedBox(height: 16),
-                      sistemCard,
-                      const SizedBox(height: 16),
-                      keamananCard,
                       const SizedBox(height: 16),
                       lainnyaCard,
                       const SizedBox(height: 24),
@@ -512,109 +328,6 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
     );
   }
 
-  Widget _buildSwitchTile(
-    String title,
-    String subtitle,
-    IconData icon,
-    bool value,
-    Function(bool) onChanged,
-    bool isDesktop,
-  ) {
-    final themeProvider = context.watch<ThemeProvider>();
-
-    return Material(
-      color: Colors.transparent,
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: isDesktop ? 20 : 16,
-          vertical: isDesktop ? 8 : 4,
-        ),
-        leading: Icon(icon, color: themeProvider.textSecondary, size: 24),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: isDesktop ? 15 : 14,
-            fontWeight: FontWeight.w600,
-            color: themeProvider.textPrimary,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: isDesktop ? 13 : 12,
-            color: themeProvider.textTertiary,
-          ),
-        ),
-        trailing: Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: AppTheme.primaryMain,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDropdownTile(
-    String title,
-    String subtitle,
-    IconData icon,
-    String value,
-    List<String> items,
-    Function(String?) onChanged,
-    bool isDesktop,
-  ) {
-    final themeProvider = context.watch<ThemeProvider>();
-
-    return Material(
-      color: Colors.transparent,
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: isDesktop ? 20 : 16,
-          vertical: isDesktop ? 8 : 4,
-        ),
-        leading: Icon(icon, color: themeProvider.textSecondary, size: 24),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: isDesktop ? 15 : 14,
-            fontWeight: FontWeight.w600,
-            color: themeProvider.textPrimary,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: isDesktop ? 13 : 12,
-            color: themeProvider.textTertiary,
-          ),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: themeProvider.cardColor,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: themeProvider.borderColor),
-          ),
-          child: DropdownButton<String>(
-            value: value,
-            icon: Icon(Icons.arrow_drop_down, color: themeProvider.primaryMain),
-            underline: const SizedBox(),
-            style: TextStyle(
-              color: themeProvider.textPrimary,
-              fontSize: isDesktop ? 14 : 13,
-              fontWeight: FontWeight.w600,
-            ),
-            onChanged: onChanged,
-            items:
-                items.map((item) {
-                  return DropdownMenuItem(value: item, child: Text(item));
-                }).toList(),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildActionTile(
     String title,
     String subtitle,
@@ -675,7 +388,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
           size: 24,
         ),
         title: Text(
-          'Mode Gelap',
+          'Dark Mode',
           style: TextStyle(
             fontSize: isDesktop ? 15 : 14,
             fontWeight: FontWeight.w600,
@@ -683,7 +396,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
           ),
         ),
         subtitle: Text(
-          themeProvider.isDarkMode ? 'Tema gelap aktif' : 'Tema terang aktif',
+          themeProvider.isDarkMode ? 'Dark theme active' : 'Light theme active',
           style: TextStyle(
             fontSize: isDesktop ? 13 : 12,
             color: themeProvider.textTertiary,
@@ -718,7 +431,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
             size: 24,
           ),
           title: Text(
-            'Skema Warna',
+            'Color Scheme',
             style: TextStyle(
               fontSize: isDesktop ? 15 : 14,
               fontWeight: FontWeight.w600,
@@ -794,7 +507,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
-                        'Pilih Skema Warna',
+                        'Select Color Scheme',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -809,7 +522,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Pilih tema warna yang sesuai dengan preferensi Anda',
+                  'Choose the color theme that suits your preference',
                   style: TextStyle(
                     fontSize: 14,
                     color: themeProvider.textTertiary,
@@ -911,168 +624,6 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
     );
   }
 
-  void _showEditProfile() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryMain.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.edit, color: AppTheme.primaryMain),
-                ),
-                const SizedBox(width: 12),
-                const Text('Edit Profil'),
-              ],
-            ),
-            content: const Text('Form edit profil akan ditampilkan di sini'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Simpan'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showChangePassword() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryMain.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.lock_outline, color: AppTheme.primaryMain),
-                ),
-                const SizedBox(width: 12),
-                const Text('Ubah Password'),
-              ],
-            ),
-            content: const Text('Form ubah password akan ditampilkan di sini'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Ubah'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showLoginHistory() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.textSecondary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.history, color: AppTheme.textSecondary),
-                ),
-                const SizedBox(width: 12),
-                const Text('Riwayat Login'),
-              ],
-            ),
-            content: const Text(
-              'Daftar riwayat login akan ditampilkan di sini',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showClearCacheDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.warningColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.warning_amber,
-                    color: AppTheme.warningColor,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text('Clear Cache'),
-              ],
-            ),
-            content: const Text(
-              'Apakah Anda yakin ingin menghapus semua cache?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Cache berhasil dihapus'),
-                      backgroundColor: AppTheme.successColor,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.warningColor,
-                ),
-                child: const Text('Hapus'),
-              ),
-            ],
-          ),
-    );
-  }
-
   void _showAboutDialog() {
     showDialog(
       context: context,
@@ -1092,7 +643,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                   child: Icon(Icons.info_outline, color: AppTheme.infoColor),
                 ),
                 const SizedBox(width: 12),
-                const Text('Tentang Aplikasi'),
+                const Text('About Application'),
               ],
             ),
             content: Column(
@@ -1110,7 +661,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Aplikasi Point of Sale modern untuk manajemen toko handphone.',
+                  'Modern Point of Sale application for phone store management.',
                   style: TextStyle(color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 16),
@@ -1123,7 +674,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup'),
+                child: const Text('Close'),
               ),
             ],
           ),
@@ -1152,16 +703,16 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text('Bantuan & Dukungan'),
+                const Text('Help & Support'),
               ],
             ),
             content: const Text(
-              'FAQ dan kontak support akan ditampilkan di sini',
+              'FAQ and support contact will be displayed here',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup'),
+                child: const Text('Close'),
               ),
             ],
           ),
@@ -1171,8 +722,9 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
   void _showLogoutDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder:
-          (context) => AlertDialog(
+          (dialogContext) => AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -1187,43 +739,72 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
                   child: Icon(Icons.logout, color: AppTheme.errorColor),
                 ),
                 const SizedBox(width: 12),
-                const Text('Konfirmasi Logout'),
+                const Text('Confirm Logout'),
               ],
             ),
-            content: const Text('Apakah Anda yakin ingin keluar dari akun?'),
+            content: const Text('Are you sure you want to sign out?'),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  // Close confirmation dialog first
-                  Navigator.pop(context);
+                  // Show loading indicator
+                  Navigator.pop(dialogContext);
+                  
+                  // Show loading dialog
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (loadingContext) => WillPopScope(
+                      onWillPop: () async => false,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(
+                                color: AppTheme.primaryMain,
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Signing out...',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
 
                   try {
-                    // Call logout API (akan otomatis hapus token)
+                    // Call logout API
                     await AuthService.logout();
-
-                    // Navigate to login screen
-                    if (mounted) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                        (route) => false, // Remove all previous routes
-                      );
-                    }
+                    
+                    // Small delay to ensure everything is cleaned up
+                    await Future.delayed(const Duration(milliseconds: 300));
                   } catch (e) {
-                    // Jika error, tetap navigate ke login karena token sudah dihapus
-                    if (mounted) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    }
+                    print('Logout error: $e');
+                  }
+
+                  // Navigate to login screen (use root navigator)
+                  if (mounted) {
+                    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
                   }
                 },
                 style: ElevatedButton.styleFrom(

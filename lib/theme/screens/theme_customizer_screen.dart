@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/theme_provider.dart';
 import '../../config/theme_schemes.dart';
+import '../../layouts/screens/main_layout.dart';
 
 class ThemeCustomizerScreen extends StatefulWidget {
   const ThemeCustomizerScreen({super.key});
@@ -20,32 +21,62 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
     final isTablet = screenWidth > 600 && screenWidth <= 900;
     final isSmallScreen = screenWidth < 360;
 
-    return Scaffold(
-      backgroundColor: themeProvider.backgroundColor,
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await Future.delayed(const Duration(milliseconds: 500));
-          setState(() {});
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(isDesktop ? 20 : (isSmallScreen ? 12 : 16)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildModernHeader(isDesktop, isSmallScreen, themeProvider),
-              SizedBox(height: isDesktop ? 20 : 16),
-              _buildStatsCards(isDesktop, isTablet, isSmallScreen, themeProvider),
-              SizedBox(height: isDesktop ? 20 : 16),
-              _buildThemePresets(isDesktop, isTablet, isSmallScreen, themeProvider),
-            ],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        // Navigate ke dashboard (index 0)
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      const MainLayout(title: 'Dashboard', selectedIndex: 0),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: themeProvider.backgroundColor,
+        body: RefreshIndicator(
+          onRefresh: () async {
+            await Future.delayed(const Duration(milliseconds: 500));
+            setState(() {});
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.all(isDesktop ? 20 : (isSmallScreen ? 12 : 16)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildModernHeader(isDesktop, isSmallScreen, themeProvider),
+                SizedBox(height: isDesktop ? 20 : 16),
+                _buildStatsCards(
+                  isDesktop,
+                  isTablet,
+                  isSmallScreen,
+                  themeProvider,
+                ),
+                SizedBox(height: isDesktop ? 20 : 16),
+                _buildThemePresets(
+                  isDesktop,
+                  isTablet,
+                  isSmallScreen,
+                  themeProvider,
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildModernHeader(bool isDesktop, bool isSmallScreen, ThemeProvider themeProvider) {
+  Widget _buildModernHeader(
+    bool isDesktop,
+    bool isSmallScreen,
+    ThemeProvider themeProvider,
+  ) {
     return Container(
       padding: EdgeInsets.all(isDesktop ? 24 : (isSmallScreen ? 16 : 20)),
       decoration: BoxDecoration(
@@ -107,10 +138,15 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
     );
   }
 
-  Widget _buildStatsCards(bool isDesktop, bool isTablet, bool isSmallScreen, ThemeProvider themeProvider) {
+  Widget _buildStatsCards(
+    bool isDesktop,
+    bool isTablet,
+    bool isSmallScreen,
+    ThemeProvider themeProvider,
+  ) {
     final scheme = themeProvider.currentScheme;
     final totalThemes = ThemeColorScheme.presets.length;
-    
+
     return Row(
       children: [
         Expanded(
@@ -162,9 +198,9 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
     Color color,
     bool isDesktop,
     bool isSmallScreen,
-    ThemeProvider themeProvider,
-    {VoidCallback? onTap}
-  ) {
+    ThemeProvider themeProvider, {
+    VoidCallback? onTap,
+  }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -175,7 +211,9 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
           decoration: BoxDecoration(
             color: themeProvider.surfaceColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: themeProvider.borderColor.withOpacity(0.3)),
+            border: Border.all(
+              color: themeProvider.borderColor.withOpacity(0.3),
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.03),
@@ -226,7 +264,12 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
     );
   }
 
-  Widget _buildThemePresets(bool isDesktop, bool isTablet, bool isSmallScreen, ThemeProvider themeProvider) {
+  Widget _buildThemePresets(
+    bool isDesktop,
+    bool isTablet,
+    bool isSmallScreen,
+    ThemeProvider themeProvider,
+  ) {
     int crossAxisCount;
     if (isDesktop) {
       crossAxisCount = 4;
@@ -331,22 +374,28 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
             color: themeProvider.surfaceColor,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isActive ? scheme.primaryMain : themeProvider.borderColor.withOpacity(0.3),
+              color:
+                  isActive
+                      ? scheme.primaryMain
+                      : themeProvider.borderColor.withOpacity(0.3),
               width: isActive ? 2.5 : 1,
             ),
-            boxShadow: isActive ? [
-              BoxShadow(
-                color: scheme.primaryMain.withOpacity(0.2),
-                blurRadius: 15,
-                offset: const Offset(0, 4),
-              ),
-            ] : [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow:
+                isActive
+                    ? [
+                      BoxShadow(
+                        color: scheme.primaryMain.withOpacity(0.2),
+                        blurRadius: 15,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                    : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -377,7 +426,8 @@ class _ThemeCustomizerScreenState extends State<ThemeCustomizerScreen> {
                 style: TextStyle(
                   fontSize: isDesktop ? 14 : (isSmallScreen ? 11 : 12),
                   fontWeight: FontWeight.bold,
-                  color: isActive ? scheme.primaryMain : themeProvider.textPrimary,
+                  color:
+                      isActive ? scheme.primaryMain : themeProvider.textPrimary,
                 ),
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,

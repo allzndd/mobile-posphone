@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/theme_provider.dart';
+import '../../auth/services/auth_service.dart';
+import '../../auth/models/user_model.dart';
 
 class SidebarMenu extends StatefulWidget {
   final bool isCollapsed;
@@ -21,11 +23,34 @@ class SidebarMenu extends StatefulWidget {
 
 class _SidebarMenuState extends State<SidebarMenu> {
   bool _isTransaksiExpanded = false;
+  UserModel? _currentUser;
 
-  final List<Map<String, dynamic>> menuItems = [
-    {'icon': Icons.dashboard_rounded, 'title': 'Dashboard', 'index': 0},
-    {'icon': Icons.inventory_2_rounded, 'title': 'Products', 'index': 1},
-    {
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final user = await AuthService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> get menuItems {
+    final baseItems = <Map<String, dynamic>>[];
+    
+    // Dashboard - available for all
+    baseItems.add({'icon': Icons.dashboard_rounded, 'title': 'Dashboard', 'index': 0});
+    
+    // Products - available for all
+    baseItems.add({'icon': Icons.inventory_2_rounded, 'title': 'Products', 'index': 1});
+    
+    // Transactions - available for all
+    baseItems.add({
       'icon': Icons.point_of_sale_rounded,
       'title': 'Transactions',
       'index': 2,
@@ -34,22 +59,60 @@ class _SidebarMenuState extends State<SidebarMenu> {
         {'title': 'Incoming', 'index': 2, 'icon': Icons.arrow_downward_rounded},
         {'title': 'Outgoing', 'index': 5, 'icon': Icons.arrow_upward_rounded},
       ],
-    },
-    {'icon': Icons.people_rounded, 'title': 'Customers', 'index': 3},
-    {'icon': Icons.psychology_rounded, 'title': 'AI Chat', 'index': 8},
-    {'icon': Icons.store, 'title': 'Stores', 'index': 9},
-    {'icon': Icons.build_circle_rounded, 'title': 'Services', 'index': 10},
-    {'icon': Icons.local_shipping_rounded, 'title': 'Suppliers', 'index': 11},
-    {'icon': Icons.swap_horiz_rounded, 'title': 'Trade In', 'index': 12},
-    {'icon': Icons.assessment_rounded, 'title': 'Reports', 'index': 13},
-    {'icon': Icons.palette_rounded, 'title': 'Theme', 'index': 6},
-    {
+    });
+    
+    // Customers - available for all
+    baseItems.add({'icon': Icons.people_rounded, 'title': 'Customers', 'index': 3});
+    
+    // AI Chat - available for all
+    baseItems.add({'icon': Icons.psychology_rounded, 'title': 'AI Chat', 'index': 8});
+    
+    // Stores - only for owner (role_id = 2)
+    if (_currentUser?.roleId == 2) {
+      baseItems.add({'icon': Icons.store, 'title': 'Stores', 'index': 9});
+    }
+    
+    // Services - available for all
+    baseItems.add({'icon': Icons.build_circle_rounded, 'title': 'Services', 'index': 10});
+    
+    // Suppliers - available for all
+    baseItems.add({'icon': Icons.local_shipping_rounded, 'title': 'Suppliers', 'index': 11});
+    
+    // Trade In - available for all
+    baseItems.add({'icon': Icons.swap_horiz_rounded, 'title': 'Trade In', 'index': 12});
+    
+    // Reports - only for owner (role_id = 2)
+    if (_currentUser?.roleId == 2) {
+      baseItems.add({'icon': Icons.assessment_rounded, 'title': 'Reports', 'index': 13});
+    }
+    
+    // Theme - available for all
+    baseItems.add({'icon': Icons.palette_rounded, 'title': 'Theme', 'index': 6});
+    
+    // Logo & Branding - available for all
+    baseItems.add({
       'icon': Icons.branding_watermark_rounded,
       'title': 'Logo & Branding',
       'index': 7,
-    },
-    {'icon': Icons.settings_rounded, 'title': 'Settings', 'index': 4},
-  ];
+    });
+
+    // User Management - only for owners (role_id = 2)
+    if (_currentUser?.roleId == 2) {
+      baseItems.add({
+        'icon': Icons.manage_accounts_rounded,
+        'title': 'User Management',
+        'index': 14,
+      });
+    }
+
+    baseItems.add({
+      'icon': Icons.settings_rounded,
+      'title': 'Settings',
+      'index': 4,
+    });
+
+    return baseItems;
+  }
 
   @override
   Widget build(BuildContext context) {

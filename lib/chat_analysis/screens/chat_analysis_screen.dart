@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
+import '../../layouts/screens/main_layout.dart';
 
 class ChatAnalysisScreen extends StatefulWidget {
   const ChatAnalysisScreen({super.key});
@@ -98,14 +99,30 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 900;
 
-    return Scaffold(
-      backgroundColor: themeProvider.backgroundColor,
-      body: Column(
-        children: [
-          _buildModernHeader(isDesktop, themeProvider),
-          Expanded(child: _buildChatArea(isDesktop, themeProvider)),
-          _buildInputArea(isDesktop, themeProvider),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        // Navigate ke dashboard (index 0)
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      const MainLayout(title: 'Dashboard', selectedIndex: 0),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: themeProvider.backgroundColor,
+        body: Column(
+          children: [
+            _buildModernHeader(isDesktop, themeProvider),
+            Expanded(child: _buildChatArea(isDesktop, themeProvider)),
+            _buildInputArea(isDesktop, themeProvider),
+          ],
+        ),
       ),
     );
   }

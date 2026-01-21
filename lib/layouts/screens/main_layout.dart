@@ -18,6 +18,7 @@ import '../../services/screens/index.screen.dart';
 import '../../suppliers/screens/index.screen.dart';
 import '../../trade_in/screens/index.screen.dart';
 import '../../reports/screens/index.screen.dart';
+import '../../user_management/screens/index.screen.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget? child;
@@ -61,6 +62,7 @@ class _MainLayoutState extends State<MainLayout> {
     const SupplierIndexScreen(), // 11
     const TradeInIndexScreen(), // 12
     const ReportsIndexScreen(), // 13
+    const UserManagementScreen(), // 14
   ];
 
   // Title for each screen
@@ -79,6 +81,7 @@ class _MainLayoutState extends State<MainLayout> {
     'Suppliers', // 11
     'Trade In', // 12
     'Reports & Analytics', // 13
+    'User Management', // 14
   ];
 
   void _onMenuItemTap(int index) {

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/theme_provider.dart';
+import '../../auth/services/auth_service.dart';
+import '../../auth/models/user_model.dart';
 
 /// Mobile Bottom Navigation
-class MobileBottomNav extends StatelessWidget {
+class MobileBottomNav extends StatefulWidget {
   final int selectedIndex;
   final Function(int) onMenuItemTap;
 
@@ -13,6 +15,28 @@ class MobileBottomNav extends StatelessWidget {
     required this.selectedIndex,
     required this.onMenuItemTap,
   });
+
+  @override
+  State<MobileBottomNav> createState() => _MobileBottomNavState();
+}
+
+class _MobileBottomNavState extends State<MobileBottomNav> {
+  UserModel? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final user = await AuthService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,21 +68,21 @@ class MobileBottomNav extends StatelessWidget {
                   icon: Icons.dashboard_rounded,
                   label: 'Dashboard',
                   index: 0,
-                  isSelected: selectedIndex == 0,
+                  isSelected: widget.selectedIndex == 0,
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.arrow_downward_rounded,
                   label: 'Incoming',
                   index: 2,
-                  isSelected: selectedIndex == 2,
+                  isSelected: widget.selectedIndex == 2,
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.arrow_upward_rounded,
                   label: 'Outgoing',
                   index: 5,
-                  isSelected: selectedIndex == 5,
+                  isSelected: widget.selectedIndex == 5,
                 ),
               ],
             ),
@@ -80,7 +104,7 @@ class MobileBottomNav extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          onMenuItemTap(index);
+          widget.onMenuItemTap(index);
         },
         child: Container(
           decoration: BoxDecoration(
@@ -201,7 +225,7 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'Manage products & stock',
                             color: AppTheme.primaryMain,
                             index: 1,
-                            isSelected: selectedIndex == 1,
+                            isSelected: widget.selectedIndex == 1,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -211,7 +235,7 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'Manage customer data',
                             color: AppTheme.secondaryMain,
                             index: 3,
-                            isSelected: selectedIndex == 3,
+                            isSelected: widget.selectedIndex == 3,
                           ),
                           const Divider(height: 1),
 
@@ -222,7 +246,7 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'Customize colors & appearance',
                             color: AppTheme.accentPurple,
                             index: 6,
-                            isSelected: selectedIndex == 6,
+                            isSelected: widget.selectedIndex == 6,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -232,7 +256,7 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'Change logo & app name',
                             color: Colors.pink,
                             index: 7,
-                            isSelected: selectedIndex == 7,
+                            isSelected: widget.selectedIndex == 7,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -242,18 +266,21 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'AI assistant for business analysis',
                             color: Colors.deepPurple,
                             index: 8,
-                            isSelected: selectedIndex == 8,
+                            isSelected: widget.selectedIndex == 8,
                           ),
-                          const Divider(height: 1),
-                          _buildSubmenuItem(
-                            context: context,
-                            icon: Icons.store,
-                            title: 'Stores',
-                            subtitle: 'Manage store locations',
-                            color: Colors.teal,
-                            index: 9,
-                            isSelected: selectedIndex == 9,
-                          ),
+                          // Stores - only for owner
+                          if (_currentUser?.roleId == 2) ...[
+                            const Divider(height: 1),
+                            _buildSubmenuItem(
+                              context: context,
+                              icon: Icons.store,
+                              title: 'Stores',
+                              subtitle: 'Manage store locations',
+                              color: Colors.teal,
+                              index: 9,
+                              isSelected: widget.selectedIndex == 9,
+                            ),
+                          ],
                           const Divider(height: 1),
                           _buildSubmenuItem(
                             context: context,
@@ -262,7 +289,7 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'Manage services & repairs',
                             color: Colors.blue,
                             index: 10,
-                            isSelected: selectedIndex == 10,
+                            isSelected: widget.selectedIndex == 10,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -272,7 +299,7 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'Manage supplier & vendor data',
                             color: Colors.orange,
                             index: 11,
-                            isSelected: selectedIndex == 11,
+                            isSelected: widget.selectedIndex == 11,
                           ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
@@ -282,18 +309,34 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'Product trade-in transactions',
                             color: Colors.cyan,
                             index: 12,
-                            isSelected: selectedIndex == 12,
+                            isSelected: widget.selectedIndex == 12,
                           ),
-                          const Divider(height: 1),
-                          _buildSubmenuItem(
-                            context: context,
-                            icon: Icons.assessment_rounded,
-                            title: 'Reports',
-                            subtitle: 'Complete reports & analytics',
-                            color: Colors.indigo,
-                            index: 13,
-                            isSelected: selectedIndex == 13,
-                          ),
+                          // Reports - only for owner
+                          if (_currentUser?.roleId == 2) ...[
+                            const Divider(height: 1),
+                            _buildSubmenuItem(
+                              context: context,
+                              icon: Icons.assessment_rounded,
+                              title: 'Reports',
+                              subtitle: 'Complete reports & analytics',
+                              color: Colors.indigo,
+                              index: 13,
+                              isSelected: widget.selectedIndex == 13,
+                            ),
+                          ],
+                          // Show User Management only for owners (role_id = 2)
+                          if (_currentUser?.roleId == 2) ...[
+                            const Divider(height: 1),
+                            _buildSubmenuItem(
+                              context: context,
+                              icon: Icons.manage_accounts_rounded,
+                              title: 'User Management',
+                              subtitle: 'Manage admin accounts',
+                              color: Colors.purple,
+                              index: 14,
+                              isSelected: widget.selectedIndex == 14,
+                            ),
+                          ],
                           const Divider(height: 1),
                           _buildSubmenuItem(
                             context: context,
@@ -302,7 +345,7 @@ class MobileBottomNav extends StatelessWidget {
                             subtitle: 'App & system configuration',
                             color: AppTheme.textSecondary,
                             index: 4,
-                            isSelected: selectedIndex == 4,
+                            isSelected: widget.selectedIndex == 4,
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -332,7 +375,7 @@ class MobileBottomNav extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Navigator.pop(context);
-          onMenuItemTap(index);
+          widget.onMenuItemTap(index);
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
