@@ -869,11 +869,18 @@ class _StockCreateScreenState extends State<StockCreateScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Product *',
+              'Product',
               style: TextStyle(
                 fontSize: isMobile ? 12 : 14,
                 fontWeight: FontWeight.w500,
                 color: themeProvider.textPrimary,
+              ),
+            ),
+            const Text(
+              ' *',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.red,
               ),
             ),
           ],
@@ -948,11 +955,18 @@ class _StockCreateScreenState extends State<StockCreateScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Store *',
+              'Store',
               style: TextStyle(
                 fontSize: isMobile ? 12 : 14,
                 fontWeight: FontWeight.w500,
                 color: themeProvider.textPrimary,
+              ),
+            ),
+            const Text(
+              ' *',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.red,
               ),
             ),
           ],

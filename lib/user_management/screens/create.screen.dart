@@ -285,6 +285,7 @@ class _CreateAdminScreenState extends State<CreateAdminScreen> {
             label: 'Full Name',
             hint: 'Enter admin name',
             icon: Icons.person,
+            isRequired: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter admin name';
@@ -302,6 +303,7 @@ class _CreateAdminScreenState extends State<CreateAdminScreen> {
             hint: 'Enter email address',
             icon: Icons.email,
             keyboardType: TextInputType.emailAddress,
+            isRequired: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter email';
@@ -324,6 +326,7 @@ class _CreateAdminScreenState extends State<CreateAdminScreen> {
             hint: 'Enter password',
             icon: Icons.lock,
             obscureText: _obscurePassword,
+            isRequired: true,
             onToggleVisibility: () {
               setState(() => _obscurePassword = !_obscurePassword);
             },
@@ -347,6 +350,7 @@ class _CreateAdminScreenState extends State<CreateAdminScreen> {
             hint: 'Re-enter password',
             icon: Icons.lock_outline,
             obscureText: _obscurePasswordConfirmation,
+            isRequired: true,
             onToggleVisibility: () {
               setState(() => _obscurePasswordConfirmation = !_obscurePasswordConfirmation);
             },
@@ -461,6 +465,7 @@ class _CreateAdminScreenState extends State<CreateAdminScreen> {
     String? errorText,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool isRequired = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,6 +486,15 @@ class _CreateAdminScreenState extends State<CreateAdminScreen> {
                 color: themeProvider.textPrimary,
               ),
             ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
           ],
         ),
         SizedBox(height: isMobile ? 8 : 10),
@@ -542,6 +556,7 @@ class _CreateAdminScreenState extends State<CreateAdminScreen> {
     required bool isMobile,
     String? Function(String?)? validator,
     String? errorText,
+    bool isRequired = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -562,6 +577,15 @@ class _CreateAdminScreenState extends State<CreateAdminScreen> {
                 color: themeProvider.textPrimary,
               ),
             ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
           ],
         ),
         SizedBox(height: isMobile ? 8 : 10),

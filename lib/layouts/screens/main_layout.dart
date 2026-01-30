@@ -136,6 +136,7 @@ class _MainLayoutState extends State<MainLayout> {
               CustomAppBar(
                 title: _screenTitles[_currentIndex],
                 isDesktop: true,
+                showBackButton: _currentIndex != 0,
               ),
               Expanded(
                 child: Container(
@@ -161,7 +162,11 @@ class _MainLayoutState extends State<MainLayout> {
   Widget _buildTabletLayout() {
     return Column(
       children: [
-        CustomAppBar(title: _screenTitles[_currentIndex], isDesktop: false),
+        CustomAppBar(
+          title: _screenTitles[_currentIndex],
+          isDesktop: false,
+          showBackButton: _currentIndex != 0,
+        ),
         Expanded(
           child:
               _screens.isNotEmpty && _currentIndex < _screens.length
@@ -179,7 +184,11 @@ class _MainLayoutState extends State<MainLayout> {
   Widget _buildMobileLayout() {
     return Column(
       children: [
-        CustomAppBar(title: _screenTitles[_currentIndex], isDesktop: false),
+        CustomAppBar(
+          title: _screenTitles[_currentIndex],
+          isDesktop: false,
+          showBackButton: _currentIndex != 0,
+        ),
         Expanded(
           child:
               _screens.isNotEmpty && _currentIndex < _screens.length

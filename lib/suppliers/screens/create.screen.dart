@@ -174,6 +174,7 @@ class _SupplierCreateScreenState extends State<SupplierCreateScreen> {
             label: 'Supplier Name',
             hint: 'Enter supplier name',
             icon: Icons.business,
+            isRequired: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty)
                 return 'Supplier name is required';
@@ -371,6 +372,7 @@ class _SupplierCreateScreenState extends State<SupplierCreateScreen> {
     String? errorText,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool isRequired = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,6 +393,15 @@ class _SupplierCreateScreenState extends State<SupplierCreateScreen> {
                 color: themeProvider.textPrimary,
               ),
             ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
           ],
         ),
         SizedBox(height: isMobile ? 8 : 10),

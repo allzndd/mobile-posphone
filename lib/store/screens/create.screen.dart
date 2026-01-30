@@ -167,6 +167,7 @@ class _StoreCreateScreenState extends State<StoreCreateScreen> {
             label: 'Store Name',
             hint: 'Enter store name',
             icon: Icons.store,
+            isRequired: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Store name is required';
@@ -187,6 +188,7 @@ class _StoreCreateScreenState extends State<StoreCreateScreen> {
             hint: 'Enter complete store address',
             icon: Icons.location_on_rounded,
             maxLines: 3,
+            isRequired: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Address is required';
@@ -295,6 +297,7 @@ class _StoreCreateScreenState extends State<StoreCreateScreen> {
     String? errorText,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool isRequired = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,6 +318,15 @@ class _StoreCreateScreenState extends State<StoreCreateScreen> {
                 color: themeProvider.textPrimary,
               ),
             ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
           ],
         ),
         SizedBox(height: isMobile ? 8 : 10),

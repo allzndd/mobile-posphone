@@ -238,7 +238,7 @@ class _CreateBrandScreenState extends State<CreateBrandScreen> {
       children: [
         // Brand Name
         _buildFormField(
-          label: 'Brand Name *',
+          label: 'Brand Name ',
           hint: 'Enter brand name (e.g., Apple, Samsung)',
           controller: _nameController,
           themeProvider: themeProvider,

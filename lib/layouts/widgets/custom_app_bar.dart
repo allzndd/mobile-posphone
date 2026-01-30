@@ -7,8 +7,14 @@ import '../screens/main_layout.dart';
 class CustomAppBar extends StatelessWidget {
   final String title;
   final bool isDesktop;
+  final bool showBackButton;
 
-  const CustomAppBar({super.key, required this.title, this.isDesktop = true});
+  const CustomAppBar({
+    super.key,
+    required this.title,
+    this.isDesktop = true,
+    this.showBackButton = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +38,39 @@ class CustomAppBar extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: isNarrow ? 12 : 20),
         child: Row(
           children: [
+            // Back Button
+            if (showBackButton) ...[
+              Container(
+                decoration: BoxDecoration(
+                  color: themeProvider.primaryLight.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: themeProvider.primaryMain,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => const MainLayout(
+                          title: 'Dashboard',
+                          selectedIndex: 0,
+                        ),
+                      ),
+                    );
+                  },
+                  tooltip: 'Back to Dashboard',
+                ),
+              ),
+              SizedBox(width: isNarrow ? 8 : 12),
+            ],
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
-                  fontSize: isNarrow ? 16 : 20,
+                  fontSize: isNarrow ? 20 : 26,
                   fontWeight: FontWeight.bold,
                   color: themeProvider.primaryMain,
                 ),
@@ -121,7 +155,7 @@ class CustomAppBar extends StatelessWidget {
                           Text(
                             'Admin',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: themeProvider.textPrimary,
                             ),
@@ -129,7 +163,7 @@ class CustomAppBar extends StatelessWidget {
                           Text(
                             'Administrator',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 15,
                               color: themeProvider.textTertiary,
                             ),
                           ),

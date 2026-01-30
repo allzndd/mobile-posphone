@@ -313,6 +313,7 @@ class _ServiceCreateScreenState extends State<ServiceCreateScreen> {
                 label: 'Service Name',
                 hintText: 'Enter service name',
                 prefixIcon: Icons.build_rounded,
+                isRequired: true,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Service name is required';
@@ -344,6 +345,7 @@ class _ServiceCreateScreenState extends State<ServiceCreateScreen> {
                 hintText: 'Enter service price',
                 prefixIcon: Icons.attach_money,
                 keyboardType: TextInputType.number,
+                isRequired: true,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                   _ThousandsFormatter(),
@@ -372,6 +374,7 @@ class _ServiceCreateScreenState extends State<ServiceCreateScreen> {
                 hintText: 'Enter service duration',
                 prefixIcon: Icons.schedule,
                 keyboardType: TextInputType.number,
+                isRequired: true,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -453,19 +456,33 @@ class _ServiceCreateScreenState extends State<ServiceCreateScreen> {
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
     int maxLines = 1,
+    bool isRequired = false,
   }) {
     final themeProvider = context.watch<ThemeProvider>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: themeProvider.textPrimary,
-          ),
+        Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: themeProvider.textPrimary,
+              ),
+            ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         TextFormField(
@@ -534,13 +551,26 @@ class _ServiceCreateScreenState extends State<ServiceCreateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label + (isRequired ? ' *' : ''),
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: themeProvider.textPrimary,
-          ),
+        Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: themeProvider.textPrimary,
+              ),
+            ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<T>(

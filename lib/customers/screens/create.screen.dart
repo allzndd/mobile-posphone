@@ -216,10 +216,11 @@ class _CustomerCreateScreenState extends State<CustomerCreateScreen> {
           // Nama Field
           _buildModernTextField(
             controller: _namaController,
-            label: 'Customer Name *',
+            label: 'Customer Name',
             hint: 'Enter customer full name',
             icon: Icons.person_outline,
             keyboardType: TextInputType.text,
+            isRequired: true,
             validator: (value) {
               if (value?.isEmpty ?? true) {
                 return 'Customer name is required';
@@ -351,17 +352,31 @@ class _CustomerCreateScreenState extends State<CustomerCreateScreen> {
     required ThemeProvider themeProvider,
     required bool isMobile,
     int maxLines = 1,
+    bool isRequired = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isMobile ? 13 : 14,
-            fontWeight: FontWeight.w500,
-            color: themeProvider.textSecondary,
-          ),
+        Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isMobile ? 13 : 14,
+                fontWeight: FontWeight.w500,
+                color: themeProvider.textSecondary,
+              ),
+            ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.red,
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         TextFormField(

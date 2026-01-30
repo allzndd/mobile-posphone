@@ -159,6 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           "Grafik Penjualan",
                           style: AppTheme.textTheme.displayMedium?.copyWith(
                             color: themeProvider.primaryMain,
+                            fontFamily: 'Poppins',
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -168,6 +169,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           "Produk Terlaris",
                           style: AppTheme.textTheme.displayMedium?.copyWith(
                             color: themeProvider.primaryMain,
+                            fontFamily: 'Poppins',
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -178,7 +180,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(
                           "Stok Menipis",
                           style: AppTheme.textTheme.displayMedium?.copyWith(
-                            color: Colors.red,
+                            color: themeProvider.primaryMain,
+                            fontFamily: 'Poppins',
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -190,6 +193,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           "Riwayat Transaksi",
                           style: AppTheme.textTheme.displayMedium?.copyWith(
                             color: themeProvider.primaryMain,
+                            fontFamily: 'Poppins',
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -223,16 +227,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: const Icon(Icons.logout, color: Colors.red),
                 ),
                 const SizedBox(width: 12),
-                const Text('Konfirmasi Logout'),
+                const Text(
+                  'Konfirmasi Logout',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
               ],
             ),
             content: const Text(
               'Apakah Anda yakin ingin keluar dari aplikasi?',
+              style: TextStyle(fontFamily: 'Poppins'),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
+                child: const Text(
+                  'Batal',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -268,7 +279,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Logout'),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
               ),
             ],
           ),
@@ -334,12 +348,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: Colors.white,
                           fontSize: isNarrow ? 18 : 22,
                           fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
                         ),
                       ),
                     ),
                     Text(
                       logoProvider.appName,
-                      style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontFamily: 'Poppins',
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -375,6 +393,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: themeProvider.primaryMain,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
+                        fontFamily: 'Poppins',
                       ),
                     ),
                   ],
@@ -481,6 +500,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: color,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
+                      fontFamily: 'Poppins',
                     ),
                   ),
                 ),
@@ -490,6 +510,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: TextStyle(
                     color: themeProvider.textSecondary,
                     fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -530,6 +552,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: themeProvider.textPrimary,
+                      fontFamily: 'Poppins',
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -538,6 +561,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       color: themeProvider.textSecondary,
+                      fontFamily: 'Poppins',
                     ),
                   ),
                 ],
@@ -572,6 +596,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: themeProvider.primaryMain,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
+                          fontFamily: 'Poppins',
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -635,7 +660,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ? Center(
                       child: Text(
                         'Tidak ada data grafik',
-                        style: TextStyle(color: themeProvider.textTertiary),
+                        style: TextStyle(
+                          color: themeProvider.textTertiary,
+                          fontFamily: 'Poppins',
+                        ),
                       ),
                     )
                     : LineChart(
@@ -672,6 +700,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   style: TextStyle(
                                     color: themeProvider.textTertiary,
                                     fontSize: 10,
+                                    fontFamily: 'Poppins',
                                   ),
                                 );
                               },
@@ -693,6 +722,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       style: TextStyle(
                                         color: themeProvider.textTertiary,
                                         fontSize: 10,
+                                        fontFamily: 'Poppins',
                                       ),
                                     ),
                                   );
@@ -798,7 +828,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Text(
             label,
-            style: TextStyle(fontSize: 11, color: theme.textSecondary),
+            style: TextStyle(
+              fontSize: 11,
+              color: theme.textSecondary,
+              fontFamily: 'Poppins',
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -807,6 +841,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               fontSize: 14,
               fontWeight: FontWeight.bold,
               color: theme.textPrimary,
+              fontFamily: 'Poppins',
             ),
           ),
         ],
@@ -856,6 +891,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               fontWeight: FontWeight.bold,
               fontSize: 14,
               color: themeProvider.textPrimary,
+              fontFamily: 'Poppins',
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -867,6 +903,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: themeProvider.primaryMain,
               fontWeight: FontWeight.bold,
               fontSize: 13,
+              fontFamily: 'Poppins',
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -886,6 +923,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: TextStyle(
                     color: themeProvider.textSecondary,
                     fontSize: 11,
+                    fontFamily: 'Poppins',
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -938,6 +976,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
                 color: themeProvider.textPrimary,
+                fontFamily: 'Poppins',
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -955,6 +994,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: Colors.red,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
               ),
             ),
           ),
@@ -1021,11 +1061,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             fontWeight: FontWeight.bold,
             fontSize: 14,
             color: themeProvider.textPrimary,
+            fontFamily: 'Poppins',
           ),
         ),
         subtitle: Text(
           customer,
-          style: TextStyle(fontSize: 12, color: themeProvider.textSecondary),
+          style: TextStyle(
+            fontSize: 12,
+            color: themeProvider.textSecondary,
+            fontFamily: 'Poppins',
+          ),
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1039,13 +1084,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: isIncome ? AppTheme.successColor : AppTheme.errorColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
+                  fontFamily: 'Poppins',
                 ),
               ),
             ),
             const SizedBox(height: 2),
             Text(
               status,
-              style: TextStyle(fontSize: 10, color: themeProvider.textTertiary),
+              style: TextStyle(
+                fontSize: 10,
+                color: themeProvider.textTertiary,
+                fontFamily: 'Poppins',
+              ),
             ),
           ],
         ),
@@ -1083,6 +1133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: themeProvider.primaryMain,
+                  fontFamily: 'Poppins',
                 ),
               ),
             ),
@@ -1184,9 +1235,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        childAspectRatio: 1.0,
+        childAspectRatio: 0.85,
         crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        mainAxisSpacing: 16,
       ),
       itemCount: menuItems.length,
       itemBuilder: (context, index) {
@@ -1209,50 +1260,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     final themeProvider = context.watch<ThemeProvider>();
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: themeProvider.surfaceColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withOpacity(0.2), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: themeProvider.surfaceColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color.withOpacity(0.2), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(14),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
                 ),
-                child: Icon(icon, color: color, size: 28),
               ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: themeProvider.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: themeProvider.textPrimary,
+                fontFamily: 'Poppins',
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1295,7 +1353,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Center(
         child: Text(
           message,
-          style: TextStyle(color: themeProvider.textTertiary, fontSize: 14),
+          style: TextStyle(
+            color: themeProvider.textTertiary,
+            fontSize: 14,
+            fontFamily: 'Poppins',
+          ),
         ),
       ),
     );
