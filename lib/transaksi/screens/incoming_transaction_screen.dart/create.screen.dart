@@ -94,11 +94,11 @@ class _IncomingTransactionCreateScreenState
           final lastInvoice = transactions[0].invoice ?? '';
           debugPrint('Last invoice: $lastInvoice');
 
-          // Parse last invoice number (format: INV-YYYYMMDD-XXXX)
+          // Parse last invoice number (format: INV-IN-YYYYMMDD-XXXX)
           final parts = lastInvoice.split('-');
-          if (parts.length == 3) {
-            final lastDate = parts[1];
-            final lastNumber = int.tryParse(parts[2]) ?? 0;
+          if (parts.length == 4) {
+            final lastDate = parts[2];
+            final lastNumber = int.tryParse(parts[3]) ?? 0;
 
             // If same date, increment. Otherwise start from 1
             if (lastDate == dateStr) {
@@ -108,9 +108,9 @@ class _IncomingTransactionCreateScreenState
         }
       }
 
-      // Generate invoice: INV-YYYYMMDD-XXXX
+      // Generate invoice: INV-IN-YYYYMMDD-XXXX
       final invoiceNumber =
-          'INV-$dateStr-${nextNumber.toString().padLeft(4, '0')}';
+          'INV-IN-$dateStr-${nextNumber.toString().padLeft(4, '0')}';
 
       if (mounted) {
         setState(() {
@@ -126,7 +126,7 @@ class _IncomingTransactionCreateScreenState
       final now = DateTime.now();
       final dateStr =
           '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-      final invoiceNumber = 'INV-$dateStr-0001';
+      final invoiceNumber = 'INV-IN-$dateStr-0001';
 
       if (mounted) {
         setState(() {
@@ -700,6 +700,52 @@ class _IncomingTransactionCreateScreenState
               ),
             ],
           ),
+          SizedBox(height: isMobile ? 12 : 16),
+          Divider(color: themeProvider.borderColor),
+          SizedBox(height: isMobile ? 12 : 16),
+          Container(
+            padding: EdgeInsets.all(isMobile ? 12 : 16),
+            decoration: BoxDecoration(
+              color: themeProvider.backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: themeProvider.borderColor.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: themeProvider.primaryMain,
+                  size: isMobile ? 20 : 24,
+                ),
+                SizedBox(width: isMobile ? 12 : 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Amount',
+                        style: TextStyle(
+                          fontSize: isMobile ? 12 : 14,
+                          color: themeProvider.textSecondary,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Rp ${_formatPrice(total)}',
+                        style: TextStyle(
+                          fontSize: isMobile ? 18 : 22,
+                          fontWeight: FontWeight.bold,
+                          color: themeProvider.primaryMain,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -804,12 +850,16 @@ class _IncomingTransactionCreateScreenState
                           ),
                           value: selectedProduct,
                           hint: const Text('Select Product'),
+                          isExpanded: true,
                           items:
                               _products
                                   .map(
                                     (product) => DropdownMenuItem<Product>(
                                       value: product,
-                                      child: Text(product.nama ?? ''),
+                                      child: Text(
+                                        product.nama ?? '',
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   )
                                   .toList(),
@@ -836,12 +886,16 @@ class _IncomingTransactionCreateScreenState
                           ),
                           value: selectedService,
                           hint: const Text('Select Service'),
+                          isExpanded: true,
                           items:
                               _services
                                   .map(
                                     (service) => DropdownMenuItem<Service>(
                                       value: service,
-                                      child: Text(service.nama),
+                                      child: Text(
+                                        service.nama,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   )
                                   .toList(),

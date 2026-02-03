@@ -7,7 +7,9 @@ import '../../../suppliers/models/supplier.dart';
 import '../../../store/services/store_service.dart';
 import '../../../store/models/store.dart';
 import '../../../produk/services/product_service.dart';
+import '../../../produk/services/brand_service.dart';
 import '../../../produk/models/product.dart';
+import '../../../produk/models/product_brand.dart';
 import '../../services/outgoing_service.dart';
 
 class OutgoingTransactionCreateScreen extends StatefulWidget {
@@ -86,11 +88,11 @@ class _OutgoingTransactionCreateScreenState
           final lastInvoice = transactions[0].invoice ?? '';
           debugPrint('Last invoice: $lastInvoice');
 
-          // Parse last invoice number (format: INV-YYYYMMDD-XXXX)
+          // Parse last invoice number (format: INV-OUT-YYYYMMDD-XXXX)
           final parts = lastInvoice.split('-');
-          if (parts.length == 3) {
-            final lastDate = parts[1];
-            final lastNumber = int.tryParse(parts[2]) ?? 0;
+          if (parts.length == 4) {
+            final lastDate = parts[2];
+            final lastNumber = int.tryParse(parts[3]) ?? 0;
 
             // If same date, increment. Otherwise start from 1
             if (lastDate == dateStr) {
@@ -100,9 +102,9 @@ class _OutgoingTransactionCreateScreenState
         }
       }
 
-      // Generate invoice: INV-YYYYMMDD-XXXX
+      // Generate invoice: INV-OUT-YYYYMMDD-XXXX
       final invoiceNumber =
-          'INV-$dateStr-${nextNumber.toString().padLeft(4, '0')}';
+          'INV-OUT-$dateStr-${nextNumber.toString().padLeft(4, '0')}';
 
       if (mounted) {
         setState(() {
@@ -118,7 +120,7 @@ class _OutgoingTransactionCreateScreenState
       final now = DateTime.now();
       final dateStr =
           '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-      final invoiceNumber = 'INV-$dateStr-0001';
+      final invoiceNumber = 'INV-OUT-$dateStr-0001';
 
       if (mounted) {
         setState(() {
@@ -188,6 +190,42 @@ class _OutgoingTransactionCreateScreenState
     } finally {
       setState(() => _isLoadingProducts = false);
     }
+  }
+
+  Future<bool?> _showAddProductDialog() async {
+    final result = await showDialog<Product>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _QuickAddProductDialog(
+        key: UniqueKey(),
+        onProductAdded: () async {
+          await _loadProducts();
+        },
+      ),
+    );
+
+    // Jika ada product baru, langsung tambahkan ke items
+    if (result != null) {
+      setState(() {
+        _items.add({
+          'product': result,
+          'product_id': result.id,
+          'quantity': 1,
+          'price': result.hargaBeli,
+        });
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Product added to transaction!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+
+    return result != null;
   }
 
   @override
@@ -685,6 +723,52 @@ class _OutgoingTransactionCreateScreenState
               ),
             ],
           ),
+          SizedBox(height: isMobile ? 12 : 16),
+          Divider(color: themeProvider.borderColor),
+          SizedBox(height: isMobile ? 12 : 16),
+          Container(
+            padding: EdgeInsets.all(isMobile ? 12 : 16),
+            decoration: BoxDecoration(
+              color: themeProvider.backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: themeProvider.borderColor.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: themeProvider.primaryMain,
+                  size: isMobile ? 20 : 24,
+                ),
+                SizedBox(width: isMobile ? 12 : 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Amount',
+                        style: TextStyle(
+                          fontSize: isMobile ? 12 : 14,
+                          color: themeProvider.textSecondary,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Rp ${_formatPrice(total)}',
+                        style: TextStyle(
+                          fontSize: isMobile ? 18 : 22,
+                          fontWeight: FontWeight.bold,
+                          color: themeProvider.primaryMain,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -695,11 +779,21 @@ class _OutgoingTransactionCreateScreenState
     final quantityController = TextEditingController(text: '1');
     final unitPriceController = TextEditingController();
     int subtotal = 0;
+    bool controllersDisposed = false;
+
+    void disposeControllers() {
+      if (!controllersDisposed) {
+        quantityController.dispose();
+        unitPriceController.dispose();
+        controllersDisposed = true;
+      }
+    }
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder:
-          (context) => StatefulBuilder(
+          (dialogContext) => StatefulBuilder(
             builder: (context, setDialogState) {
               void calculateSubtotal() {
                 final qty = int.tryParse(quantityController.text) ?? 0;
@@ -709,7 +803,12 @@ class _OutgoingTransactionCreateScreenState
                 });
               }
 
-              return AlertDialog(
+              return WillPopScope(
+                onWillPop: () async {
+                  disposeControllers();
+                  return true;
+                },
+                child: AlertDialog(
                 backgroundColor: themeProvider.surfaceColor,
                 title: Text(
                   'Add Product',
@@ -720,7 +819,7 @@ class _OutgoingTransactionCreateScreenState
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Product Dropdown
+                      // Product Dropdown with +New Button
                       Text(
                         'Product',
                         style: TextStyle(
@@ -730,36 +829,86 @@ class _OutgoingTransactionCreateScreenState
                         ),
                       ),
                       const SizedBox(height: 8),
-                      DropdownButtonFormField<Product>(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<Product>(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                              ),
+                              value: selectedProduct,
+                              hint: const Text('Select Product'),
+                              isExpanded: true,
+                              items:
+                                  _products
+                                      .map(
+                                        (product) => DropdownMenuItem<Product>(
+                                          value: product,
+                                          child: Text(
+                                            product.nama ?? '',
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged: (value) {
+                                setDialogState(() {
+                                  selectedProduct = value;
+                                  unitPriceController.text =
+                                      (selectedProduct?.hargaBeli ?? 0).toString();
+                                  calculateSubtotal();
+                                });
+                              },
+                              dropdownColor: themeProvider.surfaceColor,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                // Don't dispose controllers yet, just close dialog
+                                Navigator.pop(dialogContext);
+                                
+                                // Show product creation dialog
+                                final result = await _showAddProductDialog();
+                                
+                                // If product was not added and widget is still mounted, reopen this dialog
+                                if (result != true && mounted) {
+                                  // Give a small delay to ensure clean state
+                                  await Future.delayed(const Duration(milliseconds: 100));
+                                  
+                                  // Reopen with new controllers since old ones are closed with the dialog
+                                  _showAddItemDialog(themeProvider, isMobile);
+                                } else if (!mounted) {
+                                  // Widget unmounted, dispose controllers
+                                  disposeControllers();
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: themeProvider.primaryMain,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                '+New',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        value: selectedProduct,
-                        hint: const Text('Select Product'),
-                        items:
-                            _products
-                                .map(
-                                  (product) => DropdownMenuItem<Product>(
-                                    value: product,
-                                    child: Text(product.nama ?? ''),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (value) {
-                          setDialogState(() {
-                            selectedProduct = value;
-                            unitPriceController.text =
-                                (selectedProduct?.hargaBeli ?? 0).toString();
-                            calculateSubtotal();
-                          });
-                        },
-                        dropdownColor: themeProvider.surfaceColor,
+                        ],
                       ),
                       const SizedBox(height: 16),
 
@@ -855,7 +1004,10 @@ class _OutgoingTransactionCreateScreenState
                 ),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      disposeControllers();
+                      Navigator.pop(dialogContext);
+                    },
                     style: TextButton.styleFrom(
                       foregroundColor: themeProvider.textPrimary,
                     ),
@@ -874,7 +1026,8 @@ class _OutgoingTransactionCreateScreenState
                                 int.tryParse(unitPriceController.text) ?? 0,
                           });
                         });
-                        Navigator.pop(context);
+                        disposeControllers();
+                        Navigator.pop(dialogContext);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -884,9 +1037,10 @@ class _OutgoingTransactionCreateScreenState
                     child: const Text('Add'),
                   ),
                 ],
-              );
-            },
-          ),
+              ),
+            );
+          },
+        ),
     );
   }
 
@@ -1326,5 +1480,895 @@ class _OutgoingTransactionCreateScreenState
         });
       }
     }
+  }
+}
+
+// Quick Add Product Dialog Widget
+class _QuickAddProductDialog extends StatefulWidget {
+  final VoidCallback onProductAdded;
+
+  const _QuickAddProductDialog({
+    Key? key,
+    required this.onProductAdded,
+  }) : super(key: key);
+
+  @override
+  State<_QuickAddProductDialog> createState() => _QuickAddProductDialogState();
+}
+
+class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _descriptionController = TextEditingController();
+  final _imeiController = TextEditingController();
+  final _storageController = TextEditingController();
+  final _colorController = TextEditingController();
+  final _batteryHealthController = TextEditingController();
+  final _purchasePriceController = TextEditingController();
+  final _sellingPriceController = TextEditingController();
+  
+  bool _isLoading = false;
+  bool _isLoadingBrands = false;
+  String _productType = 'electronic';
+  List<ProductBrand> _brands = [];
+  int? _selectedBrandId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBrands();
+  }
+
+  Future<void> _loadBrands() async {
+    setState(() => _isLoadingBrands = true);
+    try {
+      final response = await BrandService.getBrands(perPage: 100);
+      if (response['success'] == true && mounted) {
+        setState(() {
+          _brands = (response['data'] as List)
+              .map((json) => ProductBrand.fromJson(json))
+              .toList();
+          // Select first brand by default if available
+          if (_brands.isNotEmpty) {
+            _selectedBrandId = _brands.first.id;
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading brands: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingBrands = false);
+      }
+    }
+  }
+
+  Future<void> _showAddBrandDialog() async {
+    final brandNameController = TextEditingController();
+    final themeProvider = context.read<ThemeProvider>();
+    final scaffoldContext = context;
+    
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => WillPopScope(
+        onWillPop: () async {
+          // Unfocus to prevent render errors
+          FocusScope.of(dialogContext).unfocus();
+          return true;
+        },
+        child: AlertDialog(
+          backgroundColor: themeProvider.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Add Product Name',
+            style: TextStyle(
+              color: themeProvider.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: brandNameController,
+            autofocus: true,
+            style: TextStyle(
+              color: themeProvider.textPrimary,
+            ),
+            decoration: InputDecoration(
+              labelText: 'Product Name',
+              hintText: 'e.g. iPhone, Samsung, Charger...',
+              hintStyle: TextStyle(
+                color: themeProvider.textSecondary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Unfocus before closing
+                FocusScope.of(dialogContext).unfocus();
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  if (Navigator.canPop(dialogContext)) {
+                    Navigator.of(dialogContext).pop(null);
+                  }
+                });
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: themeProvider.textSecondary,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final text = brandNameController.text.trim();
+                if (text.isEmpty) {
+                  ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter product name'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                // Unfocus before closing
+                FocusScope.of(dialogContext).unfocus();
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  if (Navigator.canPop(dialogContext)) {
+                    Navigator.of(dialogContext).pop(text);
+                  }
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeProvider.primaryMain,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Dispose controller after dialog closes
+    brandNameController.dispose();
+
+    if (result != null && result.isNotEmpty && mounted) {
+      try {
+        final response = await BrandService.createBrand(nama: result);
+        
+        if (response['success'] == true) {
+          // Reload brands
+          await _loadBrands();
+          
+          // Find and select the newly created brand
+          final newBrand = _brands.firstWhere(
+            (b) => b.nama.toLowerCase() == result.toLowerCase(),
+            orElse: () => _brands.first,
+          );
+          
+          if (mounted) {
+            setState(() {
+              _selectedBrandId = newBrand.id;
+            });
+            
+            ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+              const SnackBar(
+                content: Text('Product name added successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ValidationHandler.showErrorDialog(
+              context: scaffoldContext,
+              title: 'Error',
+              message: response['message'] ?? 'Failed to add product name',
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ValidationHandler.showErrorDialog(
+            context: scaffoldContext,
+            title: 'Error',
+            message: 'An error occurred: ${e.toString()}',
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _imeiController.dispose();
+    _storageController.dispose();
+    _colorController.dispose();
+    _batteryHealthController.dispose();
+    _purchasePriceController.dispose();
+    _sellingPriceController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveProduct() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedBrandId == null) {
+      ValidationHandler.showErrorDialog(
+        context: context,
+        title: 'Validation Error',
+        message: 'Please select a product brand',
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Get selected brand name
+      final selectedBrand = _brands.firstWhere((b) => b.id == _selectedBrandId);
+      
+      final response = await ProductService.createProduct(
+        nama: selectedBrand.nama,
+        merkId: _selectedBrandId!,
+        productType: _productType,
+        deskripsi: _descriptionController.text.trim(),
+        hargaBeli: double.tryParse(_purchasePriceController.text) ?? 0,
+        hargaJual: double.tryParse(_sellingPriceController.text) ?? 0,
+        imei: _productType == 'electronic' ? _imeiController.text.trim() : 'N/A',
+        penyimpanan: _productType == 'electronic' ? _storageController.text.trim() : null,
+        warna: _productType == 'electronic' ? _colorController.text.trim() : null,
+        batteryHealth: _productType == 'electronic' ? _batteryHealthController.text.trim() : null,
+        aksesoris: _productType == 'accessories' ? selectedBrand.nama : null,
+      );
+
+      if (!mounted) return;
+
+      if (response.success) {
+        widget.onProductAdded();
+        
+        // Ambil product yang baru dibuat
+        final newProduct = response.data;
+        
+        if (newProduct != null) {
+          Navigator.pop(context, newProduct); // Return product object
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Product added successfully and added to transaction!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        } else {
+          Navigator.pop(context, null);
+        }
+      } else {
+        ValidationHandler.showErrorDialog(
+          context: context,
+          title: 'Error',
+          message: response.message ?? 'Failed to add product',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ValidationHandler.showErrorDialog(
+          context: context,
+          title: 'Error',
+          message: 'An error occurred: ${e.toString()}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: isMobile ? double.infinity : 600,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: themeProvider.surfaceColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                border: Border(
+                  bottom: BorderSide(
+                    color: themeProvider.borderColor.withOpacity(0.3),
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Quick Add Product',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: themeProvider.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Add a new product to your inventory',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: themeProvider.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: themeProvider.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Product Type Tabs
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: themeProvider.surfaceColor,
+                border: Border(
+                  bottom: BorderSide(
+                    color: themeProvider.borderColor.withOpacity(0.3),
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildTypeTab(
+                      label: 'Electronic / HP',
+                      icon: Icons.phone_android_rounded,
+                      type: 'electronic',
+                      themeProvider: themeProvider,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTypeTab(
+                      label: 'Accessories',
+                      icon: Icons.headphones_rounded,
+                      type: 'accessories',
+                      themeProvider: themeProvider,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Form Content
+            Expanded(
+              child: Container(
+                color: themeProvider.surfaceColor,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Basic Information Section
+                      _buildSectionTitle('Basic Information', themeProvider),
+                      const SizedBox(height: 16),
+                      
+                      // Product Name (Brand) Selection with +New button
+                      _buildBrandDropdown(themeProvider),
+                      const SizedBox(height: 16),
+                      
+                      _buildTextField(
+                        controller: _descriptionController,
+                        label: 'Description',
+                        hint: 'Enter product description (optional)',
+                        maxLines: 3,
+                        themeProvider: themeProvider,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Specifications (Electronic only)
+                      if (_productType == 'electronic') ...[
+                        _buildSectionTitle('Specifications', themeProvider),
+                        const SizedBox(height: 16),
+                        
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _colorController,
+                                label: 'Color',
+                                hint: 'e.g. Sierra Blue',
+                                themeProvider: themeProvider,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _storageController,
+                                label: 'Storage',
+                                hint: 'e.g. 256GB',
+                                themeProvider: themeProvider,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _batteryHealthController,
+                                label: 'Battery Health',
+                                hint: 'e.g. 85%',
+                                themeProvider: themeProvider,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _imeiController,
+                                label: 'IMEI Number',
+                                hint: 'Enter IMEI',
+                                isRequired: true,
+                                themeProvider: themeProvider,
+                                validator: (value) {
+                                  if (_productType == 'electronic') {
+                                    if (value == null || value.isEmpty) {
+                                      return 'IMEI required';
+                                    }
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // Pricing Information
+                      _buildSectionTitle('Pricing Information', themeProvider),
+                      const SizedBox(height: 16),
+                      
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _purchasePriceController,
+                              label: 'Purchase Price',
+                              hint: '0',
+                              isRequired: true,
+                              keyboardType: TextInputType.number,
+                              themeProvider: themeProvider,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Required';
+                                }
+                                if (int.tryParse(value) == null) {
+                                  return 'Invalid number';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _sellingPriceController,
+                              label: 'Selling Price',
+                              hint: '0',
+                              isRequired: true,
+                              keyboardType: TextInputType.number,
+                              themeProvider: themeProvider,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Required';
+                                }
+                                if (int.tryParse(value) == null) {
+                                  return 'Invalid number';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+            // Footer Actions
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: themeProvider.surfaceColor,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                border: Border(
+                  top: BorderSide(
+                    color: themeProvider.borderColor.withOpacity(0.3),
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isLoading ? null : () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(
+                          color: themeProvider.borderColor,
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: themeProvider.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _saveProduct,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: themeProvider.primaryMain,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              'Create Product',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeTab({
+    required String label,
+    required IconData icon,
+    required String type,
+    required ThemeProvider themeProvider,
+  }) {
+    final isSelected = _productType == type;
+    
+    return InkWell(
+      onTap: () => setState(() => _productType = type),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? themeProvider.primaryMain.withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? themeProvider.primaryMain
+                : themeProvider.borderColor.withOpacity(0.3),
+            width: 2,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected 
+                  ? themeProvider.primaryMain
+                  : themeProvider.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected
+                      ? themeProvider.primaryMain
+                      : themeProvider.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, ThemeProvider themeProvider) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: themeProvider.textPrimary,
+      ),
+    );
+  }
+
+  Widget _buildBrandDropdown(ThemeProvider themeProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Product Name',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: themeProvider.textPrimary,
+              ),
+            ),
+            Text(
+              ' *',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.red,
+              ),
+            ),
+            if (_isLoadingBrands) ...[
+              const SizedBox(width: 8),
+              const SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: themeProvider.borderColor.withOpacity(0.3),
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButtonFormField<int>(
+                    value: _selectedBrandId,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      hintText: 'Select Product Name',
+                      hintStyle: TextStyle(
+                        color: themeProvider.textSecondary.withOpacity(0.6),
+                        fontSize: 14,
+                      ),
+                      filled: true,
+                      fillColor: themeProvider.backgroundColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                    ),
+                    items: _brands.map((brand) {
+                      return DropdownMenuItem<int>(
+                        value: brand.id,
+                        child: Text(
+                          brand.nama,
+                          style: TextStyle(
+                            color: themeProvider.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: _isLoadingBrands
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _selectedBrandId = value;
+                            });
+                          },
+                    dropdownColor: themeProvider.surfaceColor,
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a product name';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _isLoadingBrands ? null : _showAddBrandDialog,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeProvider.primaryMain,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  '+New',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required ThemeProvider themeProvider,
+    bool isRequired = false,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: themeProvider.textPrimary,
+              ),
+            ),
+            if (isRequired)
+              Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          validator: validator,
+          style: TextStyle(
+            color: themeProvider.textPrimary,
+            fontSize: 14,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: themeProvider.textSecondary.withOpacity(0.6),
+              fontSize: 14,
+            ),
+            filled: true,
+            fillColor: themeProvider.backgroundColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: themeProvider.borderColor.withOpacity(0.3),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: themeProvider.borderColor.withOpacity(0.3),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: themeProvider.primaryMain,
+                width: 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Colors.red,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Colors.red,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
