@@ -19,6 +19,7 @@ import '../../suppliers/screens/index.screen.dart';
 import '../../trade_in/screens/index.screen.dart';
 import '../../reports/screens/index.screen.dart';
 import '../../user_management/screens/index.screen.dart';
+import '../../expense_category/screens/index.screen.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget? child;
@@ -63,6 +64,9 @@ class _MainLayoutState extends State<MainLayout> {
     const TradeInIndexScreen(), // 12
     const ReportsIndexScreen(), // 13
     const UserManagementScreen(), // 14
+    const ExpenseCategoryIndexScreen(), // 15 - placeholder for expense transaction
+    const ExpenseCategoryIndexScreen(), // 16 - placeholder for history
+    const ExpenseCategoryIndexScreen(), // 17
   ];
 
   // Title for each screen
@@ -78,6 +82,13 @@ class _MainLayoutState extends State<MainLayout> {
     'AI Business Assistant', // 8
     'Stores', // 9
     'Services & Repairs', // 10
+    'Suppliers', // 11
+    'Trade In', // 12
+    'Reports & Analytics', // 13
+    'User Management', // 14
+    'Expense Transaction', // 15
+    'Transaction History', // 16
+    'Expense Categories', // 17
     'Suppliers', // 11
     'Trade In', // 12
     'Reports & Analytics', // 13

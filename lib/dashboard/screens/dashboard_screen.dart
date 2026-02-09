@@ -158,7 +158,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(
                           "Grafik Penjualan",
                           style: AppTheme.textTheme.displayMedium?.copyWith(
-                            color: themeProvider.primaryMain,
+                            color: Colors.black,
                             fontFamily: 'Poppins',
                           ),
                         ),
@@ -168,7 +168,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(
                           "Produk Terlaris",
                           style: AppTheme.textTheme.displayMedium?.copyWith(
-                            color: themeProvider.primaryMain,
+                            color: Colors.black,
                             fontFamily: 'Poppins',
                           ),
                         ),
@@ -180,7 +180,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(
                           "Stok Menipis",
                           style: AppTheme.textTheme.displayMedium?.copyWith(
-                            color: themeProvider.primaryMain,
+                            color: Colors.black,
                             fontFamily: 'Poppins',
                           ),
                         ),
@@ -192,7 +192,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(
                           "Riwayat Transaksi",
                           style: AppTheme.textTheme.displayMedium?.copyWith(
-                            color: themeProvider.primaryMain,
+                            color: Colors.black,
                             fontFamily: 'Poppins',
                           ),
                         ),
@@ -1118,38 +1118,133 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(
               "Quick Access",
               style: AppTheme.textTheme.displayMedium?.copyWith(
-                color: themeProvider.primaryMain,
+                color: Colors.black,
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: themeProvider.primaryMain.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                "All Features",
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: themeProvider.primaryMain,
-                  fontFamily: 'Poppins',
+            InkWell(
+              onTap: _showAllFeaturesDialog,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: themeProvider.primaryMain.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  "All Features",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: themeProvider.primaryMain,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        _buildMenuGrid(),
+        _buildMenuGrid(showLimited: true),
       ],
     );
   }
 
-  Widget _buildMenuGrid() {
+  void _showAllFeaturesDialog() {
+    final themeProvider = context.read<ThemeProvider>();
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          color: themeProvider.surfaceColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: themeProvider.textTertiary.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'All Features',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: themeProvider.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: _buildMenuGrid(showLimited: false),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuGrid({bool showLimited = false}) {
     final screenWidth = MediaQuery.of(context).size.width;
     final crossAxisCount = screenWidth > 600 ? 4 : 4;
 
     final menuItems = <Map<String, dynamic>>[
+      // 4 pertama untuk dashboard (di luar All Features)
+      {
+        'icon': Icons.arrow_downward_rounded,
+        'title': 'Incoming',
+        'color': const Color(0xFF4CAF50),
+        'index': 2,
+      },
+      {
+        'icon': Icons.arrow_upward_rounded,
+        'title': 'Outgoing',
+        'color': const Color(0xFFE53935),
+        'index': 5,
+      },
+      {
+        'icon': Icons.swap_horiz_rounded,
+        'title': 'Trade In',
+        'color': const Color(0xFF00BCD4),
+        'index': 12,
+      },
+      {
+        'icon': Icons.category_rounded,
+        'title': 'Expense Category',
+        'color': const Color(0xFFD81B60),
+        'index': 17,
+      },
+      // Baris 1: Products, Customer, Services, Suppliers
       {
         'icon': Icons.inventory_2_rounded,
         'title': 'Products',
@@ -1163,24 +1258,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'index': 3,
       },
       {
-        'icon': Icons.psychology_rounded,
-        'title': 'AI Chat',
-        'color': const Color(0xFF9C27B0),
-        'index': 8,
-      },
-      {
-        'icon': Icons.palette_rounded,
-        'title': 'Theme',
-        'color': const Color(0xFFE91E63),
-        'index': 6,
-      },
-      {
-        'icon': Icons.branding_watermark_rounded,
-        'title': 'Logo',
-        'color': const Color(0xFFFF4081),
-        'index': 7,
-      },
-      {
         'icon': Icons.build_circle_rounded,
         'title': 'Services',
         'color': const Color(0xFF3F51B5),
@@ -1192,43 +1269,100 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'color': const Color(0xFFFF9800),
         'index': 11,
       },
+      // Baris 2: AI Chat, Logo, Theme, Stores
       {
-        'icon': Icons.swap_horiz_rounded,
-        'title': 'Trade In',
-        'color': const Color(0xFF00BCD4),
-        'index': 12,
+        'icon': Icons.psychology_rounded,
+        'title': 'AI Chat',
+        'color': const Color(0xFF9C27B0),
+        'index': 8,
+      },
+      {
+        'icon': Icons.branding_watermark_rounded,
+        'title': 'Logo',
+        'color': const Color(0xFFFF4081),
+        'index': 7,
+      },
+      {
+        'icon': Icons.palette_rounded,
+        'title': 'Theme',
+        'color': const Color(0xFFE91E63),
+        'index': 6,
+      },
+      // Stores akan ditambahkan di bawah jika user adalah owner
+      // Baris 3: Color, RAM, Storage, Users
+      {
+        'icon': Icons.color_lens_rounded,
+        'title': 'Color',
+        'color': const Color(0xFFF4511E),
+        'index': 19,
+      },
+      {
+        'icon': Icons.memory_rounded,
+        'title': 'RAM',
+        'color': const Color(0xFF1E88E5),
+        'index': 20,
+      },
+      {
+        'icon': Icons.storage_rounded,
+        'title': 'Storage',
+        'color': const Color(0xFF00897B),
+        'index': 18,
+      },
+      // Users akan ditambahkan di bawah jika user adalah owner
+      // Baris 4: Report, History
+      // Report akan ditambahkan di bawah jika user adalah owner
+      {
+        'icon': Icons.history_rounded,
+        'title': 'History',
+        'color': const Color(0xFF5E35B1),
+        'index': 16,
       },
     ];
 
-    // Add Stores only for owner (role_id = 2)
+    // Add Stores only for owner (role_id = 2) - masuk ke baris 2
     if (_currentUser?.roleId == 2) {
-      menuItems.add({
-        'icon': Icons.store_rounded,
-        'title': 'Stores',
-        'color': const Color(0xFF00BCD4),
-        'index': 9,
-      });
+      // Insert Stores setelah Theme (index 6)
+      final themeIndex = menuItems.indexWhere((item) => item['index'] == 6);
+      if (themeIndex != -1) {
+        menuItems.insert(themeIndex + 1, {
+          'icon': Icons.store_rounded,
+          'title': 'Stores',
+          'color': const Color(0xFF00BCD4),
+          'index': 9,
+        });
+      }
     }
 
-    // Add Reports only for owner (role_id = 2)
+    // Add Users only for owners (role_id = 2) - masuk ke baris 3
     if (_currentUser?.roleId == 2) {
-      menuItems.add({
-        'icon': Icons.assessment_rounded,
-        'title': 'Reports',
-        'color': const Color(0xFF673AB7),
-        'index': 13,
-      });
+      // Insert Users setelah Storage (index 18)
+      final storageIndex = menuItems.indexWhere((item) => item['index'] == 18);
+      if (storageIndex != -1) {
+        menuItems.insert(storageIndex + 1, {
+          'icon': Icons.manage_accounts_rounded,
+          'title': 'Users',
+          'color': const Color(0xFF9C27B0),
+          'index': 14,
+        });
+      }
     }
 
-    // Add User Management only for owners (role_id = 2)
+    // Add Reports only for owner (role_id = 2) - masuk ke baris 4
     if (_currentUser?.roleId == 2) {
-      menuItems.add({
-        'icon': Icons.manage_accounts_rounded,
-        'title': 'Users',
-        'color': const Color(0xFF9C27B0),
-        'index': 14,
-      });
+      // Insert Reports sebelum History (index 16)
+      final historyIndex = menuItems.indexWhere((item) => item['index'] == 16);
+      if (historyIndex != -1) {
+        menuItems.insert(historyIndex, {
+          'icon': Icons.assessment_rounded,
+          'title': 'Reports',
+          'color': const Color(0xFF673AB7),
+          'index': 13,
+        });
+      }
     }
+
+    // Limit to 4 items if showLimited is true
+    final displayItems = showLimited ? menuItems.take(4).toList() : menuItems;
 
     return GridView.builder(
       shrinkWrap: true,
@@ -1239,9 +1373,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisSpacing: 12,
         mainAxisSpacing: 16,
       ),
-      itemCount: menuItems.length,
+      itemCount: displayItems.length,
       itemBuilder: (context, index) {
-        final item = menuItems[index];
+        final item = displayItems[index];
         return _buildMenuCard(
           icon: item['icon'] as IconData,
           title: item['title'] as String,
@@ -1316,6 +1450,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _navigateToScreen(int index) {
+    // Close modal if open
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+    
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder:

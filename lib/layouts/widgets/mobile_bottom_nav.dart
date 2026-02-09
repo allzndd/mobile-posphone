@@ -65,6 +65,13 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
               children: [
                 _buildNavItem(
                   context: context,
+                  icon: Icons.money_off_rounded,
+                  label: 'Expense',
+                  index: 15,
+                  isSelected: widget.selectedIndex == 15,
+                ),
+                _buildNavItem(
+                  context: context,
                   icon: Icons.dashboard_rounded,
                   label: 'Dashboard',
                   index: 0,
@@ -72,17 +79,10 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
                 ),
                 _buildNavItem(
                   context: context,
-                  icon: Icons.arrow_downward_rounded,
-                  label: 'Incoming',
-                  index: 2,
-                  isSelected: widget.selectedIndex == 2,
-                ),
-                _buildNavItem(
-                  context: context,
-                  icon: Icons.arrow_upward_rounded,
-                  label: 'Outgoing',
-                  index: 5,
-                  isSelected: widget.selectedIndex == 5,
+                  icon: Icons.settings_rounded,
+                  label: 'Settings',
+                  index: 4,
+                  isSelected: widget.selectedIndex == 4,
                 ),
               ],
             ),
