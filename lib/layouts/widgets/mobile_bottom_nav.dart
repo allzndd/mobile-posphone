@@ -65,10 +65,10 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
               children: [
                 _buildNavItem(
                   context: context,
-                  icon: Icons.money_off_rounded,
-                  label: 'Expense',
-                  index: 15,
-                  isSelected: widget.selectedIndex == 15,
+                  icon: Icons.history_rounded,
+                  label: 'History',
+                  index: 16,
+                  isSelected: widget.selectedIndex == 16,
                 ),
                 _buildNavItem(
                   context: context,
@@ -337,6 +337,26 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
                               isSelected: widget.selectedIndex == 14,
                             ),
                           ],
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.money_off_rounded,
+                            title: 'Expense Categories',
+                            subtitle: 'Manage expense categories',
+                            color: Colors.red,
+                            index: 15,
+                            isSelected: widget.selectedIndex == 15,
+                          ),
+                          const Divider(height: 1),
+                          _buildSubmenuItem(
+                            context: context,
+                            icon: Icons.color_lens_rounded,
+                            title: 'Colors',
+                            subtitle: 'Manage color palette',
+                            color: Colors.amber,
+                            index: 18,
+                            isSelected: widget.selectedIndex == 18,
+                          ),
                           const Divider(height: 1),
                           _buildSubmenuItem(
                             context: context,

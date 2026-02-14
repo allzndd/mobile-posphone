@@ -1219,7 +1219,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final crossAxisCount = screenWidth > 600 ? 4 : 4;
 
     final menuItems = <Map<String, dynamic>>[
-      // 4 pertama untuk dashboard (di luar All Features)
+      // Quick Access Items (4 pertama - ditampilkan di dashboard)
       {
         'icon': Icons.arrow_downward_rounded,
         'title': 'Incoming',
@@ -1239,12 +1239,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'index': 12,
       },
       {
-        'icon': Icons.category_rounded,
-        'title': 'Expense Category',
+        'icon': Icons.receipt_long_rounded,
+        'title': 'Expense Transaction',
         'color': const Color(0xFFD81B60),
-        'index': 17,
+        'index': 15,
       },
-      // Baris 1: Products, Customer, Services, Suppliers
+      // Baris 1: Products, Customers, Services, Suppliers
       {
         'icon': Icons.inventory_2_rounded,
         'title': 'Products',
@@ -1288,78 +1288,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'color': const Color(0xFFE91E63),
         'index': 6,
       },
-      // Stores akan ditambahkan di bawah jika user adalah owner
-      // Baris 3: Color, RAM, Storage, Users
+      {
+        'icon': Icons.store_rounded,
+        'title': 'Stores',
+        'color': const Color(0xFF00BCD4),
+        'index': 9,
+      },
+      // Baris 3: Color, RAM, Storage, Expense Category
       {
         'icon': Icons.color_lens_rounded,
         'title': 'Color',
         'color': const Color(0xFFF4511E),
-        'index': 19,
+        'index': 18,
       },
       {
         'icon': Icons.memory_rounded,
         'title': 'RAM',
-        'color': const Color(0xFF1E88E5),
-        'index': 20,
+        'color': const Color(0xFF1976D2),
+        'index': 19,
       },
       {
         'icon': Icons.storage_rounded,
         'title': 'Storage',
-        'color': const Color(0xFF00897B),
-        'index': 18,
+        'color': const Color(0xFF0097A7),
+        'index': 20,
       },
-      // Users akan ditambahkan di bawah jika user adalah owner
-      // Baris 4: Report, History
-      // Report akan ditambahkan di bawah jika user adalah owner
       {
-        'icon': Icons.history_rounded,
-        'title': 'History',
-        'color': const Color(0xFF5E35B1),
-        'index': 16,
+        'icon': Icons.category_rounded,
+        'title': 'Expense Category',
+        'color': const Color(0xFFD81B60),
+        'index': 17,
+      },
+      // Baris 4: Users, Report
+      {
+        'icon': Icons.manage_accounts_rounded,
+        'title': 'Users',
+        'color': const Color(0xFF9C27B0),
+        'index': 14,
+      },
+      {
+        'icon': Icons.assessment_rounded,
+        'title': 'Report',
+        'color': const Color(0xFF673AB7),
+        'index': 13,
       },
     ];
-
-    // Add Stores only for owner (role_id = 2) - masuk ke baris 2
-    if (_currentUser?.roleId == 2) {
-      // Insert Stores setelah Theme (index 6)
-      final themeIndex = menuItems.indexWhere((item) => item['index'] == 6);
-      if (themeIndex != -1) {
-        menuItems.insert(themeIndex + 1, {
-          'icon': Icons.store_rounded,
-          'title': 'Stores',
-          'color': const Color(0xFF00BCD4),
-          'index': 9,
-        });
-      }
-    }
-
-    // Add Users only for owners (role_id = 2) - masuk ke baris 3
-    if (_currentUser?.roleId == 2) {
-      // Insert Users setelah Storage (index 18)
-      final storageIndex = menuItems.indexWhere((item) => item['index'] == 18);
-      if (storageIndex != -1) {
-        menuItems.insert(storageIndex + 1, {
-          'icon': Icons.manage_accounts_rounded,
-          'title': 'Users',
-          'color': const Color(0xFF9C27B0),
-          'index': 14,
-        });
-      }
-    }
-
-    // Add Reports only for owner (role_id = 2) - masuk ke baris 4
-    if (_currentUser?.roleId == 2) {
-      // Insert Reports sebelum History (index 16)
-      final historyIndex = menuItems.indexWhere((item) => item['index'] == 16);
-      if (historyIndex != -1) {
-        menuItems.insert(historyIndex, {
-          'icon': Icons.assessment_rounded,
-          'title': 'Reports',
-          'color': const Color(0xFF673AB7),
-          'index': 13,
-        });
-      }
-    }
 
     // Limit to 4 items if showLimited is true
     final displayItems = showLimited ? menuItems.take(4).toList() : menuItems;
@@ -1477,6 +1450,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       12: 'Trade In',
       13: 'Reports & Analytics',
       14: 'User Management',
+      19: 'RAM Info',
+      20: 'Storage Info',
     };
     return titles[index] ?? 'Dashboard';
   }

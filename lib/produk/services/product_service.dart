@@ -104,8 +104,9 @@ class ProductService {
     required int merkId,
     required String productType,
     String? deskripsi,
-    String? warna,
-    String? penyimpanan,
+    int? warnaId,
+    int? penyimpananId,
+    int? ramId,
     String? batteryHealth,
     required double hargaBeli,
     required double hargaJual,
@@ -135,9 +136,10 @@ class ProductService {
       if (nama != null && nama.isNotEmpty) requestBody['nama'] = nama;
       if (deskripsi != null && deskripsi.isNotEmpty)
         requestBody['deskripsi'] = deskripsi;
-      if (warna != null && warna.isNotEmpty) requestBody['warna'] = warna;
-      if (penyimpanan != null && penyimpanan.isNotEmpty)
-        requestBody['penyimpanan'] = penyimpanan;
+      if (warnaId != null) requestBody['pos_warna_id'] = warnaId;
+      if (penyimpananId != null)
+        requestBody['pos_penyimpanan_id'] = penyimpananId;
+      if (ramId != null) requestBody['pos_ram_id'] = ramId;
       if (batteryHealth != null && batteryHealth.isNotEmpty)
         requestBody['battery_health'] = batteryHealth;
       if (aksesoris != null && aksesoris.isNotEmpty)

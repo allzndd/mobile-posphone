@@ -10,6 +10,12 @@ import '../../../produk/services/product_service.dart';
 import '../../../produk/services/brand_service.dart';
 import '../../../produk/models/product.dart';
 import '../../../produk/models/product_brand.dart';
+import '../../../ram/services/ram_service.dart';
+import '../../../ram/models/ram.dart' as RamModel;
+import '../../../color/services/color_service.dart';
+import '../../../color/models/color.dart' as ColorModel;
+import '../../../storage/services/storage_service.dart';
+import '../../../storage/models/storage.dart';
 import '../../services/outgoing_service.dart';
 
 class OutgoingTransactionCreateScreen extends StatefulWidget {
@@ -1500,22 +1506,32 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _imeiController = TextEditingController();
-  final _storageController = TextEditingController();
-  final _colorController = TextEditingController();
   final _batteryHealthController = TextEditingController();
   final _purchasePriceController = TextEditingController();
   final _sellingPriceController = TextEditingController();
   
   bool _isLoading = false;
   bool _isLoadingBrands = false;
+  bool _isLoadingColors = false;
+  bool _isLoadingRams = false;
+  bool _isLoadingStorages = false;
   String _productType = 'electronic';
   List<ProductBrand> _brands = [];
+  List<ColorModel.PosWarnaModel> _colors = [];
+  List<RamModel.PosRamModel> _rams = [];
+  List<Storage> _storages = [];
   int? _selectedBrandId;
+  int? _selectedColorId;
+  int? _selectedRamId;
+  int? _selectedStorageId;
 
   @override
   void initState() {
     super.initState();
     _loadBrands();
+    _loadColors();
+    _loadRams();
+    _loadStorages();
   }
 
   Future<void> _loadBrands() async {
@@ -1550,91 +1566,73 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
     final result = await showDialog<String>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => WillPopScope(
-        onWillPop: () async {
-          // Unfocus to prevent render errors
-          FocusScope.of(dialogContext).unfocus();
-          return true;
-        },
-        child: AlertDialog(
-          backgroundColor: themeProvider.surfaceColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: themeProvider.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Add Product Name',
+          style: TextStyle(
+            color: themeProvider.textPrimary,
+            fontWeight: FontWeight.bold,
           ),
-          title: Text(
-            'Add Product Name',
-            style: TextStyle(
-              color: themeProvider.textPrimary,
-              fontWeight: FontWeight.bold,
+        ),
+        content: TextField(
+          controller: brandNameController,
+          autofocus: true,
+          style: TextStyle(
+            color: themeProvider.textPrimary,
+          ),
+          decoration: InputDecoration(
+            labelText: 'Product Name',
+            hintText: 'e.g. iPhone, Samsung, Charger...',
+            hintStyle: TextStyle(
+              color: themeProvider.textSecondary,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          content: TextField(
-            controller: brandNameController,
-            autofocus: true,
-            style: TextStyle(
-              color: themeProvider.textPrimary,
-            ),
-            decoration: InputDecoration(
-              labelText: 'Product Name',
-              hintText: 'e.g. iPhone, Samsung, Charger...',
-              hintStyle: TextStyle(
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop(null);
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(
                 color: themeProvider.textSecondary,
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Unfocus before closing
-                FocusScope.of(dialogContext).unfocus();
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  if (Navigator.canPop(dialogContext)) {
-                    Navigator.of(dialogContext).pop(null);
-                  }
-                });
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: themeProvider.textSecondary,
-                ),
-              ),
+          ElevatedButton(
+            onPressed: () {
+              final text = brandNameController.text.trim();
+              if (text.isEmpty) {
+                ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter product name'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+              Navigator.of(dialogContext).pop(text);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeProvider.primaryMain,
+              foregroundColor: Colors.white,
             ),
-            ElevatedButton(
-              onPressed: () {
-                final text = brandNameController.text.trim();
-                if (text.isEmpty) {
-                  ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter product name'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                  return;
-                }
-                // Unfocus before closing
-                FocusScope.of(dialogContext).unfocus();
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  if (Navigator.canPop(dialogContext)) {
-                    Navigator.of(dialogContext).pop(text);
-                  }
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: themeProvider.primaryMain,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Add'),
-            ),
-          ],
-        ),
+            child: const Text('Add'),
+          ),
+        ],
       ),
     );
 
-    // Dispose controller after dialog closes
+    // Safely dispose controller after dialog is fully closed
+    await Future.delayed(const Duration(milliseconds: 100));
     brandNameController.dispose();
 
     if (result != null && result.isNotEmpty && mounted) {
@@ -1688,12 +1686,68 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   void dispose() {
     _descriptionController.dispose();
     _imeiController.dispose();
-    _storageController.dispose();
-    _colorController.dispose();
     _batteryHealthController.dispose();
     _purchasePriceController.dispose();
     _sellingPriceController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadColors() async {
+    setState(() => _isLoadingColors = true);
+    try {
+      final response = await ColorService.getColors(perPage: 100);
+      if (response['success'] == true && mounted) {
+        setState(() {
+          _colors = (response['data'] as List)
+              .map((json) => ColorModel.PosWarnaModel.fromJson(json))
+              .toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading colors: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingColors = false);
+      }
+    }
+  }
+
+  Future<void> _loadRams() async {
+    setState(() => _isLoadingRams = true);
+    try {
+      final response = await RamService.getRams(perPage: 100);
+      if (response['success'] == true && mounted) {
+        setState(() {
+          _rams = (response['data'] as List)
+              .map((json) => RamModel.PosRamModel.fromJson(json))
+              .toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading rams: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingRams = false);
+      }
+    }
+  }
+
+  Future<void> _loadStorages() async {
+    setState(() => _isLoadingStorages = true);
+    try {
+      final response = await StorageService.getStorages(perPage: 100);
+      if (response['success'] == true && mounted) {
+        setState(() {
+          _storages = response['data'] as List<Storage>;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading storages: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingStorages = false);
+      }
+    }
   }
 
   Future<void> _saveProduct() async {
@@ -1722,8 +1776,9 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
         hargaBeli: double.tryParse(_purchasePriceController.text) ?? 0,
         hargaJual: double.tryParse(_sellingPriceController.text) ?? 0,
         imei: _productType == 'electronic' ? _imeiController.text.trim() : 'N/A',
-        penyimpanan: _productType == 'electronic' ? _storageController.text.trim() : null,
-        warna: _productType == 'electronic' ? _colorController.text.trim() : null,
+        warnaId: _productType == 'electronic' ? _selectedColorId : null,
+        penyimpananId: _productType == 'electronic' ? _selectedStorageId : null,
+        ramId: _productType == 'electronic' ? _selectedRamId : null,
         batteryHealth: _productType == 'electronic' ? _batteryHealthController.text.trim() : null,
         aksesoris: _productType == 'accessories' ? selectedBrand.nama : null,
       );
@@ -1906,24 +1961,20 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
                         _buildSectionTitle('Specifications', themeProvider),
                         const SizedBox(height: 16),
                         
+                        // Color Dropdown
+                        _buildColorDropdown(themeProvider),
+                        const SizedBox(height: 16),
+                        
                         Row(
                           children: [
+                            // RAM Dropdown
                             Expanded(
-                              child: _buildTextField(
-                                controller: _colorController,
-                                label: 'Color',
-                                hint: 'e.g. Sierra Blue',
-                                themeProvider: themeProvider,
-                              ),
+                              child: _buildRamDropdown(themeProvider),
                             ),
                             const SizedBox(width: 12),
+                            // Storage Dropdown
                             Expanded(
-                              child: _buildTextField(
-                                controller: _storageController,
-                                label: 'Storage',
-                                hint: 'e.g. 256GB',
-                                themeProvider: themeProvider,
-                              ),
+                              child: _buildStorageDropdown(themeProvider),
                             ),
                           ],
                         ),
@@ -2365,6 +2416,231 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildColorDropdown(ThemeProvider themeProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Color',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: themeProvider.textPrimary,
+              ),
+            ),
+            if (_isLoadingColors) ...[
+              const SizedBox(width: 8),
+              const SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: themeProvider.borderColor.withOpacity(0.3),
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButtonFormField<int>(
+              value: _selectedColorId,
+              isExpanded: true,
+              decoration: InputDecoration(
+                hintText: 'Select Color',
+                hintStyle: TextStyle(
+                  color: themeProvider.textSecondary.withOpacity(0.6),
+                ),
+                filled: true,
+                fillColor: themeProvider.backgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+              ),
+              items: _colors.map((color) {
+                return DropdownMenuItem<int>(
+                  value: color.id,
+                  child: Text(
+                    color.warna,
+                    style: TextStyle(
+                      color: themeProvider.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: _isLoadingColors
+                  ? null
+                  : (value) => setState(() => _selectedColorId = value),
+              dropdownColor: themeProvider.surfaceColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRamDropdown(ThemeProvider themeProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'RAM',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: themeProvider.textPrimary,
+              ),
+            ),
+            if (_isLoadingRams) ...[
+              const SizedBox(width: 8),
+              const SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: themeProvider.borderColor.withOpacity(0.3),
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButtonFormField<int>(
+              value: _selectedRamId,
+              isExpanded: true,
+              decoration: InputDecoration(
+                hintText: 'Select RAM',
+                hintStyle: TextStyle(
+                  color: themeProvider.textSecondary.withOpacity(0.6),
+                ),
+                filled: true,
+                fillColor: themeProvider.backgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+              ),
+              items: _rams.map((ram) {
+                return DropdownMenuItem<int>(
+                  value: ram.id,
+                  child: Text(
+                    '${ram.kapasitas} GB',
+                    style: TextStyle(
+                      color: themeProvider.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: _isLoadingRams
+                  ? null
+                  : (value) => setState(() => _selectedRamId = value),
+              dropdownColor: themeProvider.surfaceColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStorageDropdown(ThemeProvider themeProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Storage',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: themeProvider.textPrimary,
+              ),
+            ),
+            if (_isLoadingStorages) ...[
+              const SizedBox(width: 8),
+              const SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: themeProvider.borderColor.withOpacity(0.3),
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButtonFormField<int>(
+              value: _selectedStorageId,
+              isExpanded: true,
+              decoration: InputDecoration(
+                hintText: 'Select Storage',
+                hintStyle: TextStyle(
+                  color: themeProvider.textSecondary.withOpacity(0.6),
+                ),
+                filled: true,
+                fillColor: themeProvider.backgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+              ),
+              items: _storages.map((storage) {
+                return DropdownMenuItem<int>(
+                  value: storage.id,
+                  child: Text(
+                    '${storage.kapasitas} GB',
+                    style: TextStyle(
+                      color: themeProvider.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: _isLoadingStorages
+                  ? null
+                  : (value) => setState(() => _selectedStorageId = value),
+              dropdownColor: themeProvider.surfaceColor,
             ),
           ),
         ),

@@ -20,6 +20,10 @@ import '../../trade_in/screens/index.screen.dart';
 import '../../reports/screens/index.screen.dart';
 import '../../user_management/screens/index.screen.dart';
 import '../../expense_category/screens/index.screen.dart';
+import '../../color/screens/index.screen.dart';
+import '../../ram/screens/index.screen.dart';
+import '../../storage/screens/index.screen.dart';
+import '../../transaksi/screens/expense_transaction_screen.dart/index.screen.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget? child;
@@ -64,9 +68,12 @@ class _MainLayoutState extends State<MainLayout> {
     const TradeInIndexScreen(), // 12
     const ReportsIndexScreen(), // 13
     const UserManagementScreen(), // 14
-    const ExpenseCategoryIndexScreen(), // 15 - placeholder for expense transaction
+    const ExpenseTransactionIndexScreen(), // 15 - expense transaction
     const ExpenseCategoryIndexScreen(), // 16 - placeholder for history
     const ExpenseCategoryIndexScreen(), // 17
+    const ColorIndexScreen(), // 18
+    const RamIndexScreen(), // 19 - RAM Info
+    const StorageIndexScreen(), // 20 - Storage
   ];
 
   // Title for each screen
@@ -89,16 +96,37 @@ class _MainLayoutState extends State<MainLayout> {
     'Expense Transaction', // 15
     'Transaction History', // 16
     'Expense Categories', // 17
-    'Suppliers', // 11
-    'Trade In', // 12
-    'Reports & Analytics', // 13
-    'User Management', // 14
+    'Colors', // 18
+    'RAM Info', // 19
+    'Storage', // 20
   ];
 
   void _onMenuItemTap(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    // Safety check to prevent RangeError
+    if (index >= 0 && index < _screens.length && index < _screenTitles.length) {
+      setState(() {
+        _currentIndex = index;
+      });
+    } else {
+      // Fallback to dashboard if index is invalid
+      setState(() {
+        _currentIndex = 0;
+      });
+    }
+  }
+
+  String get _currentTitle {
+    if (_currentIndex >= 0 && _currentIndex < _screenTitles.length) {
+      return _screenTitles[_currentIndex];
+    }
+    return 'Dashboard';
+  }
+
+  Widget get _currentScreen {
+    if (_currentIndex >= 0 && _currentIndex < _screens.length) {
+      return _screens[_currentIndex];
+    }
+    return const DashboardScreen();
   }
 
   void _onLogout() {
@@ -145,7 +173,7 @@ class _MainLayoutState extends State<MainLayout> {
           child: Column(
             children: [
               CustomAppBar(
-                title: _screenTitles[_currentIndex],
+                title: _currentTitle,
                 isDesktop: true,
                 showBackButton: _currentIndex != 0,
               ),
@@ -157,10 +185,7 @@ class _MainLayoutState extends State<MainLayout> {
                       topLeft: Radius.circular(24),
                     ),
                   ),
-                  child:
-                      _screens.isNotEmpty && _currentIndex < _screens.length
-                          ? _screens[_currentIndex]
-                          : const DashboardScreen(),
+                  child: _currentScreen,
                 ),
               ),
             ],
@@ -174,15 +199,12 @@ class _MainLayoutState extends State<MainLayout> {
     return Column(
       children: [
         CustomAppBar(
-          title: _screenTitles[_currentIndex],
+          title: _currentTitle,
           isDesktop: false,
           showBackButton: _currentIndex != 0,
         ),
         Expanded(
-          child:
-              _screens.isNotEmpty && _currentIndex < _screens.length
-                  ? _screens[_currentIndex]
-                  : const DashboardScreen(),
+          child: _currentScreen,
         ),
         MobileBottomNav(
           selectedIndex: _currentIndex,
@@ -196,15 +218,12 @@ class _MainLayoutState extends State<MainLayout> {
     return Column(
       children: [
         CustomAppBar(
-          title: _screenTitles[_currentIndex],
+          title: _currentTitle,
           isDesktop: false,
           showBackButton: _currentIndex != 0,
         ),
         Expanded(
-          child:
-              _screens.isNotEmpty && _currentIndex < _screens.length
-                  ? _screens[_currentIndex]
-                  : const DashboardScreen(),
+          child: _currentScreen,
         ),
         MobileBottomNav(
           selectedIndex: _currentIndex,
@@ -214,3 +233,81 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 }
+
+// Placeholder Screen for System Info (RAM & Storage)
+class _SystemInfoScreen extends StatelessWidget {
+  final String title;
+
+  const _SystemInfoScreen({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return Scaffold(
+      backgroundColor: themeProvider.backgroundColor,
+      body: Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          margin: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: themeProvider.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                title == 'RAM Info' ? Icons.memory_rounded : Icons.storage_rounded,
+                size: 64,
+                color: themeProvider.primaryMain,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'System information feature',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: themeProvider.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeProvider.primaryMain,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Back to Dashboard',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

@@ -58,6 +58,7 @@ class _SidebarMenuState extends State<SidebarMenu> {
       'submenu': [
         {'title': 'Incoming', 'index': 2, 'icon': Icons.arrow_downward_rounded},
         {'title': 'Outgoing', 'index': 5, 'icon': Icons.arrow_upward_rounded},
+        {'title': 'Expense Transaction', 'index': 15, 'icon': Icons.receipt_long_rounded},
       ],
     });
     
@@ -94,6 +95,34 @@ class _SidebarMenuState extends State<SidebarMenu> {
       'icon': Icons.branding_watermark_rounded,
       'title': 'Logo & Branding',
       'index': 7,
+    });
+
+    // Expense Categories - available for all
+    baseItems.add({
+      'icon': Icons.category_rounded,
+      'title': 'Expense Categories',
+      'index': 17,
+    });
+
+    // Colors - available for all
+    baseItems.add({
+      'icon': Icons.color_lens_rounded,
+      'title': 'Colors',
+      'index': 18,
+    });
+
+    // RAM - available for all
+    baseItems.add({
+      'icon': Icons.memory_rounded,
+      'title': 'RAM',
+      'index': 19,
+    });
+
+    // Storage - available for all
+    baseItems.add({
+      'icon': Icons.storage_rounded,
+      'title': 'Storage',
+      'index': 20,
     });
 
     // User Management - only for owners (role_id = 2)
