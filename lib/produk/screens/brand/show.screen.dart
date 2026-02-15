@@ -135,12 +135,12 @@ class ShowBrandScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                    // Brand Information Section
-                    _buildInfoCard(context, 'Brand Information', Icons.info, [
+                    // Product Name Information Section
+                    _buildInfoCard(context, 'Product Name Information', Icons.info, [
                       _buildInfoRow(
                         context,
-                        'Brand Name',
-                        brand['nama'] ?? '-',
+                        'Product Name',
+                        brand['merk'] ?? brand['nama'] ?? '-',
                       ),
                       _buildInfoRow(
                         context,

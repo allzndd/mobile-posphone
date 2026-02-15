@@ -19,25 +19,64 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
   String _searchQuery = '';
   bool _isLoading = false;
   List<Map<String, dynamic>> _brands = [];
+  int _currentPage = 1;
+  int _perPage = 10;
+  int _totalPages = 1;
+  int _totalItems = 0;
+  final ScrollController _scrollController = ScrollController();
+  final List<int> _perPageOptions = [10, 25, 50, 100];
 
   @override
   void initState() {
     super.initState();
-    _loadBrands();
+    _loadBrands(isRefresh: true);
   }
 
-  Future<void> _loadBrands() async {
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadBrands({bool isRefresh = false, int? page}) async {
+    if (page != null) {
+      _currentPage = page;
+    } else if (isRefresh) {
+      _currentPage = 1;
+    }
+
+    if (_isLoading) return;
+
     setState(() => _isLoading = true);
     try {
       final response = await BrandService.getBrands(
+        page: _currentPage,
         search: _searchQuery.isNotEmpty ? _searchQuery : null,
-        perPage: 50, // Load more items for better UX
+        perPage: _perPage,
       );
 
       if (response['success'] == true && mounted) {
+        final List<dynamic> brandData = response['data'] ?? [];
+        final int totalItems = response['pagination']?['total'] ?? brandData.length;
+        final int lastPage = response['pagination']?['last_page'] ?? 1;
+        final int currentPage = response['pagination']?['current_page'] ?? _currentPage;
+
         setState(() {
-          _brands = List<Map<String, dynamic>>.from(response['data']);
+          _brands = List<Map<String, dynamic>>.from(brandData);
+          _totalItems = totalItems;
+          _totalPages = lastPage > 0 ? lastPage : 1;
+          _currentPage = currentPage;
         });
+
+        // Scroll to top when changing page
+        if (page != null && _scrollController.hasClients) {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
       } else {
         if (mounted) {
           await ValidationHandler.showErrorDialog(
@@ -76,16 +115,28 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
     // Debounce search to avoid too many API calls
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      _loadBrands();
+      _loadBrands(isRefresh: true);
     });
   }
 
   Timer? _debounceTimer;
 
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
+  void _goToPage(int page) {
+    if (page >= 1 && page <= _totalPages && page != _currentPage) {
+      _loadBrands(page: page);
+    }
+  }
+
+  void _nextPage() {
+    if (_currentPage < _totalPages) {
+      _goToPage(_currentPage + 1);
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 1) {
+      _goToPage(_currentPage - 1);
+    }
   }
 
   @override
@@ -95,30 +146,48 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
     return Scaffold(
       backgroundColor: themeProvider.backgroundColor,
       appBar: AppBar(
+        key: const ValueKey('brand_index_appbar'),
         backgroundColor: themeProvider.surfaceColor,
         elevation: 0,
         title: Text(
-          'Product Brands',
+          'Product Names',
           style: TextStyle(
             color: themeProvider.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back, color: themeProvider.textPrimary),
+                onPressed: () => Navigator.of(context).pop(),
+                tooltip: '', // Disable tooltip to prevent rendering issues
+              )
+            : null,
         iconTheme: IconThemeData(color: themeProvider.textPrimary),
       ),
       body: RefreshIndicator(
-        onRefresh: () => _loadBrands(),
-        child: Column(
-          children: [
-            _buildSearchBar(),
-            _buildStatsBar(),
-            Expanded(
-              child:
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _buildBrandList(),
-            ),
-          ],
+        onRefresh: () => _loadBrands(isRefresh: true),
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              _buildSearchBar(),
+              _buildStatsBar(),
+              if (_isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(40.0),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else
+                _buildBrandList(),
+              if (!_isLoading && _brands.isNotEmpty)
+                _buildPaginationControls(
+                  MediaQuery.of(context).size.width >= 600,
+                ),
+              const SizedBox(height: 80), // Space for FAB
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -126,13 +195,14 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
         backgroundColor: themeProvider.primaryMain,
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
-          MediaQuery.of(context).size.width < 600 ? 'Add' : 'Add Brand',
+          MediaQuery.of(context).size.width < 600 ? 'Add' : 'Add Product Name',
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -149,7 +219,7 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
           color: themeProvider.textPrimary,
         ),
         decoration: InputDecoration(
-          hintText: 'Search brands...',
+          hintText: 'Search product names...',
           hintStyle: TextStyle(
             color: themeProvider.textSecondary,
           ),
@@ -195,7 +265,7 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
           Expanded(
             child: _buildStatItem(
               Icons.branding_watermark,
-              'Brands',
+              'Names',
               '${filteredBrands.length}',
               Colors.orange,
               isMobile,
@@ -259,36 +329,42 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
     final isMobile = screenWidth < 600;
 
     if (brands.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.branding_watermark_outlined,
-              size: 64,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _searchQuery.isEmpty
-                  ? 'No brands found'
-                  : 'No brands match your search',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-          ],
+      return Padding(
+        padding: const EdgeInsets.all(40.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.branding_watermark_outlined,
+                size: 64,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _searchQuery.isEmpty
+                    ? 'No product names found'
+                    : 'No product names match your search',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    return ListView.builder(
+    return Padding(
       padding: EdgeInsets.fromLTRB(
         isMobile ? 12 : 16,
         isMobile ? 12 : 16,
         isMobile ? 12 : 16,
-        80, // Extra bottom padding for FAB
+        isMobile ? 12 : 16,
       ),
-      itemCount: brands.length,
-      itemBuilder: (context, index) => _buildBrandCard(brands[index], isMobile),
+      child: Column(
+        children: brands
+            .map((brand) => _buildBrandCard(brand, isMobile))
+            .toList(),
+      ),
     );
   }
 
@@ -324,7 +400,7 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      brand['nama'],
+                      brand['merk'] ?? brand['nama'] ?? 'N/A',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: isMobile ? 16 : 18,
@@ -371,7 +447,7 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
 
     if (result != null && mounted) {
       // Reload data to ensure we have latest from server
-      await _loadBrands();
+      await _loadBrands(isRefresh: true);
     }
   }
 
@@ -384,7 +460,7 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
     if (result != null && mounted) {
       // Instead of trying to update the specific item, just reload all data
       // This ensures we have the latest data from server
-      await _loadBrands();
+      await _loadBrands(isRefresh: true);
     }
   }
 
@@ -396,22 +472,22 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
     // Create snapshot of brand data to avoid changes during dialog
     final brandSnapshot = Map<String, dynamic>.from(brand);
     final produkCount = (brandSnapshot['produk_count'] as int?) ?? 0;
-    final brandName = brandSnapshot['nama'] ?? '';
+    final brandMerk = brandSnapshot['merk'] ?? brandSnapshot['nama'] ?? '';
     final brandId = brandSnapshot['id'];
     
     if (produkCount > 0) {
-      // Show info dialog for brands with products
+      // Show info dialog for product names with products
       final confirmed = await context.showConfirmation(
-        title: 'Cannot Delete Brand', 
-        message: 'Brand "$brandName" has $produkCount products. You cannot delete it.',
+        title: 'Cannot Delete Product Name', 
+        message: 'Product Name "$brandMerk" has $produkCount products. You cannot delete it.',
         confirmText: 'OK',
         confirmColor: Colors.red,
       );
     } else {
       // Show delete confirmation dialog
       final confirmed = await context.showConfirmation(
-        title: 'Delete Brand',
-        message: 'Are you sure you want to delete "$brandName"?\n\nThis action cannot be undone.',
+        title: 'Delete Product Name',
+        message: 'Are you sure you want to delete "$brandMerk"?\n\nThis action cannot be undone.',
         confirmText: 'Delete',
         cancelText: 'Cancel',
         confirmColor: Colors.red,
@@ -437,7 +513,7 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
         }
         
         // Reload data after showing success dialog to avoid UI flicker
-        await _loadBrands();
+        await _loadBrands(isRefresh: true);
       } else {
         if (mounted) {
           await ValidationHandler.showErrorDialog(
@@ -465,5 +541,234 @@ class _IndexBrandScreenState extends State<IndexBrandScreen> {
     } catch (e) {
       return dateString;
     }
+  }
+
+  Widget _buildPaginationControls(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return Container(
+      padding: EdgeInsets.all(isDesktop ? 20 : 16),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: themeProvider.textTertiary.withOpacity(0.1)),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Rows per page selector
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Pagination info
+                Flexible(
+                  child: Text(
+                    'Showing ${_brands.isEmpty ? 0 : ((_currentPage - 1) * _perPage) + 1} - ${(_currentPage * _perPage) > _totalItems ? _totalItems : (_currentPage * _perPage)} of $_totalItems items',
+                    style: TextStyle(
+                      color: themeProvider.textSecondary,
+                      fontSize: isDesktop ? 14 : 12,
+                    ),
+                  ),
+                ),
+                // Rows per page dropdown
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Rows:',
+                      style: TextStyle(
+                        color: themeProvider.textSecondary,
+                        fontSize: isDesktop ? 14 : 12,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: themeProvider.borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButton<int>(
+                        value: _perPage,
+                        underline: const SizedBox(),
+                        isDense: true,
+                        style: TextStyle(
+                          color: themeProvider.textPrimary,
+                          fontSize: isDesktop ? 14 : 12,
+                        ),
+                        items: _perPageOptions.map((int value) {
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text(value.toString()),
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          if (newValue != null && newValue != _perPage) {
+                            setState(() {
+                              _perPage = newValue;
+                              _currentPage = 1; // Reset to first page
+                            });
+                            _loadBrands(isRefresh: true);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Pagination controls with horizontal scroll for mobile
+          Center(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                // Previous button
+                IconButton(
+                  onPressed: _currentPage > 1 ? _previousPage : null,
+                  icon: const Icon(Icons.chevron_left_rounded),
+                  color: themeProvider.primaryMain,
+                  disabledColor: themeProvider.textTertiary.withOpacity(0.3),
+                  style: IconButton.styleFrom(
+                    backgroundColor:
+                        _currentPage > 1
+                            ? themeProvider.primaryMain.withOpacity(0.1)
+                            : themeProvider.textTertiary.withOpacity(0.05),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // Page numbers
+                ..._buildPageNumbers(isDesktop),
+
+                const SizedBox(width: 12),
+
+                // Next button
+                IconButton(
+                  onPressed: _currentPage < _totalPages ? _nextPage : null,
+                  icon: const Icon(Icons.chevron_right_rounded),
+                  color: themeProvider.primaryMain,
+                  disabledColor: themeProvider.textTertiary.withOpacity(0.3),
+                  style: IconButton.styleFrom(
+                    backgroundColor:
+                        _currentPage < _totalPages
+                            ? themeProvider.primaryMain.withOpacity(0.1)
+                            : themeProvider.textTertiary.withOpacity(0.05),
+                  ),
+                ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildPageNumbers(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+    List<Widget> pageButtons = [];
+
+    // Show fewer page numbers on mobile to prevent overflow
+    final maxPages = isDesktop ? 10 : 5;
+    final halfPages = maxPages ~/ 2;
+    
+    int startPage = _currentPage - halfPages;
+    int endPage = _currentPage + (halfPages - 1);
+
+    if (startPage < 1) {
+      startPage = 1;
+      endPage = _totalPages < maxPages ? _totalPages : maxPages;
+    }
+
+    if (endPage > _totalPages) {
+      endPage = _totalPages;
+      startPage = _totalPages - (maxPages - 1) > 0 ? _totalPages - (maxPages - 1) : 1;
+    }
+
+    // First page
+    if (startPage > 1) {
+      pageButtons.add(_buildPageButton(1, isDesktop));
+      if (startPage > 2) {
+        pageButtons.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '...',
+              style: TextStyle(color: themeProvider.textSecondary),
+            ),
+          ),
+        );
+      }
+    }
+
+    // Page numbers
+    for (int i = startPage; i <= endPage; i++) {
+      pageButtons.add(_buildPageButton(i, isDesktop));
+    }
+
+    // Last page
+    if (endPage < _totalPages) {
+      if (endPage < _totalPages - 1) {
+        pageButtons.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '...',
+              style: TextStyle(color: themeProvider.textSecondary),
+            ),
+          ),
+        );
+      }
+      pageButtons.add(_buildPageButton(_totalPages, isDesktop));
+    }
+
+    return pageButtons;
+  }
+
+  Widget _buildPageButton(int page, bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isCurrentPage = page == _currentPage;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: InkWell(
+        onTap: () => _goToPage(page),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 16 : 12,
+            vertical: isDesktop ? 12 : 8,
+          ),
+          decoration: BoxDecoration(
+            color:
+                isCurrentPage
+                    ? themeProvider.primaryMain
+                    : themeProvider.backgroundColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color:
+                  isCurrentPage
+                      ? themeProvider.primaryMain
+                      : themeProvider.textTertiary.withOpacity(0.2),
+            ),
+          ),
+          child: Text(
+            page.toString(),
+            style: TextStyle(
+              color: isCurrentPage ? Colors.white : themeProvider.textPrimary,
+              fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+              fontSize: isDesktop ? 14 : 12,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

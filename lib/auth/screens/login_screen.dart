@@ -71,26 +71,108 @@ class _LoginScreenState extends State<LoginScreen> {
           // Get logoProvider from context
           final logoProvider = context.read<LogoProvider>();
 
-          // Tampilkan pesan sukses menggunakan ValidationHandler
-          await context.showSuccess(
-            title: 'Login Berhasil',
-            message: 'Selamat datang, di ${logoProvider.appName}',
-            buttonText: 'Lanjutkan',
-          );
+          // Tampilkan dialog sukses menggunakan ValidationHandler
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext dialogContext) {
+              // Auto close dialog setelah 1.5 detik
+              Future.delayed(const Duration(milliseconds: 1500), () {
+                if (Navigator.canPop(dialogContext)) {
+                  Navigator.pop(dialogContext);
+                  
+                  // Navigate ke MainLayout setelah dialog tertutup
+                  if (mounted) {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder:
+                            (context) => MainLayout(
+                              child: Container(),
+                              title: 'Dashboard Kasir',
+                              selectedIndex: 0,
+                            ),
+                      ),
+                    );
+                  }
+                }
+              });
 
-          // Navigate to MainLayout (POS system)
-          if (mounted) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder:
-                    (context) => MainLayout(
-                      child: Container(),
-                      title: 'Dashboard Kasir',
-                      selectedIndex: 0,
+              // Tampilkan dialog sukses
+              return Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                  child: Material(
+                    borderRadius: BorderRadius.circular(24),
+                    elevation: 12,
+                    shadowColor: Colors.green.withOpacity(0.2),
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 400, minWidth: 280),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Colors.white, Colors.grey.shade50],
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(28),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.green.shade400, Colors.green.shade600],
+                                ),
+                                borderRadius: BorderRadius.circular(40),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.green.withOpacity(0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Login Berhasil',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey.shade800,
+                                letterSpacing: -0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Selamat datang, di ${logoProvider.appName}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                                height: 1.5,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-              ),
-            );
-          }
+                  ),
+                ),
+              );
+            },
+          );
         }
       } catch (e) {
         if (mounted) {

@@ -21,7 +21,7 @@ class _EditBrandScreenState extends State<EditBrandScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.brand['nama'] ?? '';
+    _nameController.text = widget.brand['merk'] ?? widget.brand['nama'] ?? '';
   }
 
   @override
@@ -41,11 +41,11 @@ class _EditBrandScreenState extends State<EditBrandScreen> {
 
     try {
       final brandId = widget.brand['id'] as int;
-      final brandName = _nameController.text.trim();
-      final originalName = (widget.brand['nama'] ?? '').trim();
+      final brandMerk = _nameController.text.trim();
+      final originalMerk = (widget.brand['merk'] ?? widget.brand['nama'] ?? '').trim();
 
       // Check if there are any changes
-      if (brandName == originalName) {
+      if (brandMerk == originalMerk) {
         if (mounted) {
           await ValidationHandler.showSuccessDialog(
             context: context,
@@ -59,7 +59,7 @@ class _EditBrandScreenState extends State<EditBrandScreen> {
 
       final response = await BrandService.updateBrand(
         id: brandId,
-        nama: brandName,
+        merk: brandMerk,
       );
 
       if (response['success'] == true) {
@@ -109,7 +109,7 @@ class _EditBrandScreenState extends State<EditBrandScreen> {
       backgroundColor: themeProvider.backgroundColor,
       appBar: AppBar(
         title: Text(
-          'Edit Brand',
+          'Edit Product Name',
           style: TextStyle(color: themeProvider.textPrimary),
         ),
         backgroundColor: themeProvider.surfaceColor,
@@ -206,16 +206,16 @@ class _EditBrandScreenState extends State<EditBrandScreen> {
                       ),
                       SizedBox(height: isMobile ? 20 : 24),
 
-                      // Brand Information Card
+                      // Product Name Information Card
                       _buildSection(
-                        title: 'Brand Information',
+                        title: 'Product Name Information',
                         icon: Icons.business,
                         themeProvider: themeProvider,
                         isMobile: isMobile,
                         children: [
                           _buildFormField(
-                            label: 'Brand Name',
-                            hint: 'Enter brand name',
+                            label: 'Product Name',
+                            hint: 'Enter product name',
                             controller: _nameController,
                             themeProvider: themeProvider,
                             isMobile: isMobile,
@@ -223,13 +223,13 @@ class _EditBrandScreenState extends State<EditBrandScreen> {
                             isRequired: true,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Brand name is required';
+                                return 'Product name is required';
                               }
                               if (value.trim().length < 2) {
-                                return 'Brand name must be at least 2 characters';
+                                return 'Product name must be at least 2 characters';
                               }
                               if (value.trim().length > 50) {
-                                return 'Brand name must be less than 50 characters';
+                                return 'Product name must be less than 50 characters';
                               }
                               return null;
                             },
@@ -238,9 +238,9 @@ class _EditBrandScreenState extends State<EditBrandScreen> {
                       ),
                       SizedBox(height: isMobile ? 20 : 24),
 
-                      // Brand Details Info Card
+                      // Product Name Details Info Card
                       _buildSection(
-                        title: 'Brand Details',
+                        title: 'Product Name Details',
                         icon: Icons.info_outline,
                         themeProvider: themeProvider,
                         isMobile: isMobile,
@@ -303,7 +303,7 @@ class _EditBrandScreenState extends State<EditBrandScreen> {
                                   ],
                                 )
                                 : Text(
-                                  'Update Brand',
+                                  'Update Product Name',
                                   style: TextStyle(
                                     fontSize: isMobile ? 14 : 16,
                                     fontWeight: FontWeight.w600,

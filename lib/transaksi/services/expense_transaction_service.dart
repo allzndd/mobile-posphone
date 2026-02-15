@@ -50,16 +50,24 @@ class ExpenseTransactionService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final pagination = data['pagination'] ?? {};
+        
         print(
-          '✅ [EXPENSE TRANSACTION SERVICE] Success - Total items: ${data['total']}',
+          '✅ [EXPENSE TRANSACTION SERVICE] Success - Total items: ${pagination['total']}',
         );
+        print('📋 [EXPENSE TRANSACTION SERVICE] Data count: ${(data['data'] as List).length}');
+        print('📄 [EXPENSE TRANSACTION SERVICE] Pagination: $pagination');
+        if ((data['data'] as List).isNotEmpty) {
+          print('🔍 [EXPENSE TRANSACTION SERVICE] First item: ${data['data'][0]}');
+        }
+        
         return {
           'success': true,
           'data': data['data'] ?? [],
-          'total': data['total'] ?? 0,
-          'current_page': data['current_page'] ?? 1,
-          'last_page': data['last_page'] ?? 1,
-          'per_page': data['per_page'] ?? perPage,
+          'total': pagination['total'] ?? 0,
+          'current_page': pagination['current_page'] ?? 1,
+          'last_page': pagination['last_page'] ?? 1,
+          'per_page': pagination['per_page'] ?? perPage,
           'message': 'Expense transactions loaded successfully',
         };
       } else if (response.statusCode == 401) {

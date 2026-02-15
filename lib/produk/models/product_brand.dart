@@ -1,5 +1,6 @@
 class ProductBrand {
   final int id;
+  final String? merk;
   final String nama;
   final String? slug;
   final int? produkCount;
@@ -8,6 +9,7 @@ class ProductBrand {
 
   ProductBrand({
     required this.id,
+    this.merk,
     required this.nama,
     this.slug,
     this.produkCount,
@@ -18,7 +20,8 @@ class ProductBrand {
   factory ProductBrand.fromJson(Map<String, dynamic> json) {
     return ProductBrand(
       id: json['id'] as int? ?? 0,
-      nama: json['nama'] as String? ?? 'Unknown',
+      merk: json['merk'] as String?,
+      nama: json['nama'] as String? ?? json['merk'] as String? ?? 'Unknown',
       slug: json['slug'] as String?,
       produkCount: json['produk_count'] as int?,
       createdAt:
@@ -35,6 +38,7 @@ class ProductBrand {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'merk': merk,
       'nama': nama,
       'slug': slug,
       'produk_count': produkCount,
@@ -45,15 +49,15 @@ class ProductBrand {
 
   @override
   String toString() {
-    return 'ProductBrand{id: $id, nama: $nama}';
+    return 'ProductBrand{id: $id, merk: $merk, nama: $nama}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is ProductBrand && other.id == id && other.nama == nama;
+    return other is ProductBrand && other.id == id && other.nama == nama && other.merk == merk;
   }
 
   @override
-  int get hashCode => id.hashCode ^ nama.hashCode;
+  int get hashCode => id.hashCode ^ nama.hashCode ^ (merk?.hashCode ?? 0);
 }

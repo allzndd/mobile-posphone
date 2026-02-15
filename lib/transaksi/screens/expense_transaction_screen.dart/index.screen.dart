@@ -82,6 +82,12 @@ class _ExpenseTransactionIndexScreenState
 
       if (response['success'] == true) {
         final List<dynamic> transactionData = response['data'] ?? [];
+        
+        print('🔍 [INDEX] Response success: true');
+        print('📊 [INDEX] Transaction data count: ${transactionData.length}');
+        print('📋 [INDEX] Total items: ${response['total']}');
+        print('📄 [INDEX] Current page: ${response['current_page']}, Last page: ${response['last_page']}');
+        
         final List<ExpenseTransactionModel.PosExpenseTransactionModel>
         newTransactions =
             transactionData
@@ -90,6 +96,11 @@ class _ExpenseTransactionIndexScreenState
                       .PosExpenseTransactionModel.fromJson(json),
                 )
                 .toList();
+                
+        print('✅ [INDEX] Parsed ${newTransactions.length} transactions');
+        if (newTransactions.isNotEmpty) {
+          print('🔍 [INDEX] First transaction: ${newTransactions.first.invoice}');
+        }
 
         final int totalItems = response['total'] ?? transactionData.length;
         final int lastPage = response['last_page'] ?? 1;
@@ -102,6 +113,8 @@ class _ExpenseTransactionIndexScreenState
           _currentPage = currentPage;
           _hasMoreData = _currentPage < _totalPages;
         });
+        
+        print('✅ [INDEX] State updated: ${_transactions.length} transactions in list');
 
         if (page != null && _scrollController.hasClients) {
           _scrollController.animateTo(

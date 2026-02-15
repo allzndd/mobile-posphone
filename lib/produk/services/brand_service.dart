@@ -27,7 +27,7 @@ class BrandService {
       };
 
       if (search != null && search.isNotEmpty) {
-        queryParams['nama'] = search;
+        queryParams['merk'] = search;
       }
 
       final uri = Uri.parse(ApiConfig.getUrl(ApiConfig.productBrandsEndpoint)).replace(
@@ -95,11 +95,13 @@ class BrandService {
 
   /// Create new brand
   static Future<Map<String, dynamic>> createBrand({
-    required String nama,
+    required String merk,
+    String? nama,
   }) async {
     try {
       final body = {
-        'nama': nama,
+        'merk': merk,
+        if (nama != null && nama.isNotEmpty) 'nama': nama,
       };
 
       final response = await http.post(
@@ -136,11 +138,13 @@ class BrandService {
   /// Update existing brand
   static Future<Map<String, dynamic>> updateBrand({
     required int id,
-    required String nama,
+    required String merk,
+    String? nama,
   }) async {
     try {
       final body = {
-        'nama': nama,
+        'merk': merk,
+        if (nama != null && nama.isNotEmpty) 'nama': nama,
       };
 
       final response = await http.put(
@@ -226,7 +230,7 @@ class BrandService {
         final brands = response['data'] as List<dynamic>;
         return brands.map((brand) => {
           'id': brand['id'],
-          'nama': brand['nama'],
+          'merk': brand['merk'] ?? brand['nama'], // Fallback to nama for compatibility
         }).toList();
       }
       return [];

@@ -318,7 +318,7 @@ class _ProdukScreenState extends State<ProdukScreen>
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: _buildStatCard(
-                                        'Brands',
+                                        'Names',
                                         _statistics['totalBrands'].toString(),
                                         Icons.business_outlined,
                                         Colors.white.withOpacity(0.95),
@@ -386,8 +386,8 @@ class _ProdukScreenState extends State<ProdukScreen>
                       ),
                       _buildModernMenuCard(
                         context,
-                        title: 'Product Brands',
-                        subtitle: 'Manage product brands',
+                        title: 'Product Name',
+                        subtitle: 'Manage product names',
                         icon: Icons.business_rounded,
                         gradient: [
                           Colors.orange.shade400,

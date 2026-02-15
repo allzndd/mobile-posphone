@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../config/theme_provider.dart';
 import '../../models/stock_management.dart';
 import '../../services/management_service.dart';
-import 'create.screen.dart';
 import 'edit.screen.dart';
 import 'show.screen.dart';
 
@@ -202,18 +201,6 @@ class _StockIndexScreenState extends State<StockIndexScreen>
           _buildStockListTab(),
           _buildSummaryTab(),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _navigateToCreate(),
-        backgroundColor: themeProvider.primaryMain,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Add',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
       ),
     );
   }
@@ -997,19 +984,6 @@ class _StockIndexScreenState extends State<StockIndexScreen>
       productData: productData,
       storeData: storeData,
     );
-  }
-
-  void _navigateToCreate() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const StockCreateScreen(),
-      ),
-    );
-
-    if (result != null && mounted) {
-      await _loadData();
-    }
   }
 
   void _navigateToEdit(ProdukStok stock) async {

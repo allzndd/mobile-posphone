@@ -1520,10 +1520,30 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   List<ColorModel.PosWarnaModel> _colors = [];
   List<RamModel.PosRamModel> _rams = [];
   List<Storage> _storages = [];
-  int? _selectedBrandId;
+  String? _selectedMerk; // Selected brand category (e.g., Samsung, Apple)
+  int? _selectedBrandId; // Selected product name ID
   int? _selectedColorId;
   int? _selectedRamId;
   int? _selectedStorageId;
+  
+  // Computed lists
+  List<String> get _uniqueMerks {
+    final merks = _brands
+        .map((b) => b.merk)
+        .whereType<String>()
+        .where((m) => m.isNotEmpty)
+        .toSet()
+        .toList();
+    merks.sort();
+    return merks;
+  }
+  
+  List<ProductBrand> get _filteredBrands {
+    if (_selectedMerk == null || _selectedMerk!.isEmpty) {
+      return [];
+    }
+    return _brands.where((b) => b.merk == _selectedMerk).toList();
+  }
 
   @override
   void initState() {
@@ -1543,10 +1563,7 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
           _brands = (response['data'] as List)
               .map((json) => ProductBrand.fromJson(json))
               .toList();
-          // Select first brand by default if available
-          if (_brands.isNotEmpty) {
-            _selectedBrandId = _brands.first.id;
-          }
+          // Don't auto-select - users must choose Brand and Type explicitly
         });
       }
     } catch (e) {
@@ -1559,85 +1576,295 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   }
 
   Future<void> _showAddBrandDialog() async {
-    final brandNameController = TextEditingController();
+    final merkController = TextEditingController();
+    final namaController = TextEditingController();
     final themeProvider = context.read<ThemeProvider>();
     final scaffoldContext = context;
+    String? selectedMerk;
     
-    final result = await showDialog<String>(
+    // Get unique brands (non-nullable only)
+    final existingMerks = _brands
+        .map((b) => b.merk)
+        .whereType<String>()
+        .where((m) => m.isNotEmpty)
+        .toSet()
+        .toList();
+    
+    final result = await showDialog<Map<String, String>>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: themeProvider.surfaceColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Add Product Name',
-          style: TextStyle(
-            color: themeProvider.textPrimary,
-            fontWeight: FontWeight.bold,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: themeProvider.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        ),
-        content: TextField(
-          controller: brandNameController,
-          autofocus: true,
-          style: TextStyle(
-            color: themeProvider.textPrimary,
-          ),
-          decoration: InputDecoration(
-            labelText: 'Product Name',
-            hintText: 'e.g. iPhone, Samsung, Charger...',
-            hintStyle: TextStyle(
-              color: themeProvider.textSecondary,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+          title: Text(
+            'Add New Product Name',
+            style: TextStyle(
+              color: themeProvider.textPrimary,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop(null);
-            },
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: themeProvider.textSecondary,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Brand Field with Add New Button
+                Row(
+                  children: [
+                    Text(
+                      'Brand',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: themeProvider.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      ' *',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.red,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: () {
+                        // Show add new brand input
+                        setDialogState(() {
+                          selectedMerk = '_NEW_';
+                        });
+                      },
+                      icon: const Icon(Icons.add, size: 16),
+                      label: const Text('Add New', style: TextStyle(fontSize: 12)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: themeProvider.primaryMain,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                
+                // Show dropdown or text field based on selection
+                if (selectedMerk == '_NEW_')
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: merkController,
+                        autofocus: true,
+                        style: TextStyle(
+                          color: themeProvider.textPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'e.g., Samsung, Apple, Xiaomi',
+                          hintStyle: TextStyle(
+                            color: themeProvider.textSecondary.withOpacity(0.6),
+                            fontSize: 14,
+                          ),
+                          filled: true,
+                          fillColor: themeProvider.backgroundColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: themeProvider.borderColor),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: themeProvider.borderColor),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: themeProvider.primaryMain, width: 2),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              setDialogState(() {
+                                selectedMerk = null;
+                                merkController.clear();
+                              });
+                            },
+                            child: const Text('Use existing', style: TextStyle(fontSize: 12)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+                else
+                  DropdownButtonFormField<String>(
+                    value: selectedMerk,
+                    isExpanded: true,
+                    menuMaxHeight: 300, // Enable scrolling for long list
+                    decoration: InputDecoration(
+                      hintText: '-- Select Brand --',
+                      hintStyle: TextStyle(
+                        color: themeProvider.textSecondary.withOpacity(0.6),
+                        fontSize: 14,
+                      ),
+                      filled: true,
+                      fillColor: themeProvider.backgroundColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    items: existingMerks.map((merk) {
+                      return DropdownMenuItem<String>(
+                        value: merk,
+                        child: Text(
+                          merk,
+                          style: TextStyle(
+                            color: themeProvider.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setDialogState(() {
+                        selectedMerk = value;
+                      });
+                    },
+                    dropdownColor: themeProvider.surfaceColor,
+                  ),
+                
+                const SizedBox(height: 16),
+                
+                // Product Name Field
+                Text(
+                  'Product Name',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: themeProvider.textPrimary,
+                  ),
+                ),
+                Text(
+                  ' *',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: namaController,
+                  style: TextStyle(
+                    color: themeProvider.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'e.g., Apple, Samsung, Xiaomi',
+                    hintStyle: TextStyle(
+                      color: themeProvider.textSecondary.withOpacity(0.6),
+                      fontSize: 14,
+                    ),
+                    filled: true,
+                    fillColor: themeProvider.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: themeProvider.borderColor),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: themeProvider.borderColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: themeProvider.primaryMain, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Enter the product brand name (e.g., Apple, Samsung, Oppo, Vivo)',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: themeProvider.textSecondary.withOpacity(0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(null);
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: themeProvider.textSecondary,
+                ),
               ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final text = brandNameController.text.trim();
-              if (text.isEmpty) {
-                ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please enter product name'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                return;
-              }
-              Navigator.of(dialogContext).pop(text);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeProvider.primaryMain,
-              foregroundColor: Colors.white,
+            ElevatedButton(
+              onPressed: () {
+                final nama = namaController.text.trim();
+                final merk = selectedMerk == '_NEW_' 
+                    ? merkController.text.trim() 
+                    : selectedMerk ?? '';
+                
+                if (merk.isEmpty) {
+                  ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please select or enter a brand'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                
+                if (nama.isEmpty) {
+                  ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter product name'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                
+                Navigator.of(dialogContext).pop({
+                  'merk': merk,
+                  'nama': nama,
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeProvider.primaryMain,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Save Product Name'),
             ),
-            child: const Text('Add'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
-    // Safely dispose controller after dialog is fully closed
+    // Safely dispose controllers after dialog is fully closed
     await Future.delayed(const Duration(milliseconds: 100));
-    brandNameController.dispose();
+    merkController.dispose();
+    namaController.dispose();
 
-    if (result != null && result.isNotEmpty && mounted) {
+    if (result != null && mounted) {
       try {
-        final response = await BrandService.createBrand(nama: result);
+        final response = await BrandService.createBrand(
+          merk: result['merk']!,
+          nama: result['nama']!,
+        );
         
         if (response['success'] == true) {
           // Reload brands
@@ -1645,13 +1872,15 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
           
           // Find and select the newly created brand
           final newBrand = _brands.firstWhere(
-            (b) => b.nama.toLowerCase() == result.toLowerCase(),
+            (b) => (b.merk?.toLowerCase() == result['merk']!.toLowerCase() ||
+                    b.nama.toLowerCase() == result['nama']!.toLowerCase()),
             orElse: () => _brands.first,
           );
           
           if (mounted) {
             setState(() {
-              _selectedBrandId = newBrand.id;
+              _selectedMerk = newBrand.merk; // Set the brand category
+              _selectedBrandId = newBrand.id; // Set the product name ID
             });
             
             ScaffoldMessenger.of(scaffoldContext).showSnackBar(
@@ -1753,11 +1982,20 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_selectedMerk == null || _selectedMerk!.isEmpty) {
+      ValidationHandler.showErrorDialog(
+        context: context,
+        title: 'Validation Error',
+        message: 'Please select a brand category',
+      );
+      return;
+    }
+
     if (_selectedBrandId == null) {
       ValidationHandler.showErrorDialog(
         context: context,
         title: 'Validation Error',
-        message: 'Please select a product brand',
+        message: 'Please select a product type/name',
       );
       return;
     }
@@ -2211,10 +2449,11 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Brand Dropdown
         Row(
           children: [
             Text(
-              'Product Name',
+              'Brand',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -2240,65 +2479,159 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
           ],
         ),
         const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _selectedMerk,
+          isExpanded: true,
+          menuMaxHeight: 300,
+          decoration: InputDecoration(
+            hintText: 'Select Brand',
+            hintStyle: TextStyle(
+              color: themeProvider.textSecondary.withOpacity(0.6),
+              fontSize: 14,
+            ),
+            filled: true,
+            fillColor: themeProvider.backgroundColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: themeProvider.borderColor.withOpacity(0.3),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: themeProvider.borderColor.withOpacity(0.3),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: themeProvider.primaryMain,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+          ),
+          items: _uniqueMerks.map((merk) {
+            return DropdownMenuItem<String>(
+              value: merk,
+              child: Text(
+                merk,
+                style: TextStyle(
+                  color: themeProvider.textPrimary,
+                  fontSize: 14,
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: _isLoadingBrands
+              ? null
+              : (value) {
+                  setState(() {
+                    _selectedMerk = value;
+                    _selectedBrandId = null; // Reset type selection
+                  });
+                },
+          dropdownColor: themeProvider.surfaceColor,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select a brand';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        
+        // Type/Product Name Dropdown
+        Row(
+          children: [
+            Text(
+              'Type / Product Name',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: themeProvider.textPrimary,
+              ),
+            ),
+            Text(
+              ' *',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.red,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: themeProvider.borderColor.withOpacity(0.3),
+              child: DropdownButtonFormField<int>(
+                value: _selectedBrandId,
+                isExpanded: true,
+                menuMaxHeight: 300,
+                decoration: InputDecoration(
+                  hintText: _selectedMerk == null ? 'Select Brand first' : 'Select Type',
+                  hintStyle: TextStyle(
+                    color: themeProvider.textSecondary.withOpacity(0.6),
+                    fontSize: 14,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  filled: true,
+                  fillColor: themeProvider.backgroundColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: themeProvider.borderColor.withOpacity(0.3),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: themeProvider.borderColor.withOpacity(0.3),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: themeProvider.primaryMain,
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                 ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButtonFormField<int>(
-                    value: _selectedBrandId,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      hintText: 'Select Product Name',
-                      hintStyle: TextStyle(
-                        color: themeProvider.textSecondary.withOpacity(0.6),
+                items: _filteredBrands.map((brand) {
+                  return DropdownMenuItem<int>(
+                    value: brand.id,
+                    child: Text(
+                      brand.nama,
+                      style: TextStyle(
+                        color: themeProvider.textPrimary,
                         fontSize: 14,
                       ),
-                      filled: true,
-                      fillColor: themeProvider.backgroundColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
                     ),
-                    items: _brands.map((brand) {
-                      return DropdownMenuItem<int>(
-                        value: brand.id,
-                        child: Text(
-                          brand.nama,
-                          style: TextStyle(
-                            color: themeProvider.textPrimary,
-                            fontSize: 14,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: _isLoadingBrands
-                        ? null
-                        : (value) {
-                            setState(() {
-                              _selectedBrandId = value;
-                            });
-                          },
-                    dropdownColor: themeProvider.surfaceColor,
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select a product name';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
+                  );
+                }).toList(),
+                onChanged: (_isLoadingBrands || _selectedMerk == null)
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _selectedBrandId = value;
+                        });
+                      },
+                dropdownColor: themeProvider.surfaceColor,
+                validator: (value) {
+                  if (value == null) {
+                    return 'Please select a type';
+                  }
+                  return null;
+                },
               ),
             ),
             const SizedBox(width: 8),

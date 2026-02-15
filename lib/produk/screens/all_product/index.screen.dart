@@ -6,7 +6,6 @@ import '../../../component/validation_handler.dart';
 import '../../services/product_service.dart';
 import '../../models/product.dart';
 import '../../models/product_brand.dart';
-import 'create.screen.dart';
 import 'show.screen.dart';
 
 class AllProductsScreen extends StatefulWidget {
@@ -188,30 +187,6 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                   : _buildProductList(isDesktop),
             ),
           ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CreateProductScreen(),
-            ),
-          );
-
-          // Refresh products list if product was created successfully
-          if (result == true) {
-            _loadProducts(isRefresh: true);
-          }
-        },
-        backgroundColor: themeProvider.primaryMain,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(
-          MediaQuery.of(context).size.width < 600 ? 'Add' : 'Add Product',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
         ),
       ),
     );
