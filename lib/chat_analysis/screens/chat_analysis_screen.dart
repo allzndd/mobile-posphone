@@ -77,7 +77,9 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
           _messages.add({
             'id': _messages.length + 1,
             'role': 'assistant',
-            'content': response.error ?? 'Terjadi kesalahan saat memproses pertanyaan.',
+            'content':
+                response.error ??
+                'Terjadi kesalahan saat memproses pertanyaan.',
             'timestamp': DateTime.now(),
             'isError': true,
           });
@@ -397,7 +399,8 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
                     Text(
                       message['content'],
                       style: TextStyle(
-                        color: isUser ? Colors.white : themeProvider.textPrimary,
+                        color:
+                            isUser ? Colors.white : themeProvider.textPrimary,
                         fontSize: isDesktop ? 15 : 14,
                         height: 1.5,
                       ),
@@ -550,7 +553,9 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
               ),
               decoration: InputDecoration(
                 hintText:
-                    isSmallScreen ? 'Tanya...' : 'Tanyakan tentang bisnis Anda...',
+                    isSmallScreen
+                        ? 'Tanya...'
+                        : 'Tanyakan tentang bisnis Anda...',
                 hintStyle: TextStyle(
                   color: themeProvider.textTertiary,
                   fontSize: isDesktop ? 15 : 14,
