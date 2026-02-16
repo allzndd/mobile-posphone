@@ -27,11 +27,18 @@ class AppVersion {
       platform: json['platform'] ?? '',
       latestVersion: json['latest_version'] ?? '',
       minimumVersion: json['minimum_version'] ?? '',
-      maintenanceMode: json['maintenance_mode'] == 1 || json['maintenance_mode'] == true,
+      maintenanceMode:
+          json['maintenance_mode'] == 1 || json['maintenance_mode'] == true,
       maintenanceMessage: json['maintenance_message'],
       storeUrl: json['store_url'],
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
+      createdAt:
+          json['created_at'] != null
+              ? DateTime.parse(json['created_at'])
+              : null,
+      updatedAt:
+          json['updated_at'] != null
+              ? DateTime.parse(json['updated_at'])
+              : null,
     );
   }
 
