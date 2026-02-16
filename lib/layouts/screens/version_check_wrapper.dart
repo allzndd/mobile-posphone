@@ -9,11 +9,8 @@ class VersionCheckWrapper extends StatefulWidget {
   final Widget child;
   final String? title;
 
-  const VersionCheckWrapper({
-    Key? key,
-    required this.child,
-    this.title,
-  }) : super(key: key);
+  const VersionCheckWrapper({Key? key, required this.child, this.title})
+    : super(key: key);
 
   @override
   State<VersionCheckWrapper> createState() => _VersionCheckWrapperState();
@@ -66,9 +63,10 @@ class _VersionCheckWrapperState extends State<VersionCheckWrapper> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => MaintenanceDialog(
-        message: _versionCheckProvider.appVersion?.maintenanceMessage,
-      ),
+      builder:
+          (context) => MaintenanceDialog(
+            message: _versionCheckProvider.appVersion?.maintenanceMessage,
+          ),
     );
   }
 
@@ -76,11 +74,12 @@ class _VersionCheckWrapperState extends State<VersionCheckWrapper> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => UpdateVersionDialog(
-        appVersion: _versionCheckProvider.appVersion!,
-        currentVersion: _versionCheckProvider.currentVersion,
-        isForceUpdate: true,
-      ),
+      builder:
+          (context) => UpdateVersionDialog(
+            appVersion: _versionCheckProvider.appVersion!,
+            currentVersion: _versionCheckProvider.currentVersion,
+            isForceUpdate: true,
+          ),
     );
   }
 
@@ -88,11 +87,12 @@ class _VersionCheckWrapperState extends State<VersionCheckWrapper> {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) => UpdateVersionDialog(
-        appVersion: _versionCheckProvider.appVersion!,
-        currentVersion: _versionCheckProvider.currentVersion,
-        isForceUpdate: false,
-      ),
+      builder:
+          (context) => UpdateVersionDialog(
+            appVersion: _versionCheckProvider.appVersion!,
+            currentVersion: _versionCheckProvider.currentVersion,
+            isForceUpdate: false,
+          ),
     );
   }
 
