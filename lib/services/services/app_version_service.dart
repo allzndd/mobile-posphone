@@ -22,11 +22,13 @@ class AppVersionService {
       final headers = await _getHeaders();
       print('🌐 API: GET /api/app-versions?platform=$platform');
       print('🌐 API: Headers: $headers');
-      
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/app-versions?platform=$platform'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 10));
+
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/api/app-versions?platform=$platform'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
 
       print('🌐 API: Response Status Code: ${response.statusCode}');
       print('🌐 API: Response Body: ${response.body}');
@@ -34,7 +36,7 @@ class AppVersionService {
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         print('🌐 API: Decoded JSON: $jsonData');
-        
+
         if (jsonData['status'] == true && jsonData['data'] != null) {
           // API returns single data for specific platform
           final appVersion = AppVersion.fromJson(jsonData['data']);
@@ -57,10 +59,9 @@ class AppVersionService {
   static Future<List<AppVersion>> getAllAppVersions() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/app-versions'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(Uri.parse('$baseUrl/api/app-versions'), headers: headers)
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
