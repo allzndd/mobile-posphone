@@ -53,6 +53,12 @@ dependencies:
   
   # Path provider for file storage
   path_provider: ^2.1.1
+  
+  # Package info for getting app version
+  package_info_plus: ^4.2.0
+  
+  # URL launcher for opening store links
+  url_launcher: ^6.2.0
 
 dev_dependencies:
   flutter_test:
