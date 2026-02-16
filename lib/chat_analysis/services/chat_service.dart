@@ -23,7 +23,7 @@ class ChatService {
       }
 
       final chatUrl = Uri.parse('$baseUrl$chatEndpoint');
-      
+
       print('=== CHAT SERVICE DEBUG ===');
       print('URL: $chatUrl');
       print('Message: $message');
@@ -32,25 +32,30 @@ class ChatService {
       final requestBody = jsonEncode({'message': message});
       print('Request Body: $requestBody');
 
-      final response = await http.post(
-        chatUrl,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-          'User-Agent': 'PosPhone-Mobile/1.0',
-        },
-        body: requestBody,
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          print('ERROR: REQUEST TIMEOUT');
-          return http.Response(
-            jsonEncode({'ok': false, 'error': 'Request timeout setelah 30 detik'}),
-            408,
+      final response = await http
+          .post(
+            chatUrl,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+              'Accept': 'application/json',
+              'User-Agent': 'PosPhone-Mobile/1.0',
+            },
+            body: requestBody,
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              print('ERROR: REQUEST TIMEOUT');
+              return http.Response(
+                jsonEncode({
+                  'ok': false,
+                  'error': 'Request timeout setelah 30 detik',
+                }),
+                408,
+              );
+            },
           );
-        },
-      );
 
       print('Response Status: ${response.statusCode}');
       print('Response Headers: ${response.headers}');
@@ -90,10 +95,7 @@ class ChatService {
       );
     } on HttpException catch (e) {
       print('HTTP EXCEPTION: $e');
-      return ChatResponse(
-        ok: false,
-        error: 'HTTP Error: ${e.message}',
-      );
+      return ChatResponse(ok: false, error: 'HTTP Error: ${e.message}');
     } catch (e) {
       print('GENERAL EXCEPTION: $e');
       return ChatResponse(
