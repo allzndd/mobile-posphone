@@ -30,7 +30,7 @@ class VersionCheckProvider extends ChangeNotifier {
 
     try {
       print('🔍 VERSION CHECK: Starting version check...');
-      
+
       // Get current app version
       final packageInfo = await PackageInfo.fromPlatform();
       _currentVersion = packageInfo.version;
@@ -48,8 +48,10 @@ class VersionCheckProvider extends ChangeNotifier {
         print('🔍 VERSION CHECK: API Response received');
         print('🔍 VERSION CHECK: Latest: ${appVersion.latestVersion}');
         print('🔍 VERSION CHECK: Minimum: ${appVersion.minimumVersion}');
-        print('🔍 VERSION CHECK: Maintenance Mode: ${appVersion.maintenanceMode}');
-        
+        print(
+          '🔍 VERSION CHECK: Maintenance Mode: ${appVersion.maintenanceMode}',
+        );
+
         _appVersion = appVersion;
 
         // Check status
@@ -67,7 +69,7 @@ class VersionCheckProvider extends ChangeNotifier {
 
         _isMaintenanceMode = appVersion.maintenanceMode;
         print('🔍 VERSION CHECK: Is Maintenance Mode: $_isMaintenanceMode');
-        
+
         final action = getRequiredAction();
         print('🔍 VERSION CHECK: Required Action: $action');
       } else {
@@ -124,9 +126,4 @@ class VersionCheckProvider extends ChangeNotifier {
   }
 }
 
-enum VersionCheckAction {
-  none,
-  optionalUpdate,
-  forceUpdate,
-  maintenance,
-}
+enum VersionCheckAction { none, optionalUpdate, forceUpdate, maintenance }
