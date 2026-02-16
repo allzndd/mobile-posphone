@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/models/app_version.dart';
 import '../../core/version_comparator.dart';
@@ -6,20 +7,23 @@ import '../../core/version_comparator.dart';
 /// Widget untuk maintenance mode dialog
 class MaintenanceDialog extends StatelessWidget {
   final String? message;
-  
-  const MaintenanceDialog({
-    Key? key,
-    this.message,
-  }) : super(key: key);
+
+  const MaintenanceDialog({Key? key, this.message}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Row(
+      backgroundColor: Colors.white,
+      title: Row(
         children: [
-          Icon(Icons.warning_rounded, color: Colors.amber, size: 28),
-          SizedBox(width: 12),
-          Text('Aplikasi Sedang Maintenance'),
+          const Icon(Icons.warning_rounded, color: Colors.amber, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Aplikasi Sedang Maintenance',
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
       content: SingleChildScrollView(
@@ -29,7 +33,8 @@ class MaintenanceDialog extends StatelessWidget {
           children: [
             const SizedBox(height: 8),
             Text(
-              message ?? 'Aplikasi sedang dalam pemeliharaan. Silakan coba lagi nanti.',
+              message ??
+                  'Aplikasi sedang dalam pemeliharaan. Silakan coba lagi nanti.',
               style: const TextStyle(fontSize: 14, height: 1.5),
             ),
           ],
@@ -38,9 +43,8 @@ class MaintenanceDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () {
-            Navigator.pop(context);
-            // Exit app or return to login
-            // You can implement proper app exit logic here
+            // Exit app properly
+            SystemNavigator.pop();
           },
           child: const Text('Tutup Aplikasi'),
         ),
@@ -72,10 +76,13 @@ class UpdateVersionDialog extends StatelessWidget {
     return WillPopScope(
       onWillPop: () async => !isBelowMinimum, // Prevent back if forced update
       child: AlertDialog(
+        backgroundColor: Colors.white,
         title: Row(
           children: [
             Icon(
-              isBelowMinimum ? Icons.error_rounded : Icons.system_update_rounded,
+              isBelowMinimum
+                  ? Icons.error_rounded
+                  : Icons.system_update_rounded,
               color: isBelowMinimum ? Colors.red : Colors.blue,
               size: 28,
             ),
@@ -97,9 +104,9 @@ class UpdateVersionDialog extends StatelessWidget {
               Text(
                 'Versi Aplikasi',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
-                    ),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
               ),
               const SizedBox(height: 8),
               Container(
@@ -171,7 +178,11 @@ class UpdateVersionDialog extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.info_rounded, color: Colors.red[600], size: 20),
+                      Icon(
+                        Icons.info_rounded,
+                        color: Colors.red[600],
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -219,7 +230,10 @@ class UpdateVersionDialog extends StatelessWidget {
         print('Error launching store URL: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tidak dapat membuka Play Store')),
+            SnackBar(
+              content: const Text('Tidak dapat membuka Play Store'),
+              backgroundColor: Colors.red[600],
+            ),
           );
         }
       }
@@ -269,10 +283,7 @@ class VersionStatusBar extends StatelessWidget {
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
-                child: const Text(
-                  'Update',
-                  style: TextStyle(fontSize: 12),
-                ),
+                child: const Text('Update', style: TextStyle(fontSize: 12)),
               ),
             ),
         ],
