@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme_provider.dart';
 import '../../layouts/screens/main_layout.dart';
+import '../services/chat_service.dart';
+import '../models/chat_response.dart';
 
 class ChatAnalysisScreen extends StatefulWidget {
   const ChatAnalysisScreen({super.key});
@@ -14,16 +16,23 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
+  late ChatService _chatService;
 
   final List<Map<String, dynamic>> _messages = [
     {
       'id': 1,
       'role': 'assistant',
       'content':
-          'Hello! I\'m your AI business assistant. How can I help you analyze your POS data today?',
+          'Halo! Saya adalah asisten AI bisnis Anda. Bagaimana saya bisa membantu menganalisis data POS Anda hari ini?',
       'timestamp': DateTime.now().subtract(const Duration(minutes: 5)),
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _chatService = ChatService();
+  }
 
   @override
   void dispose() {
@@ -32,39 +41,51 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
+
+    final userMessage = _messageController.text.trim();
 
     setState(() {
       _messages.add({
         'id': _messages.length + 1,
         'role': 'user',
-        'content': _messageController.text.trim(),
+        'content': userMessage,
         'timestamp': DateTime.now(),
       });
       _isLoading = true;
     });
 
     _messageController.clear();
+    _scrollToBottom();
 
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
+    // Call API
+    final response = await _chatService.sendMessage(userMessage);
+
+    if (mounted) {
+      setState(() {
+        if (response.ok && response.answer != null) {
           _messages.add({
             'id': _messages.length + 1,
             'role': 'assistant',
-            'content':
-                'Thank you for your question. I\'m analyzing the data... (API integration will be done here)',
+            'content': response.answer,
             'timestamp': DateTime.now(),
+            'intent': response.intent,
+            'data': response.data,
           });
-          _isLoading = false;
-        });
-        _scrollToBottom();
-      }
-    });
-
-    _scrollToBottom();
+        } else {
+          _messages.add({
+            'id': _messages.length + 1,
+            'role': 'assistant',
+            'content': response.error ?? 'Terjadi kesalahan saat memproses pertanyaan.',
+            'timestamp': DateTime.now(),
+            'isError': true,
+          });
+        }
+        _isLoading = false;
+      });
+      _scrollToBottom();
+    }
   }
 
   void _scrollToBottom() {
@@ -342,14 +363,46 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message['content'],
-                    style: TextStyle(
-                      color: isUser ? Colors.white : themeProvider.textPrimary,
-                      fontSize: isDesktop ? 15 : 14,
-                      height: 1.5,
+                  // Error styling untuk pesan error
+                  if (message['isError'] == true) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.red.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              message['content'],
+                              style: TextStyle(
+                                color: Colors.red.shade700,
+                                fontSize: isDesktop ? 14 : 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ] else ...[
+                    Text(
+                      message['content'],
+                      style: TextStyle(
+                        color: isUser ? Colors.white : themeProvider.textPrimary,
+                        fontSize: isDesktop ? 15 : 14,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Text(
                     _formatTime(timestamp),
@@ -497,7 +550,7 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
               ),
               decoration: InputDecoration(
                 hintText:
-                    isSmallScreen ? 'Ask...' : 'Ask about your business...',
+                    isSmallScreen ? 'Tanya...' : 'Tanyakan tentang bisnis Anda...',
                 hintStyle: TextStyle(
                   color: themeProvider.textTertiary,
                   fontSize: isDesktop ? 15 : 14,
@@ -534,12 +587,12 @@ class _ChatAnalysisScreenState extends State<ChatAnalysisScreen> {
   void _showSuggestedQuestions() {
     final themeProvider = context.read<ThemeProvider>();
     final suggestions = [
-      'What is the total sales this month?',
-      'Which products are best selling?',
-      'How is branch store performance?',
-      'Analyze sales trend this week',
-      'Which customers shop most frequently?',
-      'Recommendations to increase sales',
+      'Berapa total penjualan bulan ini?',
+      'Produk apa yang paling banyak terjual?',
+      'Bagaimana performa toko cabang?',
+      'Analisis tren penjualan minggu ini',
+      'Pelanggan mana yang paling sering belanja?',
+      'Rekomendasi untuk meningkatkan penjualan',
     ];
 
     showModalBottomSheet(
