@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Future.delayed(const Duration(milliseconds: 1500), () {
                 if (Navigator.canPop(dialogContext)) {
                   Navigator.pop(dialogContext);
-                  
+
                   // Navigate ke MainLayout setelah dialog tertutup
                   if (mounted) {
                     Navigator.of(context).pushReplacement(
@@ -104,13 +104,19 @@ class _LoginScreenState extends State<LoginScreen> {
               // Tampilkan dialog sukses
               return Center(
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 40,
+                  ),
                   child: Material(
                     borderRadius: BorderRadius.circular(24),
                     elevation: 12,
                     shadowColor: Colors.green.withOpacity(0.2),
                     child: Container(
-                      constraints: const BoxConstraints(maxWidth: 400, minWidth: 280),
+                      constraints: const BoxConstraints(
+                        maxWidth: 400,
+                        minWidth: 280,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24),
                         gradient: LinearGradient(
@@ -129,7 +135,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               height: 80,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [Colors.green.shade400, Colors.green.shade600],
+                                  colors: [
+                                    Colors.green.shade400,
+                                    Colors.green.shade600,
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(40),
                                 boxShadow: [
