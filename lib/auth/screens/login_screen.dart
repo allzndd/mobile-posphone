@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 import 'dart:convert';
 import '../../layouts/screens/main_layout.dart';
+import '../../layouts/screens/version_check_wrapper.dart';
 import '../../component/validation_handler.dart';
 import '../widgets/auth_background.dart';
 import '../widgets/auth_card.dart';
@@ -86,10 +87,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
                         builder:
-                            (context) => MainLayout(
-                              child: Container(),
+                            (context) => VersionCheckWrapper(
+                              child: MainLayout(
+                                child: Container(),
+                                title: 'Dashboard Kasir',
+                                selectedIndex: 0,
+                              ),
                               title: 'Dashboard Kasir',
-                              selectedIndex: 0,
                             ),
                       ),
                     );
