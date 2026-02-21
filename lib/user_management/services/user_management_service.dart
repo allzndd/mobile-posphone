@@ -7,7 +7,10 @@ import '../models/admin_user_model.dart';
 /// Service for managing admin users
 class UserManagementService {
   /// Get list of admin users
-  static Future<Map<String, dynamic>> getAdminUsers() async {
+  static Future<Map<String, dynamic>> getAdminUsers({
+    int page = 1,
+    int perPage = 10,
+  }) async {
     try {
       final token = await AuthService.getToken();
 
@@ -15,9 +18,16 @@ class UserManagementService {
         throw Exception('Token not found');
       }
 
+      final uri = Uri.parse(ApiConfig.getUrl('/api/users')).replace(
+        queryParameters: {
+          'page': page.toString(),
+          'per_page': perPage.toString(),
+        },
+      );
+
       final response = await http
           .get(
-            Uri.parse(ApiConfig.getUrl('/api/users')),
+            uri,
             headers: ApiConfig.authHeaders(token),
           )
           .timeout(const Duration(seconds: 15));
@@ -30,10 +40,18 @@ class UserManagementService {
             .map((json) => AdminUserModel.fromJson(json))
             .toList();
 
+        final pagination = jsonResponse['pagination'] ?? {};
+
         return {
           'success': true,
           'message': jsonResponse['message'] ?? 'Success',
           'data': admins,
+          'pagination': {
+            'current_page': pagination['current_page'] ?? 1,
+            'per_page': pagination['per_page'] ?? 10,
+            'total': pagination['total'] ?? 0,
+            'last_page': pagination['last_page'] ?? 1,
+          },
         };
       } else {
         throw Exception(
@@ -46,6 +64,12 @@ class UserManagementService {
         'success': false,
         'message': 'Failed to get admin users: $e',
         'data': [],
+        'pagination': {
+          'current_page': 1,
+          'per_page': 10,
+          'total': 0,
+          'last_page': 1,
+        },
       };
     }
   }

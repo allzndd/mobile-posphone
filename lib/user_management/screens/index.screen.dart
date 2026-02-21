@@ -20,6 +20,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   List<AdminUserModel> _admins = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  int _currentPage = 1;
+  int _perPage = 10;
+  final List<int> _perPageOptions = [10, 25, 50, 100];
+  int _totalPages = 1;
+  int _totalItems = 0;
 
   @override
   void initState() {
@@ -27,16 +32,28 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     _loadAdminUsers();
   }
 
-  Future<void> _loadAdminUsers() async {
-    setState(() => _isLoading = true);
+  Future<void> _loadAdminUsers({bool isRefresh = false, int? page}) async {
+    if (isRefresh) {
+      setState(() => _isLoading = true);
+    }
+
+    if (page != null) {
+      setState(() => _currentPage = page);
+    }
 
     try {
-      final result = await UserManagementService.getAdminUsers();
+      final result = await UserManagementService.getAdminUsers(
+        page: _currentPage,
+        perPage: _perPage,
+      );
 
       if (mounted) {
         setState(() {
           if (result['success'] == true) {
             _admins = result['data'] as List<AdminUserModel>;
+            final pagination = result['pagination'] as Map<String, dynamic>;
+            _totalPages = pagination['last_page'] ?? 1;
+            _totalItems = pagination['total'] ?? 0;
           }
           _isLoading = false;
         });
@@ -51,6 +68,24 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ),
         );
       }
+    }
+  }
+
+  void _goToPage(int page) {
+    if (page >= 1 && page <= _totalPages && page != _currentPage) {
+      _loadAdminUsers(page: page);
+    }
+  }
+
+  void _nextPage() {
+    if (_currentPage < _totalPages) {
+      _goToPage(_currentPage + 1);
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 1) {
+      _goToPage(_currentPage - 1);
     }
   }
 
@@ -154,7 +189,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       child: Scaffold(
         backgroundColor: themeProvider.backgroundColor,
         body: RefreshIndicator(
-        onRefresh: _loadAdminUsers,
+        onRefresh: () => _loadAdminUsers(isRefresh: true),
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(child: _buildHeader(isDesktop)),
@@ -183,6 +218,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     childCount: _filteredAdmins.length,
                   ),
                 ),
+              ),
+            // Add pagination controls
+            if (!_isLoading && _filteredAdmins.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _buildPaginationControls(isDesktop),
               ),
           ],
         ),
@@ -501,6 +541,238 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPaginationControls(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return Container(
+      padding: EdgeInsets.all(isDesktop ? 20 : 16),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: themeProvider.textTertiary.withOpacity(0.1)),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Rows per page selector
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Pagination info
+                Flexible(
+                  child: Text(
+                    'Showing ${_admins.isEmpty ? 0 : ((_currentPage - 1) * _perPage) + 1} - ${(_currentPage * _perPage) > _totalItems ? _totalItems : (_currentPage * _perPage)} of $_totalItems items',
+                    style: TextStyle(
+                      color: themeProvider.textSecondary,
+                      fontSize: isDesktop ? 14 : 12,
+                    ),
+                  ),
+                ),
+                // Rows per page dropdown
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Rows:',
+                      style: TextStyle(
+                        color: themeProvider.textSecondary,
+                        fontSize: isDesktop ? 14 : 12,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: themeProvider.borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButton<int>(
+                        value: _perPage,
+                        underline: const SizedBox(),
+                        isDense: true,
+                        style: TextStyle(
+                          color: themeProvider.textPrimary,
+                          fontSize: isDesktop ? 14 : 12,
+                        ),
+                        items: _perPageOptions.map((int value) {
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text(value.toString()),
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          if (newValue != null && newValue != _perPage) {
+                            setState(() {
+                              _perPage = newValue;
+                              _currentPage = 1;
+                            });
+                            _loadAdminUsers(isRefresh: true);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Pagination info
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text(
+              'Showing ${_admins.isEmpty ? 0 : ((_currentPage - 1) * _perPage) + 1} - ${(_currentPage * _perPage) > _totalItems ? _totalItems : (_currentPage * _perPage)} of $_totalItems items',
+              style: TextStyle(
+                color: themeProvider.textSecondary,
+                fontSize: isDesktop ? 14 : 12,
+              ),
+            ),
+          ),
+
+          // Pagination controls
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Previous button
+              IconButton(
+                onPressed: _currentPage > 1 ? _previousPage : null,
+                icon: const Icon(Icons.chevron_left_rounded),
+                color: themeProvider.primaryMain,
+                disabledColor: themeProvider.textTertiary.withOpacity(0.3),
+                style: IconButton.styleFrom(
+                  backgroundColor:
+                      _currentPage > 1
+                          ? themeProvider.primaryMain.withOpacity(0.1)
+                          : themeProvider.textTertiary.withOpacity(0.05),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // Page numbers
+              ..._buildPageNumbers(isDesktop),
+
+              const SizedBox(width: 12),
+
+              // Next button
+              IconButton(
+                onPressed: _currentPage < _totalPages ? _nextPage : null,
+                icon: const Icon(Icons.chevron_right_rounded),
+                color: themeProvider.primaryMain,
+                disabledColor: themeProvider.textTertiary.withOpacity(0.3),
+                style: IconButton.styleFrom(
+                  backgroundColor:
+                      _currentPage < _totalPages
+                          ? themeProvider.primaryMain.withOpacity(0.1)
+                          : themeProvider.textTertiary.withOpacity(0.05),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildPageNumbers(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+    List<Widget> pageButtons = [];
+
+    // Show max 10 page numbers at a time
+    int startPage = _currentPage - 5;
+    int endPage = _currentPage + 4;
+
+    if (startPage < 1) {
+      startPage = 1;
+      endPage = _totalPages < 10 ? _totalPages : 10;
+    }
+
+    if (endPage > _totalPages) {
+      endPage = _totalPages;
+      startPage = _totalPages - 9 > 0 ? _totalPages - 9 : 1;
+    }
+
+    // First page
+    if (startPage > 1) {
+      pageButtons.add(_buildPageButton(1, isDesktop));
+      if (startPage > 2) {
+        pageButtons.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '...',
+              style: TextStyle(color: themeProvider.textSecondary),
+            ),
+          ),
+        );
+      }
+    }
+
+    // Page numbers
+    for (int i = startPage; i <= endPage; i++) {
+      pageButtons.add(_buildPageButton(i, isDesktop));
+    }
+
+    // Last page
+    if (endPage < _totalPages) {
+      if (endPage < _totalPages - 1) {
+        pageButtons.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '...',
+              style: TextStyle(color: themeProvider.textSecondary),
+            ),
+          ),
+        );
+      }
+      pageButtons.add(_buildPageButton(_totalPages, isDesktop));
+    }
+
+    return pageButtons;
+  }
+
+  Widget _buildPageButton(int page, bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isCurrentPage = page == _currentPage;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: InkWell(
+        onTap: () => _goToPage(page),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 16 : 12,
+            vertical: isDesktop ? 12 : 8,
+          ),
+          decoration: BoxDecoration(
+            color:
+                isCurrentPage
+                    ? themeProvider.primaryMain
+                    : themeProvider.backgroundColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color:
+                  isCurrentPage
+                      ? themeProvider.primaryMain
+                      : themeProvider.textTertiary.withOpacity(0.2),
+            ),
+          ),
+          child: Text(
+            page.toString(),
+            style: TextStyle(
+              color: isCurrentPage ? Colors.white : themeProvider.textPrimary,
+              fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+              fontSize: isDesktop ? 14 : 12,
+            ),
+          ),
+        ),
       ),
     );
   }

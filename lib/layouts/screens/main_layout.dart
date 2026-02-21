@@ -8,6 +8,7 @@ import '../../dashboard/screens/dashboard_screen.dart';
 import '../../produk/screens/produk_screen.dart';
 import '../../transaksi/screens/incoming_transaction_screen.dart/index.screen.dart';
 import '../../transaksi/screens/outgoing_transaction_screen.dart/index.screen.dart';
+import '../../transaksi/screens/history_transaction_screen.dart/index.screen.dart';
 import '../../customers/screens/index.screen.dart';
 import '../../pengaturan/screens/pengaturan_screen.dart';
 import '../../brand/screens/index.screen.dart';
@@ -74,6 +75,7 @@ class _MainLayoutState extends State<MainLayout> {
     const ColorIndexScreen(), // 18
     const RamIndexScreen(), // 19 - RAM Info
     const StorageIndexScreen(), // 20 - Storage
+    const HistoryTransactionIndexScreen(), // 21 - Transaction History
   ];
 
   // Title for each screen
@@ -99,6 +101,7 @@ class _MainLayoutState extends State<MainLayout> {
     'Colors', // 18
     'RAM Info', // 19
     'Storage', // 20
+    'Transaction History', // 21
   ];
 
   void _onMenuItemTap(int index) {

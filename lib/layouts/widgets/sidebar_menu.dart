@@ -58,6 +58,7 @@ class _SidebarMenuState extends State<SidebarMenu> {
       'submenu': [
         {'title': 'Incoming', 'index': 2, 'icon': Icons.arrow_downward_rounded},
         {'title': 'Outgoing', 'index': 5, 'icon': Icons.arrow_upward_rounded},
+        {'title': 'History', 'index': 21, 'icon': Icons.history_rounded},
         {'title': 'Expense Transaction', 'index': 15, 'icon': Icons.receipt_long_rounded},
       ],
     });

@@ -26,7 +26,8 @@ class _RamIndexScreenState extends State<RamIndexScreen>
   int _currentPage = 1;
   bool _hasMoreData = true;
   bool _isLoadingMore = false;
-  final int _perPage = 10;
+  int _perPage = 10;
+  final List<int> _perPageOptions = [10, 25, 50, 100];
   int _totalPages = 1;
   int _totalItems = 0;
   late AnimationController _fadeController;
@@ -584,6 +585,72 @@ class _RamIndexScreenState extends State<RamIndexScreen>
       ),
       child: Column(
         children: [
+          // Rows per page selector
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Pagination info
+                Flexible(
+                  child: Text(
+                    'Showing ${_rams.isEmpty ? 0 : ((_currentPage - 1) * _perPage) + 1} - ${(_currentPage * _perPage) > _totalItems ? _totalItems : (_currentPage * _perPage)} of $_totalItems items',
+                    style: TextStyle(
+                      color: themeProvider.textSecondary,
+                      fontSize: isDesktop ? 14 : 12,
+                    ),
+                  ),
+                ),
+                // Rows per page dropdown
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Rows:',
+                      style: TextStyle(
+                        color: themeProvider.textSecondary,
+                        fontSize: isDesktop ? 14 : 12,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: themeProvider.borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButton<int>(
+                        value: _perPage,
+                        underline: const SizedBox(),
+                        isDense: true,
+                        style: TextStyle(
+                          color: themeProvider.textPrimary,
+                          fontSize: isDesktop ? 14 : 12,
+                        ),
+                        items: _perPageOptions.map((int value) {
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text(value.toString()),
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          if (newValue != null && newValue != _perPage) {
+                            setState(() {
+                              _perPage = newValue;
+                              _currentPage = 1;
+                            });
+                            _loadRams(isRefresh: true);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Pagination controls
           // Pagination info
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
