@@ -24,15 +24,15 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
   
   List<Customer> _customers = [];
   bool _isLoading = false;
-  bool _isLoadingMore = false;
   String _searchQuery = '';
   String _sortBy = 'nama';
   String _sortOrder = 'asc';
   int _currentPage = 1;
+  int _perPage = 10;
   int _totalPages = 1;
-  bool _hasMoreData = true;
+  int _totalItems = 0;
+  final List<int> _perPageOptions = [10, 25, 50, 100];
   String? _error;
-  final int _perPage = 20;
   
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -50,7 +50,6 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
     _loadCustomers(isRefresh: true);
     _fadeController.forward();
-    _scrollController.addListener(_scrollListener);
   }
 
   @override
@@ -61,26 +60,17 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
     super.dispose();
   }
 
-  void _scrollListener() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-      if (!_isLoadingMore && _hasMoreData) {
-        _loadMore();
-      }
-    }
-  }
-
-  Future<void> _loadCustomers({bool isRefresh = false}) async {
-    if (isRefresh) {
+  Future<void> _loadCustomers({bool isRefresh = false, int? page}) async {
+    if (page != null) {
+      _currentPage = page;
+    } else if (isRefresh) {
       _currentPage = 1;
-      _hasMoreData = true;
-      _customers.clear();
     }
 
-    if (!_hasMoreData || _isLoading) return;
+    if (_isLoading) return;
 
     setState(() {
-      _isLoading = isRefresh || _currentPage == 1;
-      _isLoadingMore = !isRefresh && _currentPage > 1;
+      _isLoading = true;
       _error = null;
     });
 
@@ -93,25 +83,27 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
         perPage: _perPage,
       );
 
-      if (result.success) {
+      if (result.success && mounted) {
         final List<Customer> newCustomers = result.customers ?? [];
+        final int totalItems = result.pagination?.total ?? newCustomers.length;
+        final int lastPage = result.pagination?.lastPage ?? 1;
+        final int currentPage = result.pagination?.currentPage ?? _currentPage;
 
         setState(() {
-          if (isRefresh || _currentPage == 1) {
-            _customers = newCustomers;
-          } else {
-            _customers.addAll(newCustomers);
-          }
-
-          if (result.pagination != null) {
-            _totalPages = result.pagination!.lastPage;
-            _hasMoreData = newCustomers.length >= _perPage && _currentPage < _totalPages;
-            if (_hasMoreData) _currentPage++;
-          } else {
-            _hasMoreData = newCustomers.length >= _perPage;
-            if (_hasMoreData) _currentPage++;
-          }
+          _customers = newCustomers;
+          _totalItems = totalItems;
+          _totalPages = lastPage > 0 ? lastPage : 1;
+          _currentPage = currentPage;
         });
+
+        // Scroll to top when changing page
+        if (page != null && _scrollController.hasClients) {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
       } else {
         setState(() {
           _error = result.message;
@@ -132,63 +124,9 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
         }
       }
     } finally {
-      setState(() {
-        _isLoading = false;
-        _isLoadingMore = false;
-      });
-    }
-  }
-
-  Future<void> _loadMore() async {
-    if (!_hasMoreData || _isLoadingMore) return;
-    
-    setState(() {
-      _isLoadingMore = true;
-    });
-
-    try {
-      final result = await _customerService.getCustomers(
-        page: _currentPage,
-        search: _searchQuery.isNotEmpty ? _searchQuery : null,
-        sortBy: _sortBy,
-        sortOrder: _sortOrder,
-        perPage: _perPage,
-      );
-
-      if (result.success) {
-        final List<Customer> newCustomers = result.customers ?? [];
-
-        setState(() {
-          _customers.addAll(newCustomers);
-          
-          if (result.pagination != null) {
-            _totalPages = result.pagination!.lastPage;
-            _hasMoreData = newCustomers.length >= _perPage && _currentPage < _totalPages;
-            if (_hasMoreData) _currentPage++;
-          } else {
-            _hasMoreData = newCustomers.length >= _perPage;
-            if (_hasMoreData) _currentPage++;
-          }
-        });
-      } else {
-        if (mounted) {
-          ValidationHandler.showErrorSnackBar(
-            context: context,
-            message: result.message,
-          );
-        }
-      }
-    } catch (e) {
       if (mounted) {
-        ValidationHandler.showErrorSnackBar(
-          context: context,
-          message: e.toString(),
-        );
+        setState(() => _isLoading = false);
       }
-    } finally {
-      setState(() {
-        _isLoadingMore = false;
-      });
     }
   }
 
@@ -197,6 +135,24 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       _loadCustomers(isRefresh: true);
     });
+  }
+
+  void _goToPage(int page) {
+    if (page >= 1 && page <= _totalPages && page != _currentPage) {
+      _loadCustomers(page: page);
+    }
+  }
+
+  void _nextPage() {
+    if (_currentPage < _totalPages) {
+      _goToPage(_currentPage + 1);
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 1) {
+      _goToPage(_currentPage - 1);
+    }
   }
 
   void _showSortDialog() {
@@ -424,6 +380,9 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
                 _buildStatsCards(isDesktop, isTablet),
                 _buildSearchSection(isDesktop),
                 _buildCustomersContentContainer(isDesktop, isTablet),
+                if (!_isLoading && _customers.isNotEmpty)
+                  _buildPaginationControls(isDesktop),
+                const SizedBox(height: 80), // Space for FAB
               ],
             ),
           ),
@@ -799,27 +758,18 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
   }
 
   Widget _buildCustomersList(bool isDesktop, bool isTablet) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    return Padding(
       padding: EdgeInsets.fromLTRB(
         isDesktop ? 20 : 16,
         8,
         isDesktop ? 20 : 16,
-        80, // Extra bottom padding for FAB clearance
+        8,
       ),
-      itemCount: _customers.length + (_isLoadingMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= _customers.length) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        return _buildModernCustomerCard(_customers[index], isDesktop);
-      },
+      child: Column(
+        children: _customers
+            .map((customer) => _buildModernCustomerCard(customer, isDesktop))
+            .toList(),
+      ),
     );
   }
 
@@ -1012,6 +962,235 @@ class _CustomerIndexScreenState extends State<CustomerIndexScreen>
         label: const Text('Add Customer'),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaginationControls(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return Container(
+      padding: EdgeInsets.all(isDesktop ? 20 : 16),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: themeProvider.textTertiary.withOpacity(0.1)),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Rows per page selector
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Pagination info
+                Flexible(
+                  child: Text(
+                    'Showing ${_customers.isEmpty ? 0 : ((_currentPage - 1) * _perPage) + 1} - ${(_currentPage * _perPage) > _totalItems ? _totalItems : (_currentPage * _perPage)} of $_totalItems items',
+                    style: TextStyle(
+                      color: themeProvider.textSecondary,
+                      fontSize: isDesktop ? 14 : 12,
+                    ),
+                  ),
+                ),
+                // Rows per page dropdown
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Rows:',
+                      style: TextStyle(
+                        color: themeProvider.textSecondary,
+                        fontSize: isDesktop ? 14 : 12,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: themeProvider.borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButton<int>(
+                        value: _perPage,
+                        underline: const SizedBox(),
+                        isDense: true,
+                        style: TextStyle(
+                          color: themeProvider.textPrimary,
+                          fontSize: isDesktop ? 14 : 12,
+                        ),
+                        items: _perPageOptions.map((int value) {
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text(value.toString()),
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          if (newValue != null && newValue != _perPage) {
+                            setState(() {
+                              _perPage = newValue;
+                              _currentPage = 1; // Reset to first page
+                            });
+                            _loadCustomers(isRefresh: true);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Pagination controls with horizontal scroll for mobile
+          Center(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Previous button
+                  IconButton(
+                    onPressed: _currentPage > 1 ? _previousPage : null,
+                    icon: const Icon(Icons.chevron_left_rounded),
+                    color: themeProvider.primaryMain,
+                    disabledColor: themeProvider.textTertiary.withOpacity(0.3),
+                    style: IconButton.styleFrom(
+                      backgroundColor:
+                          _currentPage > 1
+                              ? themeProvider.primaryMain.withOpacity(0.1)
+                              : themeProvider.textTertiary.withOpacity(0.05),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // Page numbers
+                  ..._buildPageNumbers(isDesktop),
+
+                  const SizedBox(width: 12),
+
+                  // Next button
+                  IconButton(
+                    onPressed: _currentPage < _totalPages ? _nextPage : null,
+                    icon: const Icon(Icons.chevron_right_rounded),
+                    color: themeProvider.primaryMain,
+                    disabledColor: themeProvider.textTertiary.withOpacity(0.3),
+                    style: IconButton.styleFrom(
+                      backgroundColor:
+                          _currentPage < _totalPages
+                              ? themeProvider.primaryMain.withOpacity(0.1)
+                              : themeProvider.textTertiary.withOpacity(0.05),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildPageNumbers(bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+    List<Widget> pageButtons = [];
+
+    // Show fewer page numbers on mobile to prevent overflow
+    final maxPages = isDesktop ? 10 : 5;
+    final halfPages = maxPages ~/ 2;
+    
+    int startPage = _currentPage - halfPages;
+    int endPage = _currentPage + (halfPages - 1);
+
+    if (startPage < 1) {
+      startPage = 1;
+      endPage = _totalPages < maxPages ? _totalPages : maxPages;
+    }
+
+    if (endPage > _totalPages) {
+      endPage = _totalPages;
+      startPage = _totalPages - (maxPages - 1) > 0 ? _totalPages - (maxPages - 1) : 1;
+    }
+
+    // First page
+    if (startPage > 1) {
+      pageButtons.add(_buildPageButton(1, isDesktop));
+      if (startPage > 2) {
+        pageButtons.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '...',
+              style: TextStyle(color: themeProvider.textSecondary),
+            ),
+          ),
+        );
+      }
+    }
+
+    // Page numbers
+    for (int i = startPage; i <= endPage; i++) {
+      pageButtons.add(_buildPageButton(i, isDesktop));
+    }
+
+    // Last page
+    if (endPage < _totalPages) {
+      if (endPage < _totalPages - 1) {
+        pageButtons.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '...',
+              style: TextStyle(color: themeProvider.textSecondary),
+            ),
+          ),
+        );
+      }
+      pageButtons.add(_buildPageButton(_totalPages, isDesktop));
+    }
+
+    return pageButtons;
+  }
+
+  Widget _buildPageButton(int page, bool isDesktop) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isCurrentPage = page == _currentPage;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: InkWell(
+        onTap: () => _goToPage(page),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 16 : 12,
+            vertical: isDesktop ? 12 : 8,
+          ),
+          decoration: BoxDecoration(
+            color:
+                isCurrentPage
+                    ? themeProvider.primaryMain
+                    : themeProvider.backgroundColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color:
+                  isCurrentPage
+                      ? themeProvider.primaryMain
+                      : themeProvider.textTertiary.withOpacity(0.2),
+            ),
+          ),
+          child: Text(
+            page.toString(),
+            style: TextStyle(
+              color: isCurrentPage ? Colors.white : themeProvider.textPrimary,
+              fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+              fontSize: isDesktop ? 14 : 12,
+            ),
+          ),
         ),
       ),
     );
