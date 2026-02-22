@@ -17,6 +17,7 @@ class Product {
   final String? imei;
   final String? aksesoris;
   final String? status;
+  final String? productType;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -41,6 +42,7 @@ class Product {
     this.imei,
     this.aksesoris,
     this.status,
+    this.productType,
     this.createdAt,
     this.updatedAt,
     this.merk,
@@ -65,6 +67,7 @@ class Product {
       imei: json['imei'] as String?,
       aksesoris: json['aksesoris'] as String?,
       status: json['status'] as String?,
+      productType: json['product_type'] as String?,
       createdAt:
           json['created_at'] != null
               ? DateTime.parse(json['created_at'])
@@ -142,6 +145,7 @@ class Product {
       'imei': imei,
       'aksesoris': aksesoris,
       'status': status,
+      'product_type': productType,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       'merk': merk?.toJson(),

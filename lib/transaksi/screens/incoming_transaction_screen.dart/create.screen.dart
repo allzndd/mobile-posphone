@@ -11,6 +11,7 @@ import '../../../produk/models/product.dart';
 import '../../../services/services/service_service.dart';
 import '../../../services/models/service.dart';
 import '../../services/incoming_service.dart';
+import '../../widgets/transaction_receipt.dart';
 
 class IncomingTransactionCreateScreen extends StatefulWidget {
   const IncomingTransactionCreateScreen({super.key});
@@ -433,7 +434,13 @@ class _IncomingTransactionCreateScreenState
                       ),
                     )
                     .toList(),
-            onChanged: (value) => setState(() => _selectedStoreId = value),
+            onChanged: (value) => setState(() {
+              _selectedStoreId = value;
+              // Clear items when store changes because products in different stores
+              if (_items.isNotEmpty) {
+                _items.clear();
+              }
+            }),
             isLoading: _isLoadingStores,
             validator:
                 (value) => value == null ? 'Please select a store' : null,
@@ -556,15 +563,21 @@ class _IncomingTransactionCreateScreenState
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => _showAddItemDialog(themeProvider, isMobile),
+              onPressed: _selectedStoreId == null
+                  ? null
+                  : () => _showAddItemDialog(themeProvider, isMobile),
               icon: const Icon(Icons.add_rounded),
               label: Text(
-                'Add Item',
+                _selectedStoreId == null ? 'Select Store First' : 'Add Item',
                 style: TextStyle(fontSize: isMobile ? 14 : 16),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: themeProvider.primaryMain,
-                side: BorderSide(color: themeProvider.primaryMain),
+                side: BorderSide(
+                  color: _selectedStoreId == null
+                      ? themeProvider.borderColor
+                      : themeProvider.primaryMain,
+                ),
                 padding: EdgeInsets.symmetric(vertical: isMobile ? 12 : 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -586,9 +599,29 @@ class _IncomingTransactionCreateScreenState
     bool isMobile,
   ) {
     final product = item['product'] as Product?;
+    final service = item['service'] as Service?;
     final quantity = item['quantity'] as int;
     final price = item['price'] as int;
     final subtotal = quantity * price;
+    final itemType = item['type'] as String;
+
+    // Determine display name based on type
+    String displayName;
+    if (itemType == 'electronic' || itemType == 'accessories') {
+      displayName = product?.nama ?? 'Unknown Product';
+    } else {
+      displayName = service?.nama ?? 'Unknown Service';
+    }
+
+    // Type label
+    String typeLabel;
+    if (itemType == 'electronic') {
+      typeLabel = 'Electronic';
+    } else if (itemType == 'accessories') {
+      typeLabel = 'Accessories';
+    } else {
+      typeLabel = 'Service';
+    }
 
     return Container(
       margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
@@ -607,8 +640,28 @@ class _IncomingTransactionCreateScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: themeProvider.primaryMain.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            typeLabel,
+                            style: TextStyle(
+                              fontSize: isMobile ? 10 : 12,
+                              fontWeight: FontWeight.w600,
+                              color: themeProvider.primaryMain,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6),
                     Text(
-                      product?.nama ?? 'Unknown Product',
+                      displayName,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: isMobile ? 14 : 16,
@@ -786,12 +839,14 @@ class _IncomingTransactionCreateScreenState
   }
 
   void _showAddItemDialog(ThemeProvider themeProvider, bool isMobile) {
-    String selectedType = 'product';
+    String selectedType = 'electronic';
     Product? selectedProduct;
     Service? selectedService;
     final quantityController = TextEditingController(text: '1');
     final unitPriceController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
     int subtotal = 0;
+    int maxStock = 0; // Maximum stock available in selected store
 
     showDialog(
       context: context,
@@ -813,10 +868,12 @@ class _IncomingTransactionCreateScreenState
                   style: TextStyle(color: themeProvider.textPrimary),
                 ),
                 content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                       // Type Dropdown
                       Text(
                         'Type',
@@ -840,12 +897,16 @@ class _IncomingTransactionCreateScreenState
                         value: selectedType,
                         items: const [
                           DropdownMenuItem(
-                            value: 'product',
-                            child: Text('Product'),
+                            value: 'electronic',
+                            child: Text('Electronic'),
                           ),
                           DropdownMenuItem(
-                            value: 'service',
-                            child: Text('Service'),
+                            value: 'accessories',
+                            child: Text('Accessories'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'services',
+                            child: Text('Services'),
                           ),
                         ],
                         onChanged: (value) {
@@ -855,6 +916,7 @@ class _IncomingTransactionCreateScreenState
                             selectedService = null;
                             unitPriceController.clear();
                             subtotal = 0;
+                            maxStock = 0; // Reset max stock when type changes
                           });
                         },
                         dropdownColor: themeProvider.surfaceColor,
@@ -871,7 +933,7 @@ class _IncomingTransactionCreateScreenState
                         ),
                       ),
                       const SizedBox(height: 8),
-                      if (selectedType == 'product')
+                      if (selectedType == 'electronic' || selectedType == 'accessories')
                         DropdownButtonFormField<Product>(
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
@@ -887,19 +949,74 @@ class _IncomingTransactionCreateScreenState
                           isExpanded: true,
                           items:
                               _products
+                                  .where((product) {
+                                    // Debug logging
+                                    debugPrint('Product: ${product.nama}, Type: ${product.productType}, Stok: ${product.stok?.length ?? 0}');
+                                    
+                                    // Filter products based on selected type
+                                    bool typeMatch = false;
+                                    if (selectedType == 'electronic') {
+                                      // Allow if productType is 'electronic' OR null (for backward compatibility)
+                                      typeMatch = product.productType == 'electronic' || product.productType == null;
+                                    } else if (selectedType == 'accessories') {
+                                      typeMatch = product.productType == 'accessory';
+                                    }
+                                    
+                                    if (!typeMatch) {
+                                      debugPrint('  -> Type not match: ${product.productType} vs $selectedType');
+                                      return false;
+                                    }
+                                    
+                                    // Filter products based on selected store (has stock in this store)
+                                    if (_selectedStoreId != null && product.stok != null) {
+                                      final hasStock = product.stok!.any((stok) {
+                                        debugPrint('  -> Store ${stok.posTokoId} vs selected ${_selectedStoreId}, stock: ${stok.stok}');
+                                        return stok.posTokoId == _selectedStoreId && stok.stok > 0;
+                                      });
+                                      if (!hasStock) {
+                                        debugPrint('  -> No stock in selected store');
+                                      }
+                                      return hasStock;
+                                    }
+                                    
+                                    debugPrint('  -> No stok data or store not selected');
+                                    return false;
+                                  })
                                   .map(
-                                    (product) => DropdownMenuItem<Product>(
-                                      value: product,
-                                      child: Text(
-                                        product.nama ?? '',
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
+                                    (product) {
+                                      // Get stock for the selected store
+                                      int stokTersedia = 0;
+                                      if (_selectedStoreId != null && product.stok != null) {
+                                        final stokStore = product.stok!.firstWhere(
+                                          (s) => s.posTokoId == _selectedStoreId,
+                                          orElse: () => product.stok!.first,
+                                        );
+                                        stokTersedia = stokStore.stok;
+                                      }
+                                      
+                                      return DropdownMenuItem<Product>(
+                                        value: product,
+                                        child: Text(
+                                          '${product.nama ?? ''} (Stock: $stokTersedia)',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    },
                                   )
                                   .toList(),
                           onChanged: (value) {
                             setDialogState(() {
                               selectedProduct = value;
+                              // Get stock from selected store
+                              if (_selectedStoreId != null && selectedProduct?.stok != null) {
+                                final stokStore = selectedProduct!.stok!.firstWhere(
+                                  (s) => s.posTokoId == _selectedStoreId,
+                                  orElse: () => selectedProduct!.stok!.first,
+                                );
+                                maxStock = stokStore.stok;
+                              } else {
+                                maxStock = 0;
+                              }
                               unitPriceController.text =
                                   (selectedProduct?.hargaJual ?? 0).toString();
                               calculateSubtotal();
@@ -966,10 +1083,31 @@ class _IncomingTransactionCreateScreenState
                             horizontal: 12,
                             vertical: 12,
                           ),
+                          suffixText: (selectedType == 'electronic' || selectedType == 'accessories') && maxStock > 0
+                              ? 'Max: $maxStock'
+                              : null,
+                          suffixStyle: TextStyle(
+                            color: themeProvider.textSecondary,
+                            fontSize: 12,
+                          ),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (value) => calculateSubtotal(),
                         style: TextStyle(color: themeProvider.textPrimary),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter quantity';
+                          }
+                          final qty = int.tryParse(value);
+                          if (qty == null || qty <= 0) {
+                            return 'Please enter valid quantity';
+                          }
+                          // Validate stock for products only (not services)
+                          if ((selectedType == 'electronic' || selectedType == 'accessories') && qty > maxStock) {
+                            return 'Stock only $maxStock available';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
 
@@ -1035,6 +1173,7 @@ class _IncomingTransactionCreateScreenState
                       ),
                     ],
                   ),
+                  ),
                 ),
                 actions: [
                   TextButton(
@@ -1046,27 +1185,32 @@ class _IncomingTransactionCreateScreenState
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      if ((selectedType == 'product' &&
+                      // Validate form first
+                      if (!formKey.currentState!.validate()) {
+                        return;
+                      }
+                      
+                      if (((selectedType == 'electronic' || selectedType == 'accessories') &&
                               selectedProduct != null) ||
-                          (selectedType == 'service' &&
+                          (selectedType == 'services' &&
                               selectedService != null)) {
                         setState(() {
                           _items.add({
                             'type': selectedType,
                             'product':
-                                selectedType == 'product'
+                                (selectedType == 'electronic' || selectedType == 'accessories')
                                     ? selectedProduct
                                     : null,
                             'service':
-                                selectedType == 'service'
+                                selectedType == 'services'
                                     ? selectedService
                                     : null,
                             'product_id':
-                                selectedType == 'product'
+                                (selectedType == 'electronic' || selectedType == 'accessories')
                                     ? selectedProduct!.id
                                     : null,
                             'service_id':
-                                selectedType == 'service'
+                                selectedType == 'services'
                                     ? selectedService!.id
                                     : null,
                             'quantity':
@@ -1879,26 +2023,171 @@ class _IncomingTransactionCreateScreenState
       }
 
       if (mounted) {
-        await ValidationHandler.showSuccessDialog(
-          context: context,
-          title: 'Success',
-          message:
-              response['message'] ??
-              'Transaction has been created successfully!',
-          onPressed: () {
-            Navigator.of(context).pop(); // Close dialog
-            Navigator.pop(context, true); // Return to previous screen
-          },
-        );
+        debugPrint('=== RECEIPT DEBUG START ===');
+        debugPrint('Transaction saved successfully');
+        debugPrint('Invoice: ${_invoiceController.text.trim()}');
+        debugPrint('Total: $total');
+        debugPrint('Items count: ${_items.length}');
+        debugPrint('Selected Store ID: $_selectedStoreId');
+        debugPrint('Selected Customer ID: $_selectedCustomerId');
+        debugPrint('Payment Method: $_selectedPaymentMethod');
+        debugPrint('Status: $_selectedStatus');
+        
+        try {
+          // Get selected customer and store
+          debugPrint('Getting customer data...');
+          final selectedCustomer = _selectedCustomerId != null
+              ? _customers.firstWhere(
+                  (c) => c.id == _selectedCustomerId,
+                  orElse: () {
+                    debugPrint('WARNING: Customer not found for ID $_selectedCustomerId');
+                    return Customer(
+                      nama: 'Unknown',
+                    );
+                  },
+                )
+              : null;
+          debugPrint('Customer: ${selectedCustomer?.nama ?? "null"}');
+          
+          debugPrint('Getting store data...');
+          final selectedStore = _stores.firstWhere(
+            (s) => s.id == _selectedStoreId,
+            orElse: () {
+              debugPrint('WARNING: Store not found for ID $_selectedStoreId');
+              return Store(
+                id: 0,
+                nama: 'Unknown',
+                alamat: '',
+                createdAt: DateTime.now(),
+              );
+            },
+          );
+          debugPrint('Store: ${selectedStore.nama}');
 
-        // Generate new invoice number for next transaction if user stays
-        _generateInvoiceNumber();
-        // Clear form
-        setState(() {
-          _items.clear();
-          _selectedCustomerId = null;
-          _keteranganController.clear();
-        });
+          // Prepare receipt items
+          debugPrint('Preparing receipt items...');
+          final receiptItems = _items.map((item) {
+            try {
+              final quantity = item['quantity'] as int;
+              final price = item['price'] as int;
+              final subtotal = quantity * price;
+              String name = '';
+              final itemType = item['type'];
+
+              debugPrint('Processing item: type=$itemType, qty=$quantity, price=$price');
+
+              // Check if item is product (electronic or accessories) or service
+              if (itemType == 'electronic' || itemType == 'accessories') {
+                final productId = item['product_id'] as int?;
+                debugPrint('  Product ID: $productId');
+                final product = _products.firstWhere(
+                  (p) => p.id == productId,
+                  orElse: () {
+                    debugPrint('  WARNING: Product not found for ID $productId');
+                    return Product(
+                      id: 0,
+                      ownerId: 0,
+                      posProdukMerkId: 0,
+                      nama: 'Unknown Product',
+                      slug: '',
+                      hargaBeli: 0,
+                      hargaJual: 0,
+                      stok: [],
+                    );
+                  },
+                );
+                name = product.nama;
+                debugPrint('  Product name: $name');
+              } else if (itemType == 'services') {
+                final serviceId = item['service_id'] as int?;
+                debugPrint('  Service ID: $serviceId');
+                final service = _services.firstWhere(
+                  (s) => s.id == serviceId,
+                  orElse: () {
+                    debugPrint('  WARNING: Service not found for ID $serviceId');
+                    return Service(
+                      nama: 'Unknown Service',
+                      harga: 0.0,
+                      durasi: 0,
+                      posTokoId: 0,
+                    );
+                  },
+                );
+                name = service.nama;
+                debugPrint('  Service name: $name');
+              } else {
+                debugPrint('  WARNING: Unknown item type: $itemType');
+                name = 'Unknown Item';
+              }
+
+              final receiptItem = {
+                'name': name,
+                'quantity': quantity,
+                'price': price,
+                'subtotal': subtotal,
+              };
+              debugPrint('  Receipt item created: $receiptItem');
+              return receiptItem;
+            } catch (e, stackTrace) {
+              debugPrint('ERROR processing item: $e');
+              debugPrint('Stack trace: $stackTrace');
+              debugPrint('Item data: $item');
+              rethrow;
+            }
+          }).toList();
+          debugPrint('Receipt items prepared: ${receiptItems.length} items');
+
+          debugPrint('Getting theme provider...');
+          final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+          debugPrint('Theme provider obtained');
+
+          // Show receipt dialog
+          debugPrint('Showing receipt dialog...');
+          debugPrint('Receipt data: invoice=${_invoiceController.text.trim()}, total=$total, items=${receiptItems.length}');
+          
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) {
+              debugPrint('Building TransactionReceipt widget...');
+              return TransactionReceipt(
+                invoice: _invoiceController.text.trim(),
+                date: DateTime.now(),
+                store: selectedStore,
+                customer: selectedCustomer,
+                status: _selectedStatus,
+                items: receiptItems,
+                totalHarga: total,
+                metodePembayaran: _selectedPaymentMethod,
+                keterangan:
+                    _keteranganController.text.trim().isEmpty
+                        ? null
+                        : _keteranganController.text.trim(),
+                themeProvider: themeProvider,
+              );
+            },
+          );
+          debugPrint('Receipt dialog closed');
+
+          // After closing receipt, return to previous screen
+          if (mounted) {
+            debugPrint('Returning to previous screen');
+            Navigator.pop(context, true);
+          }
+          debugPrint('=== RECEIPT DEBUG END ===');
+        } catch (e, stackTrace) {
+          debugPrint('ERROR in receipt generation: $e');
+          debugPrint('Stack trace: $stackTrace');
+          if (mounted) {
+            await ValidationHandler.showErrorDialog(
+              context: context,
+              title: 'Receipt Error',
+              message: 'Failed to display receipt: ${e.toString()}',
+            );
+            // Still return to previous screen on error
+            Navigator.pop(context, true);
+          }
+        }
       }
     } catch (e) {
       debugPrint('Error creating transaction: $e');
