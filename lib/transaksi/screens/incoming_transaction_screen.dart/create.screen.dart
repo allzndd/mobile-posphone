@@ -365,24 +365,58 @@ class _IncomingTransactionCreateScreenState
             isRequired: true,
           ),
           SizedBox(height: isMobile ? 16 : 20),
-          _buildModernDropdown<int>(
-            label: 'Customer',
-            hint: 'Select customer (optional)',
-            icon: Icons.person_rounded,
-            value: _selectedCustomerId,
-            items:
-                _customers
-                    .map(
-                      (customer) => DropdownMenuItem<int>(
-                        value: customer.id,
-                        child: Text(customer.nama ?? ''),
-                      ),
-                    )
-                    .toList(),
-            onChanged: (value) => setState(() => _selectedCustomerId = value),
-            isLoading: _isLoadingCustomers,
-            themeProvider: themeProvider,
-            isMobile: isMobile,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: _buildModernDropdown<int>(
+                  label: 'Customer',
+                  hint: 'Select customer (optional)',
+                  icon: Icons.person_rounded,
+                  value: _selectedCustomerId,
+                  items:
+                      _customers
+                          .map(
+                            (customer) => DropdownMenuItem<int>(
+                              value: customer.id,
+                              child: Text(customer.nama ?? ''),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (value) => setState(() => _selectedCustomerId = value),
+                  isLoading: _isLoadingCustomers,
+                  themeProvider: themeProvider,
+                  isMobile: isMobile,
+                ),
+              ),
+              SizedBox(width: isMobile ? 8 : 12),
+              SizedBox(
+                height: isMobile ? 48 : 56,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showAddCustomerDialog(themeProvider, isMobile),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: themeProvider.primaryMain,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 12 : 16,
+                      vertical: 0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: Icon(Icons.add, size: isMobile ? 18 : 20),
+                  label: Text(
+                    'New',
+                    style: TextStyle(
+                      fontSize: isMobile ? 13 : 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           SizedBox(height: isMobile ? 16 : 20),
           _buildModernDropdown<int>(
@@ -1389,6 +1423,394 @@ class _IncomingTransactionCreateScreenState
       default:
         return method[0].toUpperCase() + method.substring(1);
     }
+  }
+
+  void _showAddCustomerDialog(ThemeProvider themeProvider, bool isMobile) {
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
+    final emailController = TextEditingController();
+    final addressController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: themeProvider.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: themeProvider.primaryMain.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.person_add_rounded,
+                  color: themeProvider.primaryMain,
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 12),
+              Text(
+                'Add New Customer',
+                style: TextStyle(
+                  color: themeProvider.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: SizedBox(
+                width: isMobile ? MediaQuery.of(context).size.width * 0.8 : 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Customer Name
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Customer Name',
+                              style: TextStyle(
+                                color: themeProvider.textPrimary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              '*',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        TextFormField(
+                          controller: nameController,
+                          style: TextStyle(color: themeProvider.textPrimary),
+                          decoration: InputDecoration(
+                            hintText: 'Enter customer name',
+                            hintStyle: TextStyle(color: themeProvider.textSecondary),
+                            filled: true,
+                            fillColor: themeProvider.backgroundColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.borderColor.withOpacity(0.3),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.borderColor.withOpacity(0.3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.primaryMain,
+                                width: 2,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.red),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Customer name is required';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    // Phone Number
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Phone Number',
+                          style: TextStyle(
+                            color: themeProvider.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        TextFormField(
+                          controller: phoneController,
+                          style: TextStyle(color: themeProvider.textPrimary),
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            hintText: 'eg, 08123456789',
+                            hintStyle: TextStyle(color: themeProvider.textSecondary),
+                            filled: true,
+                            fillColor: themeProvider.backgroundColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.borderColor.withOpacity(0.3),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.borderColor.withOpacity(0.3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.primaryMain,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    // Email Address
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Email Address',
+                          style: TextStyle(
+                            color: themeProvider.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        TextFormField(
+                          controller: emailController,
+                          style: TextStyle(color: themeProvider.textPrimary),
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            hintText: 'eg, customer@email.com',
+                            hintStyle: TextStyle(color: themeProvider.textSecondary),
+                            filled: true,
+                            fillColor: themeProvider.backgroundColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.borderColor.withOpacity(0.3),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.borderColor.withOpacity(0.3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.primaryMain,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value != null && value.trim().isNotEmpty) {
+                              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                              if (!emailRegex.hasMatch(value)) {
+                                return 'Please enter a valid email';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    // Address
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Address',
+                          style: TextStyle(
+                            color: themeProvider.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        TextFormField(
+                          controller: addressController,
+                          style: TextStyle(color: themeProvider.textPrimary),
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            hintText: 'Enter customer address',
+                            hintStyle: TextStyle(color: themeProvider.textSecondary),
+                            filled: true,
+                            fillColor: themeProvider.backgroundColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.borderColor.withOpacity(0.3),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.borderColor.withOpacity(0.3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: themeProvider.primaryMain,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: themeProvider.textSecondary),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (formKey.currentState!.validate()) {
+                        setDialogState(() {
+                          isLoading = true;
+                        });
+
+                        try {
+                          final newCustomer = Customer(
+                            nama: nameController.text.trim(),
+                            nomorHp: phoneController.text.trim().isEmpty
+                                ? null
+                                : phoneController.text.trim(),
+                            email: emailController.text.trim().isEmpty
+                                ? null
+                                : emailController.text.trim(),
+                            alamat: addressController.text.trim().isEmpty
+                                ? null
+                                : addressController.text.trim(),
+                          );
+
+                          final response = await _customerService.createCustomer(newCustomer);
+
+                          if (response.success && response.data != null) {
+                            // Refresh customer list
+                            await _loadCustomers();
+
+                            // Select the newly created customer
+                            if (mounted) {
+                              setState(() {
+                                _selectedCustomerId = response.data!.id;
+                              });
+                            }
+
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              await ValidationHandler.showSuccessDialog(
+                                context: context,
+                                title: 'Success',
+                                message: 'Customer added successfully',
+                              );
+                            }
+                          } else {
+                            throw Exception(response.message ?? 'Failed to add customer');
+                          }
+                        } catch (e) {
+                          debugPrint('Error creating customer: $e');
+                          if (context.mounted) {
+                            await ValidationHandler.showErrorDialog(
+                              context: context,
+                              title: 'Error',
+                              message: e.toString().replaceFirst('Exception: ', ''),
+                            );
+                          }
+                        } finally {
+                          if (context.mounted) {
+                            setDialogState(() {
+                              isLoading = false;
+                            });
+                          }
+                        }
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeProvider.primaryMain,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: isLoading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Save',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _saveTransaction() async {
