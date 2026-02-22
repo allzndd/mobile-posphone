@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 import '../../../config/theme_provider.dart';
 import '../../../component/validation_handler.dart';
 import '../../../layouts/screens/main_layout.dart';
+import '../../../customers/models/customer.dart';
+import '../../../store/models/store.dart';
 import '../../services/incoming_service.dart';
+import '../../widgets/transaction_receipt.dart';
 import 'show.screen.dart';
 import 'create.screen.dart';
 
@@ -717,71 +720,7 @@ class _IncomingTransactionIndexScreenState
           offset: Offset(0, 20 * (1 - value)),
           child: Opacity(
             opacity: value,
-            child: Dismissible(
-              key: Key('transaction_${transaction['id']}'),
-              direction: DismissDirection.horizontal,
-              confirmDismiss: (direction) async {
-                return await _showDeleteConfirmation(transaction);
-              },
-              onDismissed: (direction) async {
-                await _deleteTransaction(transaction);
-              },
-              background: Container(
-                margin: EdgeInsets.only(bottom: isDesktop ? 16 : 12),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 20),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.delete_rounded,
-                      color: Colors.white,
-                      size: isDesktop ? 28 : 24,
-                    ),
-                    SizedBox(width: isDesktop ? 12 : 8),
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isDesktop ? 16 : 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              secondaryBackground: Container(
-                margin: EdgeInsets.only(bottom: isDesktop ? 16 : 12),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                alignment: Alignment.centerRight,
-                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isDesktop ? 16 : 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(width: isDesktop ? 12 : 8),
-                    Icon(
-                      Icons.delete_rounded,
-                      color: Colors.white,
-                      size: isDesktop ? 28 : 24,
-                    ),
-                  ],
-                ),
-              ),
-              child: Container(
+            child: Container(
               margin: EdgeInsets.only(bottom: isDesktop ? 16 : 12),
               decoration: BoxDecoration(
                 color: themeProvider.surfaceColor,
@@ -801,39 +740,39 @@ class _IncomingTransactionIndexScreenState
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
                     padding: EdgeInsets.all(isDesktop ? 20 : 16),
-                    child: Row(
+                    child: Column(
                       children: [
-                        // Icon Container
-                        Container(
-                          padding: EdgeInsets.all(isDesktop ? 14 : 12),
-                          decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.receipt_long_rounded,
-                            color: statusColor,
-                            size: isDesktop ? 28 : 24,
-                          ),
-                        ),
-                        SizedBox(width: isDesktop ? 16 : 12),
-                        // Transaction Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                        // Header Row with Invoice and Actions
+                        Row(
+                          children: [
+                            // Icon Container
+                            Container(
+                              padding: EdgeInsets.all(isDesktop ? 14 : 12),
+                              decoration: BoxDecoration(
+                                color: statusColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.receipt_long_rounded,
+                                color: statusColor,
+                                size: isDesktop ? 28 : 24,
+                              ),
+                            ),
+                            SizedBox(width: isDesktop ? 16 : 12),
+                            // Invoice and Status
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      transaction['invoice'] ?? '-',
-                                      style: TextStyle(
-                                        fontSize: isDesktop ? 16 : 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: themeProvider.textPrimary,
-                                      ),
+                                  Text(
+                                    transaction['invoice'] ?? '-',
+                                    style: TextStyle(
+                                      fontSize: isDesktop ? 16 : 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: themeProvider.textPrimary,
                                     ),
                                   ),
+                                  SizedBox(height: isDesktop ? 4 : 2),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 10,
@@ -854,83 +793,120 @@ class _IncomingTransactionIndexScreenState
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                transaction['customer_name'] ?? '-',
-                                style: TextStyle(
-                                  fontSize: isDesktop ? 14 : 12,
-                                  color: themeProvider.textSecondary,
-                                  fontWeight: FontWeight.w500,
+                            ),
+                            // Action Buttons
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () => _showReceipt(transaction),
+                                  icon: Icon(
+                                    Icons.receipt,
+                                    size: isDesktop ? 20 : 18,
+                                    color: themeProvider.primaryMain,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  visualDensity: VisualDensity.compact,
+                                  tooltip: 'View Receipt',
                                 ),
+                                SizedBox(height: isDesktop ? 8 : 6),
+                                IconButton(
+                                  onPressed: () => _deleteTransaction(transaction),
+                                  icon: Icon(
+                                    Icons.delete,
+                                    size: isDesktop ? 20 : 18,
+                                    color: Colors.red,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  visualDensity: VisualDensity.compact,
+                                  tooltip: 'Delete Transaction',
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: isDesktop ? 12 : 10),
+                        // Transaction Details
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              transaction['customer_name'] ?? '-',
+                              style: TextStyle(
+                                fontSize: isDesktop ? 14 : 12,
+                                color: themeProvider.textSecondary,
+                                fontWeight: FontWeight.w500,
                               ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.store_rounded,
-                                    size: isDesktop ? 14 : 12,
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.store_rounded,
+                                  size: isDesktop ? 14 : 12,
+                                  color: themeProvider.textTertiary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  transaction['toko_name'] ?? '-',
+                                  style: TextStyle(
+                                    fontSize: isDesktop ? 12 : 10,
                                     color: themeProvider.textTertiary,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    transaction['toko_name'] ?? '-',
-                                    style: TextStyle(
-                                      fontSize: isDesktop ? 12 : 10,
-                                      color: themeProvider.textTertiary,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Icon(
-                                    Icons.shopping_bag_rounded,
-                                    size: isDesktop ? 14 : 12,
+                                ),
+                                const SizedBox(width: 12),
+                                Icon(
+                                  Icons.shopping_bag_rounded,
+                                  size: isDesktop ? 14 : 12,
+                                  color: themeProvider.textTertiary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${transaction['items_count']} items',
+                                  style: TextStyle(
+                                    fontSize: isDesktop ? 12 : 10,
                                     color: themeProvider.textTertiary,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${transaction['items_count']} items',
-                                    style: TextStyle(
-                                      fontSize: isDesktop ? 12 : 10,
-                                      color: themeProvider.textTertiary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        _getPaymentIcon(
-                                            transaction['metode_pembayaran']),
-                                        size: isDesktop ? 14 : 12,
-                                        color: themeProvider.primaryMain,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        transaction['metode_pembayaran'] ?? '-',
-                                        style: TextStyle(
-                                          fontSize: isDesktop ? 12 : 10,
-                                          color: themeProvider.primaryMain,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Text(
-                                    'Rp ${_formatPrice(transaction['total_harga'] ?? 0)}',
-                                    style: TextStyle(
-                                      fontSize: isDesktop ? 16 : 14,
-                                      fontWeight: FontWeight.bold,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      _getPaymentIcon(
+                                          transaction['metode_pembayaran']),
+                                      size: isDesktop ? 14 : 12,
                                       color: themeProvider.primaryMain,
                                     ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      transaction['metode_pembayaran'] ?? '-',
+                                      style: TextStyle(
+                                        fontSize: isDesktop ? 12 : 10,
+                                        color: themeProvider.primaryMain,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  'Rp ${_formatPrice(transaction['total_harga'] ?? 0)}',
+                                  style: TextStyle(
+                                    fontSize: isDesktop ? 16 : 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: themeProvider.primaryMain,
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -939,8 +915,7 @@ class _IncomingTransactionIndexScreenState
               ),
             ),
           ),
-        ),
-          );      },
+        );      },
     );
   }
 
@@ -1122,6 +1097,10 @@ class _IncomingTransactionIndexScreenState
   }
 
   Future<void> _deleteTransaction(Map<String, dynamic> transaction) async {
+    // Show confirmation dialog first
+    final bool? shouldDelete = await _showDeleteConfirmation(transaction);
+    if (shouldDelete != true) return;
+
     try {
       final response = await IncomingService.deleteIncomingTransaction(transaction['id']);
       
@@ -1160,6 +1139,66 @@ class _IncomingTransactionIndexScreenState
         );
       }
     }
+  }
+
+  void _showReceipt(Map<String, dynamic> transaction) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
+    // Create customer object from transaction data
+    Customer? customer;
+    if (transaction['pos_pelanggan_id'] != null) {
+      customer = Customer(
+        id: transaction['pos_pelanggan_id'],
+        nama: transaction['customer_name'] ?? 'Unknown',
+      );
+    }
+
+    // Create store object from transaction data
+    final store = Store(
+      id: transaction['pos_toko_id'] ?? 0,
+      nama: transaction['toko_name'] ?? 'Unknown',
+      alamat: '',
+      createdAt: DateTime.now(),
+    );
+
+    // Prepare receipt items from transaction items
+    final List<Map<String, dynamic>> receiptItems = [];
+    if (transaction['items'] != null) {
+      final items = transaction['items'] as List<dynamic>;
+      for (var item in items) {
+        receiptItems.add({
+          'name': item['product_name'] ?? item['produk_nama'] ?? 'Unknown',
+          'quantity': item['quantity'] ?? 0,
+          'price': item['harga_satuan'] ?? 0,
+          'subtotal': item['subtotal'] ?? 0,
+        });
+      }
+    }
+
+    // Parse date
+    DateTime transactionDate;
+    try {
+      transactionDate = DateTime.parse(transaction['created_at']);
+    } catch (e) {
+      transactionDate = DateTime.now();
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => TransactionReceipt(
+        invoice: transaction['invoice'] ?? 'N/A',
+        date: transactionDate,
+        store: store,
+        customer: customer,
+        status: transaction['status'] ?? 'Unknown',
+        items: receiptItems,
+        totalHarga: (transaction['total_harga'] as int?)?.toDouble() ?? 0.0,
+        metodePembayaran: transaction['metode_pembayaran'] ?? 'Unknown',
+        keterangan: transaction['keterangan'],
+        themeProvider: themeProvider,
+      ),
+    );
   }
 
   Widget _buildPaginationControls(bool isDesktop) {

@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
+import 'dart:io';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../config/theme_provider.dart';
 import '../../store/models/store.dart';
 import '../../customers/models/customer.dart';
@@ -87,14 +94,7 @@ class TransactionReceipt extends StatelessWidget {
                   Row(
                     children: [
                       IconButton(
-                        onPressed: () {
-                          // TODO: Implement print functionality
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Print feature coming soon'),
-                            ),
-                          );
-                        },
+                        onPressed: () => _handlePrint(context),
                         icon: const Icon(Icons.print, color: Colors.white),
                         tooltip: 'Print',
                       ),
@@ -136,14 +136,7 @@ class TransactionReceipt extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        // TODO: Implement share/save
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Save feature coming soon'),
-                          ),
-                        );
-                      },
+                      onPressed: () => _handleSave(context),
                       icon: const Icon(Icons.save_alt),
                       label: const Text('Save'),
                       style: OutlinedButton.styleFrom(
@@ -511,6 +504,319 @@ class TransactionReceipt extends StatelessWidget {
         return 'CREDIT';
       default:
         return method.toUpperCase().replaceAll('-', ' ');
+    }
+  }
+
+  // Generate PDF document with simplified styling (no bold to avoid Unicode issues)
+  Future<pw.Document> _generatePdf() async {
+    final pdf = pw.Document();
+
+    // Load Unicode-safe font
+    final font = await PdfGoogleFonts.notoSansRegular();
+    final fontBold = await PdfGoogleFonts.notoSansBold();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.roll80,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Header
+              pw.Center(
+                child: pw.Column(
+                  children: [
+                    pw.Text(
+                      store?.nama ?? 'TOKO',
+                      style: pw.TextStyle(fontSize: 18, font: fontBold),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      store?.alamat ?? 'Alamat Toko',
+                      style: pw.TextStyle(fontSize: 11, font: font),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Container(
+                      padding: const pw.EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: pw.BoxDecoration(
+                        color: PdfColor.fromHex('#16a34a'),
+                        borderRadius: pw.BorderRadius.circular(4),
+                      ),
+                      child: pw.Text(
+                        'PENJUALAN',
+                        style: pw.TextStyle(
+                          color: PdfColors.white,
+                          fontSize: 11,
+                          font: fontBold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 12),
+              pw.Divider(),
+              pw.SizedBox(height: 8),
+              // Transaction Info
+              _buildPdfInfoRow('No Invoice:', invoice, font),
+              _buildPdfInfoRow(
+                'Tanggal:',
+                DateFormat('dd/MM/yyyy HH:mm').format(date),
+                font,
+              ),
+              _buildPdfInfoRow('Toko:', store?.nama ?? '-', font),
+              if (customer != null)
+                _buildPdfInfoRow('Pelanggan:', customer!.nama, font),
+              _buildPdfInfoRow('Status:', status.toUpperCase(), font),
+              pw.SizedBox(height: 8),
+              pw.Divider(),
+              pw.SizedBox(height: 8),
+              // Items
+              ...items.map((item) => _buildPdfItemRow(item, font, fontBold)),
+              pw.SizedBox(height: 8),
+              pw.Divider(),
+              pw.SizedBox(height: 8),
+              // Totals
+              _buildPdfTotalRow('Subtotal:', _formatCurrency(totalHarga), font),
+              pw.SizedBox(height: 8),
+              pw.Container(height: 2, color: PdfColors.black),
+              pw.SizedBox(height: 8),
+              _buildPdfTotalRow(
+                'TOTAL:',
+                _formatCurrency(totalHarga),
+                fontBold,
+                fontSize: 14,
+              ),
+              pw.SizedBox(height: 8),
+              _buildPdfTotalRow(
+                'Metode Bayar:',
+                _formatPaymentMethod(metodePembayaran),
+                font,
+              ),
+              // Notes
+              if (keterangan != null && keterangan!.isNotEmpty) ...[
+                pw.SizedBox(height: 12),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  'Catatan:',
+                  style: pw.TextStyle(fontSize: 11, font: fontBold),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Text(keterangan!, style: pw.TextStyle(fontSize: 11, font: font)),
+              ],
+              pw.SizedBox(height: 12),
+              pw.Divider(),
+              pw.SizedBox(height: 8),
+              // Footer
+              pw.Center(
+                child: pw.Column(
+                  children: [
+                    pw.Text(
+                      '*** TERIMA KASIH ***',
+                      style: pw.TextStyle(fontSize: 11, font: fontBold),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      'Nota Penjualan / Sales Receipt',
+                      style: pw.TextStyle(fontSize: 10, font: font),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      'Dicetak: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now())}',
+                      style: pw.TextStyle(fontSize: 10, font: font),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    return pdf;
+  }
+
+  pw.Widget _buildPdfInfoRow(String label, String value, pw.Font font) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            label,
+            style: pw.TextStyle(fontSize: 11, font: font),
+          ),
+          pw.Expanded(
+            child: pw.Text(
+              value,
+              style: pw.TextStyle(fontSize: 11, font: font),
+              textAlign: pw.TextAlign.right,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildPdfItemRow(Map<String, dynamic> item, pw.Font font, pw.Font fontBold) {
+    final name = item['name'] as String;
+    final quantity = item['quantity'] as int;
+    final price = item['price'] as int;
+    final subtotal = item['subtotal'] as int;
+
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            name,
+            style: pw.TextStyle(fontSize: 11, font: fontBold),
+          ),
+          pw.SizedBox(height: 2),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text(
+                '$quantity x ${_formatCurrency(price.toDouble())}',
+                style: pw.TextStyle(fontSize: 10, font: font),
+              ),
+              pw.Text(
+                _formatCurrency(subtotal.toDouble()),
+                style: pw.TextStyle(fontSize: 10, font: font),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildPdfTotalRow(
+    String label,
+    String value,
+    pw.Font font, {
+    double fontSize = 11,
+  }) {
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      children: [
+        pw.Text(
+          label,
+          style: pw.TextStyle(fontSize: fontSize, font: font),
+        ),
+        pw.Text(
+          value,
+          style: pw.TextStyle(fontSize: fontSize, font: font),
+        ),
+      ],
+    );
+  }
+
+  // Handle Print
+  Future<void> _handlePrint(BuildContext context) async {
+    try {
+      debugPrint('Starting print process...');
+      final pdf = await _generatePdf();
+      debugPrint('PDF generated successfully');
+      
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+        name: 'Receipt_${invoice.replaceAll('/', '_')}.pdf',
+      );
+      debugPrint('Print completed successfully');
+    } catch (e, stackTrace) {
+      debugPrint('Print error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to print: ${e.toString().contains('MissingPluginException') ? 'Please restart the app to enable printing' : e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  // Handle Save/Share
+  Future<void> _handleSave(BuildContext context) async {
+    try {
+      debugPrint('Starting save process...');
+      final pdf = await _generatePdf();
+      debugPrint('PDF generated successfully');
+      
+      final bytes = await pdf.save();
+      debugPrint('PDF bytes saved');
+      
+      final fileName = 'Receipt_${invoice.replaceAll('/', '_')}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      
+      // Web platform: direct download
+      if (kIsWeb) {
+        debugPrint('Web platform detected, using direct download');
+        await Printing.sharePdf(
+          bytes: bytes,
+          filename: fileName,
+        );
+        debugPrint('Download triggered');
+      } else {
+        // Mobile/Desktop: use file system + share
+        debugPrint('Native platform, using share');
+        final tempDir = await getTemporaryDirectory();
+        debugPrint('Temp directory: ${tempDir.path}');
+        
+        final file = File('${tempDir.path}/$fileName');
+        await file.writeAsBytes(bytes);
+        debugPrint('File written: ${file.path}');
+        
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          subject: 'Transaction Receipt - $invoice',
+          text: 'Receipt for transaction $invoice',
+        );
+        debugPrint('Share completed');
+      }
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(kIsWeb ? 'Receipt downloaded' : 'Receipt saved and ready to share'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Save error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
     }
   }
 }

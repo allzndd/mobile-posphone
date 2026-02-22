@@ -59,6 +59,13 @@ dependencies:
   
   # URL launcher for opening store links
   url_launcher: ^6.2.0
+  
+  # PDF generation and printing
+  pdf: ^3.10.7
+  printing: ^5.12.0
+  
+  # Share functionality
+  share_plus: ^7.2.1
 
 dev_dependencies:
   flutter_test:
