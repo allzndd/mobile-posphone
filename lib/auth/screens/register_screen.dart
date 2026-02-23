@@ -537,61 +537,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           SizedBox(height: isMobile ? 24 : 32),
 
-                          // Divider
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Divider(
-                                  color: themeProvider.borderColor,
-                                  thickness: 1,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'OR',
-                                  style: TextStyle(
-                                    color: themeProvider.textSecondary,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Divider(
-                                  color: themeProvider.borderColor,
-                                  thickness: 1,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Social Login Buttons
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildSocialButton(
-                                icon: Icons.g_mobiledata,
-                                onTap: () {},
-                                themeProvider: themeProvider,
-                              ),
-                              const SizedBox(width: 12),
-                              _buildSocialButton(
-                                icon: Icons.facebook,
-                                onTap: () {},
-                                themeProvider: themeProvider,
-                              ),
-                              const SizedBox(width: 12),
-                              _buildSocialButton(
-                                icon: Icons.apple,
-                                onTap: () {},
-                                themeProvider: themeProvider,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: isMobile ? 24 : 32),
-
                           // Login Link
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -626,34 +571,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required ThemeProvider themeProvider,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: themeProvider.backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: themeProvider.borderColor,
-            width: 1,
-          ),
-        ),
-        child: Icon(
-          icon,
-          size: 28,
-          color: themeProvider.textPrimary,
         ),
       ),
     );

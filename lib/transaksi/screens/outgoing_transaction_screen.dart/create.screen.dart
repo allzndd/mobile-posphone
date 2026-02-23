@@ -1509,6 +1509,7 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   final _batteryHealthController = TextEditingController();
   final _purchasePriceController = TextEditingController();
   final _sellingPriceController = TextEditingController();
+  final _serviceNameController = TextEditingController();
   
   bool _isLoading = false;
   bool _isLoadingBrands = false;
@@ -1528,13 +1529,37 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   
   // Computed lists
   List<String> get _uniqueMerks {
-    final merks = _brands
+    // Filter brands by current product type
+    // Handle both 'accessories' and 'accessory' for compatibility
+    // Treat null/empty product_type as 'electronic' (default/legacy data)
+    final currentType = _productType;
+    final filteredByType = _brands.where((b) {
+      final brandType = b.productType;
+      
+      // If brand has no product_type (null or empty), treat as electronic (legacy data)
+      if (brandType == null || brandType.isEmpty) {
+        return currentType == 'electronic';
+      }
+      
+      if (currentType == 'accessories') {
+        // Match both 'accessories' and 'accessory'
+        return brandType == 'accessories' || brandType == 'accessory';
+      }
+      return brandType == currentType;
+    }).toList();
+    
+    debugPrint('🔍 [FILTER] Current product type: $_productType');
+    debugPrint('🔍 [FILTER] Filtered brands: ${filteredByType.length}');
+    
+    final merks = filteredByType
         .map((b) => b.merk)
         .whereType<String>()
         .where((m) => m.isNotEmpty)
         .toSet()
         .toList();
     merks.sort();
+    
+    debugPrint('🔍 [FILTER] Unique merks: ${merks.length} -> $merks');
     return merks;
   }
   
@@ -1542,7 +1567,24 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
     if (_selectedMerk == null || _selectedMerk!.isEmpty) {
       return [];
     }
-    return _brands.where((b) => b.merk == _selectedMerk).toList();
+    // Filter by both merk AND product type
+    // Handle both 'accessories' and 'accessory' for compatibility
+    // Treat null/empty product_type as 'electronic' (default/legacy data)
+    final currentType = _productType;
+    return _brands.where((b) {
+      final merkMatch = b.merk == _selectedMerk;
+      final brandType = b.productType;
+      
+      // If brand has no product_type (null or empty), treat as electronic (legacy data)
+      if (brandType == null || brandType.isEmpty) {
+        return merkMatch && currentType == 'electronic';
+      }
+      
+      final typeMatch = currentType == 'accessories'
+          ? (brandType == 'accessories' || brandType == 'accessory')
+          : brandType == currentType;
+      return merkMatch && typeMatch;
+    }).toList();
   }
 
   @override
@@ -1557,7 +1599,8 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   Future<void> _loadBrands() async {
     setState(() => _isLoadingBrands = true);
     try {
-      final response = await BrandService.getBrands(perPage: 100);
+      final response = await BrandService.getBrands(perPage: 500);
+      debugPrint('🔍 [BRAND LOADING] Response: $response');
       if (response['success'] == true && mounted) {
         setState(() {
           _brands = (response['data'] as List)
@@ -1565,9 +1608,20 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
               .toList();
           // Don't auto-select - users must choose Brand and Type explicitly
         });
+        debugPrint('✅ [BRAND LOADING] Total brands loaded: ${_brands.length}');
+        
+        // Debug: Show product types in data
+        final productTypes = _brands.map((b) => b.productType).toSet().toList();
+        debugPrint('📊 [BRAND LOADING] Product types found: $productTypes');
+        
+        // Debug: Count by product type
+        final electronicCount = _brands.where((b) => b.productType == 'electronic').length;
+        final accessoryCount = _brands.where((b) => b.productType == 'accessory').length;
+        final accessoriesCount = _brands.where((b) => b.productType == 'accessories').length;
+        debugPrint('📊 [BRAND LOADING] Electronic: $electronicCount, Accessory: $accessoryCount, Accessories: $accessoriesCount');
       }
     } catch (e) {
-      debugPrint('Error loading brands: $e');
+      debugPrint('❌ [BRAND LOADING] Error loading brands: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoadingBrands = false);
@@ -1861,9 +1915,13 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
 
     if (result != null && mounted) {
       try {
+        // Normalize product type: 'accessories' -> 'accessory' for API compatibility
+        final productTypeForApi = _productType == 'accessories' ? 'accessory' : _productType;
+        
         final response = await BrandService.createBrand(
           merk: result['merk']!,
           nama: result['nama']!,
+          productType: productTypeForApi,
         );
         
         if (response['success'] == true) {
@@ -1918,13 +1976,14 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
     _batteryHealthController.dispose();
     _purchasePriceController.dispose();
     _sellingPriceController.dispose();
+    _serviceNameController.dispose();
     super.dispose();
   }
 
   Future<void> _loadColors() async {
     setState(() => _isLoadingColors = true);
     try {
-      final response = await ColorService.getColors(perPage: 100);
+      final response = await ColorService.getColors(perPage: 500);
       if (response['success'] == true && mounted) {
         setState(() {
           _colors = (response['data'] as List)
@@ -1944,7 +2003,7 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   Future<void> _loadRams() async {
     setState(() => _isLoadingRams = true);
     try {
-      final response = await RamService.getRams(perPage: 100);
+      final response = await RamService.getRams(perPage: 500);
       if (response['success'] == true && mounted) {
         setState(() {
           _rams = (response['data'] as List)
@@ -1964,7 +2023,7 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   Future<void> _loadStorages() async {
     setState(() => _isLoadingStorages = true);
     try {
-      final response = await StorageService.getStorages(perPage: 100);
+      final response = await StorageService.getStorages(perPage: 500);
       if (response['success'] == true && mounted) {
         setState(() {
           _storages = response['data'] as List<Storage>;
@@ -1982,43 +2041,59 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedMerk == null || _selectedMerk!.isEmpty) {
-      ValidationHandler.showErrorDialog(
-        context: context,
-        title: 'Validation Error',
-        message: 'Please select a brand category',
-      );
-      return;
-    }
+    // Validation for electronic and accessories (need brand)
+    if (_productType != 'service') {
+      if (_selectedMerk == null || _selectedMerk!.isEmpty) {
+        ValidationHandler.showErrorDialog(
+          context: context,
+          title: 'Validation Error',
+          message: 'Please select a brand category',
+        );
+        return;
+      }
 
-    if (_selectedBrandId == null) {
-      ValidationHandler.showErrorDialog(
-        context: context,
-        title: 'Validation Error',
-        message: 'Please select a product type/name',
-      );
-      return;
+      if (_selectedBrandId == null) {
+        ValidationHandler.showErrorDialog(
+          context: context,
+          title: 'Validation Error',
+          message: 'Please select a product type/name',
+        );
+        return;
+      }
     }
 
     setState(() => _isLoading = true);
 
     try {
-      // Get selected brand name
-      final selectedBrand = _brands.firstWhere((b) => b.id == _selectedBrandId);
+      // Normalize product type: 'accessories' -> 'accessory' for API compatibility
+      final productTypeForApi = _productType == 'accessories' ? 'accessory' : _productType;
+      
+      // For service type, use service name as product name
+      String productName;
+      int? brandId;
+      
+      if (_productType == 'service') {
+        productName = _serviceNameController.text.trim();
+        brandId = null; // Service doesn't need brand
+      } else {
+        final selectedBrand = _brands.firstWhere((b) => b.id == _selectedBrandId);
+        productName = selectedBrand.nama;
+        brandId = _selectedBrandId;
+      }
       
       final response = await ProductService.createProduct(
-        nama: selectedBrand.nama,
-        merkId: _selectedBrandId!,
-        productType: _productType,
+        nama: productName,
+        merkId: brandId,
+        productType: productTypeForApi,
         deskripsi: _descriptionController.text.trim(),
-        hargaBeli: double.tryParse(_purchasePriceController.text) ?? 0,
-        hargaJual: double.tryParse(_sellingPriceController.text) ?? 0,
+        hargaBeli: _productType != 'service' ? (double.tryParse(_purchasePriceController.text) ?? 0) : 0,
+        hargaJual: _productType != 'service' ? (double.tryParse(_sellingPriceController.text) ?? 0) : 0,
         imei: _productType == 'electronic' ? _imeiController.text.trim() : 'N/A',
         warnaId: _productType == 'electronic' ? _selectedColorId : null,
         penyimpananId: _productType == 'electronic' ? _selectedStorageId : null,
         ramId: _productType == 'electronic' ? _selectedRamId : null,
         batteryHealth: _productType == 'electronic' ? _batteryHealthController.text.trim() : null,
-        aksesoris: _productType == 'accessories' ? selectedBrand.nama : null,
+        aksesoris: _productType == 'accessories' ? productName : null,
       );
 
       if (!mounted) return;
@@ -2147,7 +2222,7 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
                 children: [
                   Expanded(
                     child: _buildTypeTab(
-                      label: 'Electronic / HP',
+                      label: 'Electronic',
                       icon: Icons.phone_android_rounded,
                       type: 'electronic',
                       themeProvider: themeProvider,
@@ -2159,6 +2234,15 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
                       label: 'Accessories',
                       icon: Icons.headphones_rounded,
                       type: 'accessories',
+                      themeProvider: themeProvider,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTypeTab(
+                      label: 'Service',
+                      icon: Icons.build_rounded,
+                      type: 'service',
                       themeProvider: themeProvider,
                     ),
                   ),
@@ -2181,18 +2265,56 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
                       _buildSectionTitle('Basic Information', themeProvider),
                       const SizedBox(height: 16),
                       
-                      // Product Name (Brand) Selection with +New button
-                      _buildBrandDropdown(themeProvider),
-                      const SizedBox(height: 16),
+                      // For Service type, only show description
+                      if (_productType == 'service') ...[
+                        _buildTextField(
+                          controller: _descriptionController,
+                          label: 'Description',
+                          hint: 'Enter product description...',
+                          maxLines: 3,
+                          themeProvider: themeProvider,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                       
-                      _buildTextField(
-                        controller: _descriptionController,
-                        label: 'Description',
-                        hint: 'Enter product description (optional)',
-                        maxLines: 3,
-                        themeProvider: themeProvider,
-                      ),
-                      const SizedBox(height: 24),
+                      // For Electronic and Accessories, show Brand and Description
+                      if (_productType != 'service') ...[
+                        // Product Name (Brand) Selection with +New button
+                        _buildBrandDropdown(themeProvider),
+                        const SizedBox(height: 16),
+                        
+                        _buildTextField(
+                          controller: _descriptionController,
+                          label: 'Description',
+                          hint: 'Enter product description (optional)',
+                          maxLines: 3,
+                          themeProvider: themeProvider,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // Service Details (Service only)
+                      if (_productType == 'service') ...[
+                        _buildSectionTitle('Service Details', themeProvider),
+                        const SizedBox(height: 16),
+                        
+                        _buildTextField(
+                          controller: _serviceNameController,
+                          label: 'Service Name',
+                          hint: 'e.g., Phone Screen Repair, Battery Replacement, Software Update',
+                          isRequired: true,
+                          themeProvider: themeProvider,
+                          validator: (value) {
+                            if (_productType == 'service') {
+                              if (value == null || value.isEmpty) {
+                                return 'Service name is required';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                      ],
 
                       // Specifications (Electronic only)
                       if (_productType == 'electronic') ...[
@@ -2251,53 +2373,59 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
                         const SizedBox(height: 24),
                       ],
 
-                      // Pricing Information
-                      _buildSectionTitle('Pricing Information', themeProvider),
-                      const SizedBox(height: 16),
-                      
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField(
-                              controller: _purchasePriceController,
-                              label: 'Purchase Price',
-                              hint: '0',
-                              isRequired: true,
-                              keyboardType: TextInputType.number,
-                              themeProvider: themeProvider,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Required';
-                                }
-                                if (int.tryParse(value) == null) {
-                                  return 'Invalid number';
-                                }
-                                return null;
-                              },
+                      // Pricing Information (Electronic and Accessories only)
+                      if (_productType != 'service') ...[
+                        _buildSectionTitle('Pricing Information', themeProvider),
+                        const SizedBox(height: 16),
+                        
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _purchasePriceController,
+                                label: 'Purchase Price',
+                                hint: '0',
+                                isRequired: true,
+                                keyboardType: TextInputType.number,
+                                themeProvider: themeProvider,
+                                validator: (value) {
+                                  if (_productType != 'service') {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Required';
+                                    }
+                                    if (int.tryParse(value) == null) {
+                                      return 'Invalid number';
+                                    }
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildTextField(
-                              controller: _sellingPriceController,
-                              label: 'Selling Price',
-                              hint: '0',
-                              isRequired: true,
-                              keyboardType: TextInputType.number,
-                              themeProvider: themeProvider,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Required';
-                                }
-                                if (int.tryParse(value) == null) {
-                                  return 'Invalid number';
-                                }
-                                return null;
-                              },
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _sellingPriceController,
+                                label: 'Selling Price',
+                                hint: '0',
+                                isRequired: true,
+                                keyboardType: TextInputType.number,
+                                themeProvider: themeProvider,
+                                validator: (value) {
+                                  if (_productType != 'service') {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Required';
+                                    }
+                                    if (int.tryParse(value) == null) {
+                                      return 'Invalid number';
+                                    }
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -2388,7 +2516,12 @@ class _QuickAddProductDialogState extends State<_QuickAddProductDialog> {
     final isSelected = _productType == type;
     
     return InkWell(
-      onTap: () => setState(() => _productType = type),
+      onTap: () => setState(() {
+        _productType = type;
+        // Reset brand and type selections when switching product type
+        _selectedMerk = null;
+        _selectedBrandId = null;
+      }),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),

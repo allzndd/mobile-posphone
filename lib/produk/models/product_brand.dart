@@ -3,6 +3,7 @@ class ProductBrand {
   final String? merk;
   final String nama;
   final String? slug;
+  final String? productType;
   final int? produkCount;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -12,6 +13,7 @@ class ProductBrand {
     this.merk,
     required this.nama,
     this.slug,
+    this.productType,
     this.produkCount,
     this.createdAt,
     this.updatedAt,
@@ -23,6 +25,7 @@ class ProductBrand {
       merk: json['merk'] as String?,
       nama: json['nama'] as String? ?? json['merk'] as String? ?? 'Unknown',
       slug: json['slug'] as String?,
+      productType: json['product_type'] as String?,
       produkCount: json['produk_count'] as int?,
       createdAt:
           json['created_at'] != null
@@ -41,6 +44,7 @@ class ProductBrand {
       'merk': merk,
       'nama': nama,
       'slug': slug,
+      'product_type': productType,
       'produk_count': produkCount,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
@@ -49,7 +53,7 @@ class ProductBrand {
 
   @override
   String toString() {
-    return 'ProductBrand{id: $id, merk: $merk, nama: $nama}';
+    return 'ProductBrand{id: $id, merk: $merk, nama: $nama, productType: $productType}';
   }
 
   @override

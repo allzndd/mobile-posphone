@@ -5,6 +5,7 @@ import 'auth/providers/branding_provider.dart';
 import 'config/theme_provider.dart';
 import 'config/logo_provider.dart';
 import 'config/version_check_provider.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           fontFamily: 'SF Pro Display',
         ),
-        home: const LoginScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

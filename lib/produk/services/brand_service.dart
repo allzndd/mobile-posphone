@@ -97,11 +97,13 @@ class BrandService {
   static Future<Map<String, dynamic>> createBrand({
     required String merk,
     String? nama,
+    String? productType,
   }) async {
     try {
       final body = {
         'merk': merk,
         if (nama != null && nama.isNotEmpty) 'nama': nama,
+        if (productType != null && productType.isNotEmpty) 'product_type': productType,
       };
 
       final response = await http.post(

@@ -2,16 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../layouts/screens/main_layout.dart';
 import '../../layouts/screens/version_check_wrapper.dart';
 import '../../component/validation_handler.dart';
-import '../widgets/auth_background.dart';
-import '../widgets/auth_card.dart';
-import '../widgets/auth_header.dart';
-import '../widgets/custom_text_field.dart';
-import '../widgets/primary_button.dart';
-import '../widgets/social_login_button.dart';
-import '../widgets/divider_with_text.dart';
 import '../../config/logo_provider.dart';
 import '../../config/theme_provider.dart';
 import 'register_screen.dart';
@@ -46,6 +40,49 @@ class _LoginScreenState extends State<LoginScreen> {
       print('DEBUG - Logo URL: ${context.read<BrandingProvider>().logoUrl}');
       print('DEBUG - App Name: ${context.read<BrandingProvider>().appName}');
     });
+    
+    // Load saved credentials jika remember me diaktifkan
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final rememberMe = prefs.getBool('remember_me') ?? false;
+      
+      if (rememberMe) {
+        final savedEmail = prefs.getString('saved_email') ?? '';
+        final savedPassword = prefs.getString('saved_password') ?? '';
+        
+        if (mounted) {
+          setState(() {
+            _rememberMe = rememberMe;
+            _emailController.text = savedEmail;
+            _passwordController.text = savedPassword;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading saved credentials: $e');
+    }
+  }
+
+  Future<void> _saveCredentials() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      if (_rememberMe) {
+        await prefs.setBool('remember_me', true);
+        await prefs.setString('saved_email', _emailController.text.trim());
+        await prefs.setString('saved_password', _passwordController.text);
+      } else {
+        await prefs.remove('remember_me');
+        await prefs.remove('saved_email');
+        await prefs.remove('saved_password');
+      }
+    } catch (e) {
+      print('Error saving credentials: $e');
+    }
   }
 
   @override
@@ -65,6 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
           _emailController.text.trim(),
           _passwordController.text,
         );
+
+        // Save credentials jika remember me diaktifkan
+        await _saveCredentials();
 
         if (mounted) {
           setState(() => _isLoading = false);
@@ -458,10 +498,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                     width: 20,
                                     child: Checkbox(
                                       value: _rememberMe,
-                                      onChanged: (value) {
+                                      onChanged: (value) async {
                                         setState(() {
                                           _rememberMe = value ?? false;
                                         });
+                                        
+                                        // Jika uncheck, langsung hapus saved credentials
+                                        if (!_rememberMe) {
+                                          final prefs = await SharedPreferences.getInstance();
+                                          await prefs.remove('remember_me');
+                                          await prefs.remove('saved_email');
+                                          await prefs.remove('saved_password');
+                                        }
                                       },
                                       activeColor: themeProvider.primaryMain,
                                       shape: RoundedRectangleBorder(
@@ -552,63 +600,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(height: isMobile ? 24 : 32),
 
-                          // Divider
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Divider(
-                                  color: themeProvider.borderColor,
-                                  thickness: 1,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: Text(
-                                  'OR',
-                                  style: TextStyle(
-                                    color: themeProvider.textSecondary,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Divider(
-                                  color: themeProvider.borderColor,
-                                  thickness: 1,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Social Login Buttons
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildSocialButton(
-                                icon: Icons.g_mobiledata,
-                                onTap: () {},
-                                themeProvider: themeProvider,
-                              ),
-                              const SizedBox(width: 12),
-                              _buildSocialButton(
-                                icon: Icons.facebook,
-                                onTap: () {},
-                                themeProvider: themeProvider,
-                              ),
-                              const SizedBox(width: 12),
-                              _buildSocialButton(
-                                icon: Icons.apple,
-                                onTap: () {},
-                                themeProvider: themeProvider,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: isMobile ? 24 : 32),
-
                           // Register Link
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -650,27 +641,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required ThemeProvider themeProvider,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: themeProvider.backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: themeProvider.borderColor, width: 1),
-        ),
-        child: Icon(icon, size: 28, color: themeProvider.textPrimary),
       ),
     );
   }

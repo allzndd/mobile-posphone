@@ -101,7 +101,7 @@ class ProductService {
   /// Create a new product
   static Future<ApiResponse<Product>> createProduct({
     String? nama,
-    required int merkId,
+    int? merkId,
     required String productType,
     String? deskripsi,
     int? warnaId,
@@ -125,7 +125,6 @@ class ProductService {
 
       // Prepare request body
       Map<String, dynamic> requestBody = {
-        'pos_produk_merk_id': merkId,
         'product_type': productType,
         'harga_beli': hargaBeli,
         'harga_jual': hargaJual,
@@ -133,6 +132,7 @@ class ProductService {
       };
 
       // Add optional fields
+      if (merkId != null) requestBody['pos_produk_merk_id'] = merkId;
       if (nama != null && nama.isNotEmpty) requestBody['nama'] = nama;
       if (deskripsi != null && deskripsi.isNotEmpty)
         requestBody['deskripsi'] = deskripsi;
